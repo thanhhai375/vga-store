@@ -1,0 +1,35 @@
+.categories-section {
+  padding: 80px 0 120px;
+}
+.categories-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+.section-title {
+  font-size: 42px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+.section-subtitle {
+  font-size: 16px;
+  color: #666;
+}
+/* Hệ thống lưới chia 4 cột trên máy tính, 2 cột trên ipad, 1 cột trên điện thoại */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+}
