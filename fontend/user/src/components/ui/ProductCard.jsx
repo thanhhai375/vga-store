@@ -1,10 +1,10 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './ProductCard.css';
+import React from "react";
+import { Link } from "react-router-dom";
+import "./ProductCard.css";
 
 const ProductCard = ({ product }) => {
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN').format(price) + ' VND';
+    return new Intl.NumberFormat("vi-VN").format(price) + " VND";
   };
 
   return (
@@ -21,7 +21,9 @@ const ProductCard = ({ product }) => {
 
         <div className="card-bottom">
           <span className="card-price">{formatPrice(product.price)}</span>
-          <button className={`btn-add-cart ${product.name.includes('White') ? 'btn-outline' : ''}`}>
+          <button
+            className={`btn-add-cart ${product.name.includes("White") ? "btn-outline" : ""}`}
+          >
             Add
           </button>
         </div>

@@ -3,7 +3,7 @@
   height: 520px; /* TRẢ LẠI CHIỀU CAO CHUẨN ĐỂ ẢNH CHÍNH KHÔNG BỊ ĐẨY LÊN TRÊN */
   display: flex;
   align-items: center;
-  background-color: #F4EBE1;
+  background-color: #f4ebe1;
 }
 
 .hero-content-wrapper {
@@ -16,12 +16,42 @@
   gap: 40px;
 }
 
-.hero-text { flex: 1; max-width: 500px; margin-top: -60px; }
-.hero-title { font-family: 'Playfair Display', serif; font-size: 60px; font-weight: 700; line-height: 1.05; margin-bottom: 20px; letter-spacing: -1.5px; color: #000; }
-.hero-desc { font-size: 15px; color: #444; margin-bottom: 30px; line-height: 1.6; }
-.hero-features-list { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px; font-weight: 600; color: #111; }
-.feature-item { display: flex; align-items: center; gap: 7px; font-size: 14px; /* Cỡ chữ của bạn, ví dụ là 16px */
-  color: #111; margin-top: -10px; }
+.hero-text {
+  flex: 1;
+  max-width: 500px;
+  margin-top: -60px;
+}
+.hero-title {
+  font-family: "Playfair Display", serif;
+  font-size: 60px;
+  font-weight: 700;
+  line-height: 1.05;
+  margin-bottom: 20px;
+  letter-spacing: -1.5px;
+  color: #000;
+}
+.hero-desc {
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+.hero-features-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+}
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px; /* Cỡ chữ của bạn, ví dụ là 16px */
+  color: #111;
+  margin-top: -10px;
+}
 
 /* === CHỈNH KHUNG ẢNH ÔM KHÍT === */
 .hero-visual {
@@ -37,7 +67,7 @@
   height: 400px; /* Chiều cao cố định */
   object-fit: cover; /* Đảm bảo ảnh luôn đẹp, không méo */
   border-radius: 20px; /* Bo góc cong mềm mại */
-  box-shadow: -15px 25px 40px rgba(0,0,0,0.1); /* Đổ bóng sang trọng */
+  box-shadow: -15px 25px 40px rgba(0, 0, 0, 0.1); /* Đổ bóng sang trọng */
   z-index: 2;
   transform: translateX(85px) translateY(30px);
 }
@@ -60,7 +90,7 @@
   font-weight: 600;
   font-size: 12px;
   color: #111;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -68,6 +98,12 @@
   text-align: left;
 }
 
-.badge-1 { margin-left: 0; }
-.badge-2 { margin-left: -20px; }
-.badge-3 { margin-left: -10px; }
+.badge-1 {
+  margin-left: 0;
+}
+.badge-2 {
+  margin-left: -20px;
+}
+.badge-3 {
+  margin-left: -10px;
+}

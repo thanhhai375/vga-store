@@ -1,0 +1,26 @@
+.categories-section {
+  position: relative;
+  z-index: 999 !important;
+  margin-top: -130px !important;
+  padding-top: 0;
+  padding-bottom: 80px;
+}
+
+.categories-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #000;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: 750px;
+  margin: 0 auto;
+}

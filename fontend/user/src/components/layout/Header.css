@@ -1,0 +1,76 @@
+.header {
+  position: fixed; /* Khóa chặt trên cùng */
+  top: 10px;
+  left: 0;
+  width: 100%;
+  background-color: #f4ebe1; /* Đổ nền màu Kem cứng cáp để chống lộn xộn */
+  z-index: 9999; /* Luôn nằm trên cùng mọi thứ */
+  height: 50px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #6261616a;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #000;
+}
+.nav-links {
+  display: flex;
+  gap: 40px;
+}
+.nav-links a {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  transition: color 0.3s ease;
+  text-transform: uppercase;
+}
+.nav-links a:hover {
+  color: #000;
+  border-bottom: 1px solid #000;
+  padding-bottom: 2px;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.cart-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: #000;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+.btn-signin {
+  background: transparent;
+  color: #000;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+}
