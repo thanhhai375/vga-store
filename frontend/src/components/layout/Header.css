@@ -1,16 +1,22 @@
-.header { position: sticky; top: 0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100; height: 80px; display: flex; align-items: center; transition: all 0.3s ease; }
-.header-content { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-.logo { font-size: 26px; font-weight: 800; letter-spacing: -1px; color: #000; }
-.nav-links { display: flex; gap: 40px; }
-.nav-links a { font-size: 14px; font-weight: 600; color: #555; transition: color 0.3s ease; }
-.nav-links a:hover { color: #000; }
-.header-actions { display: flex; align-items: center; gap: 24px; }
-.cart-icon { position: relative; display: flex; align-items: center; transition: transform 0.2s ease; }
-.cart-icon:hover { transform: scale(1.1); }
-.cart-badge { position: absolute; top: -8px; right: -10px; background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; display: flex; justify-content: center; align-items: center; font-weight: bold; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); }
-.btn-signin { background: #000; color: #fff; padding: 10px 28px; border-radius: 40px; font-size: 14px; font-weight: 700; border: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.btn-signin:hover { background: #333; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
-
-@media (max-width: 900px) {
-  .nav-links { display: none; }
+.header {
+  position: fixed; /* Khóa chặt trên cùng */
+  top: 10px;
+  left: 0;
+  width: 100%;
+  background-color: #F4EBE1; /* Đổ nền màu Kem cứng cáp để chống lộn xộn */
+  z-index: 9999; /* Luôn nằm trên cùng mọi thứ */
+  height: 50px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #6261616a;
 }
+
+.header-content { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: #000; }
+.nav-links { display: flex; gap: 40px; }
+.nav-links a { font-size: 12px; font-weight: 600; color: #333; transition: color 0.3s ease; text-transform: uppercase; }
+.nav-links a:hover { color: #000; border-bottom: 1px solid #000; padding-bottom: 2px; }
+.header-actions { display: flex; align-items: center; gap: 24px; }
+.cart-icon { position: relative; display: flex; align-items: center; cursor: pointer; }
+.cart-badge { position: absolute; top: -8px; right: -10px; background: #000; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+.btn-signin { background: transparent; color: #000; font-size: 12px; font-weight: 600; border: none; cursor: pointer; text-transform: uppercase; }

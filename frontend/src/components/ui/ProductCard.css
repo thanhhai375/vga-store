@@ -1,94 +1,49 @@
 .product-card {
   background: #fff;
-  border-radius: 20px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 12px; /* Khoảng cách từ viền thẻ vào hình */
   transition: all 0.3s ease;
-  border: 1px solid #eaeaea;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  height: 96%;
 }
+
 .product-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.08);
-  border-color: #ddd;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
 }
+
 .card-image-wrapper {
-  position: relative;
+  background: transparent; /* ĐÃ XÓA MÀU NỀN KEM */
   border-radius: 12px;
-  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; /* ĐÃ XÓA PADDING ĐỂ ẢNH KHỚP HOÀN TOÀN VÀO KHUNG */
   margin-bottom: 16px;
-  aspect-ratio: 4/3;
-  background: #f5f5f5;
+  overflow: hidden; /* Khóa những phần ảnh bị tràn ra ngoài */
 }
+
 .card-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* ÉP ẢNH KHỚP VÀ TRÀN ĐẦY KHUNG */
+  border-radius: 12px; /* BO TRÒN GÓC ẢNH SẢN PHẨM NHƯ YÊU CẦU */
   transition: transform 0.5s ease;
 }
+
 .product-card:hover .card-image {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
-.badge-soldout {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: #ef4444;
-  color: white;
-  font-size: 11px;
-  font-weight: bold;
-  padding: 4px 10px;
-  border-radius: 20px;
-}
-.card-brand {
-  font-size: 12px;
-  color: #888;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.card-name {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 8px 0;
-  line-height: 1.4;
-}
-.card-name a {
-  color: #111;
-}
-.card-name a:hover {
-  text-decoration: underline;
-}
-.card-vram {
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 16px;
-}
-.card-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 16px;
-}
-.card-price {
-  font-size: 18px;
-  font-weight: 800;
-  color: #000;
-}
-.btn-add-cart {
-  background: #111;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 30px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.btn-add-cart:hover:not(:disabled) {
-  background: #444;
-}
-.btn-add-cart:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  color: #666;
-}
+
+.card-info { display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
+.card-brand { font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase; }
+.card-name { font-size: 14px; font-weight: 600; margin: 6px 0 14px; line-height: 1.4; color: #111; }
+.card-bottom { display: flex; justify-content: space-between; align-items: center; }
+.card-price { font-size: 15px; font-weight: 700; color: #000; }
+
+.btn-add-cart { background: #111; color: #fff; border: none; padding: 6px 18px; border-radius: 30px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.2s;}
+.btn-add-cart:hover { background: #333; }

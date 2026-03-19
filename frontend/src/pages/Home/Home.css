@@ -1,35 +1,29 @@
+/* LƯU Ý: Nếu JSX của bạn đặt tên class khác (ví dụ .new-arrivals), hãy đổi tên ở đây nhé */
 .categories-section {
-  padding: 80px 0 120px;
+  position: relative;
+  z-index: 999 !important; /* Bật lớp cao nhất, không ai che được */
+  margin-top: -130px !important; /* Lệnh tối thượng: ÉP KÉO LÊN ĐÈ VÀO ẢNH */
+  padding-top: 0;
+  padding-bottom: 80px;
 }
+
 .categories-header {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 24px;
 }
+
 .section-title {
-  font-size: 42px;
-  font-weight: 800;
-  margin-bottom: 12px;
-  letter-spacing: -1px;
+  font-size: 26px; /* Thu nhỏ chữ New Arrivals lại cho cân đối với thẻ */
+  font-weight: 700;
+  color: #000;
 }
-.section-subtitle {
-  font-size: 16px;
-  color: #666;
-}
-/* Hệ thống lưới chia 4 cột trên máy tính, 2 cột trên ipad, 1 cột trên điện thoại */
+
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-}
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px; /* Ép khoảng cách giữa 3 thẻ sát lại một chút */
 
-@media (max-width: 1024px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .product-grid {
-    grid-template-columns: 1fr;
-  }
+  /* BÍ QUYẾT Ở ĐÂY: Khóa chặt chiều ngang tổng thể, ép 3 thẻ phải thon gọn lại */
+  max-width: 750px;
+  margin: 0 auto;
 }
