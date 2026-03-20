@@ -9,29 +9,26 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name= "carts")
-public class Cart {
+@Table(name= "brands")
+public class Brand {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column(name= "id")
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name= "user_id", nullable= false, unique= true)
-    private  User user;
+    @Column(name= "name", nullable= false, unique= true, length= 100)
+    private String name;
 
-    @OneToMany(mappedBy= "cart", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
-    private List<CartItem> cartItems;
+    @OneToMany(mappedBy= "brand", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
+    private List<Product> products;
 
+        // getter setter
 
-    // getter setter
     public Long getId() {
         return id;
     }
@@ -40,20 +37,20 @@ public class Cart {
         this.id = id;
     }
 
-    public User getUser() {
-        return user;
+    public String getName() {
+        return name;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public List<CartItem> getCartItems() {
-        return cartItems;
+    public List<Product> getProducts() {
+        return products;
     }
 
-    public void setCartItems(List<CartItem> cartItems) {
-        this.cartItems = cartItems;
+    public void setProducts(List<Product> products) {
+        this.products = products;
     }
-
+    
 }
