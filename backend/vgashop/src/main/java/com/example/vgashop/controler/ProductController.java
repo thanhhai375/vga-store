@@ -17,6 +17,7 @@ import com.example.vgashop.entity.Product;
 import com.example.vgashop.service.ProductService;
 
 import jakarta.websocket.server.PathParam;
+import java.util.List;
 
 
 @RestController
@@ -33,9 +34,13 @@ public class ProductController {
     @GetMapping
     public Page<Product> getAll(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "5") int size
+        @RequestParam(defaultValue = "5") int size,
+        @RequestParam(defaultValue= "id") String sortBy,
+        @RequestParam(defaultValue= "asc") String direction
     ) {
-        return productService.getAllProducts(PageRequest.of(page, size));
+        // return productService.getAllProducts(PageRequest.of(page, size));
+
+        return productService.getAllProducts(page, size, sortBy, direction);
     }
 
     // tìm kiếm 
@@ -62,6 +67,35 @@ public class ProductController {
         @RequestParam(defaultValue= "5") int size
     ) {
         return productService.searchAndFilter(keyWord, brand, PageRequest.of(page, size));
+    }
+
+    // filter đầy đủ
+    @GetMapping("/filter")
+    public Page<Product> filter(
+
+        @RequestParam(required= false)
+        String keyWord,
+
+        @RequestParam(required= false)
+        List<Long> brandIds,
+
+        @RequestParam(required= false)
+        Double minPrice,
+
+        @RequestParam(required= false)
+        Double maxPrice,
+
+        @RequestParam(defaultValue = "0")
+        int page,
+        @RequestParam(defaultValue = "5")
+        int size,
+        @RequestParam(defaultValue= "id")
+        String sortBy,
+        @RequestParam(defaultValue= "asc")
+        String direction
+
+    ) {
+        return productService.filterProducts(keyWord, brandIds, minPrice, maxPrice, page, size, sortBy, direction);
     }
 
     // tạo mới
