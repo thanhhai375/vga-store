@@ -24,8 +24,14 @@ public class Brand {
     @Column(name= "name", nullable= false, unique= true, length= 100)
     private String name;
 
+    // mối quan hệ 
     @OneToMany(mappedBy= "brand", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private List<Product> products;
+
+    //constructor
+    public Brand(String name) {
+        this.name = name;
+    }
 
         // getter setter
 

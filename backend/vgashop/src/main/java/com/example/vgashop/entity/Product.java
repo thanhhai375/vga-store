@@ -12,9 +12,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.CascadeType;
 
 @Entity
-@Table(name="products")
+@Table(name = "products")
 public class Product {
 
     @Id
@@ -40,6 +41,10 @@ public class Product {
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name= "brand_id", nullable= false)
     private Brand brand;
+
+    @ManyToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name= "category_id", nullable= false)
+    private Category category;
 
     @OneToMany(mappedBy= "product", fetch= FetchType.LAZY)
     private List<CartItem> cartItems;
@@ -118,6 +123,15 @@ public class Product {
 
     public void setOrderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
+    }
+
+
+    public Category getCategory() {
+        return category;
+    }
+    
+     public void setCategory(Category category) {
+        this.category = category;
     }
 
 }

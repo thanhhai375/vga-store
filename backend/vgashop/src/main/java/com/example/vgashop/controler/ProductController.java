@@ -1,5 +1,7 @@
 package com.example.vgashop.controler;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,9 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.vgashop.entity.Product;
 import com.example.vgashop.service.ProductService;
 
-import jakarta.websocket.server.PathParam;
-import java.util.List;
-
 
 @RestController
 @RequestMapping("api/products")
@@ -34,7 +33,7 @@ public class ProductController {
     @GetMapping
     public Page<Product> getAll(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "5") int size,
+        @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue= "id") String sortBy,
         @RequestParam(defaultValue= "asc") String direction
     ) {
@@ -48,7 +47,7 @@ public class ProductController {
     public Page<Product> search(
         @RequestParam String keyWord,
         @RequestParam(defaultValue= "0") int page,
-        @RequestParam(defaultValue= "5") int size
+        @RequestParam(defaultValue= "10") int size
     ) {
         return productService.searchProducts(keyWord, PageRequest.of(page, size));
     }
@@ -64,7 +63,7 @@ public class ProductController {
         @RequestParam String keyWord,
         @RequestParam String brand,
         @RequestParam(defaultValue= "0") int page,
-        @RequestParam(defaultValue= "5") int size
+        @RequestParam(defaultValue= "10") int size
     ) {
         return productService.searchAndFilter(keyWord, brand, PageRequest.of(page, size));
     }
@@ -87,7 +86,7 @@ public class ProductController {
 
         @RequestParam(defaultValue = "0")
         int page,
-        @RequestParam(defaultValue = "5")
+        @RequestParam(defaultValue = "10")
         int size,
         @RequestParam(defaultValue= "id")
         String sortBy,
