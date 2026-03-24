@@ -1,30 +1,43 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom'; // Import NavLink
 import './Header.css';
 
 const Header = () => {
   return (
     <header className="header">
       <div className="container header-content">
-        <Link to="/" className="logo">VGA STORE</Link>
+
+        {/* LOGO */}
+        <Link to="/" className="logo">
+          VGA STORE
+        </Link>
+
+        {/* NAVIGATION LINKS */}
         <nav className="nav-links">
-          <Link to="/">HOME</Link>
-          <Link to="/products">SHOP</Link>
-          <Link to="/brands">BRANDS</Link>
-          <Link to="/contact">CONTACT</Link>
+          <NavLink to="/" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>HOME</NavLink>
+          <NavLink to="/products" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>SHOP</NavLink>
+          {/* Thay thế dòng BRANDS bằng dòng BLOG này */}
+<NavLink to="/blog" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>BLOG</NavLink>
+          <NavLink to="/contact" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>CONTACT</NavLink>
         </nav>
+
+        {/* ACTIONS */}
         <div className="header-actions">
-          <Link to="/login" className="btn-signin">SIGN IN</Link>
-          <div className="cart-icon">
-            {}
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
-            </svg>
+          <button className="btn-signin">SIGN IN</button>
+
+          <Link to="/cart" className="cart-icon">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+             </svg>
             <span className="cart-badge">3</span>
-          </div>
+          </Link>
         </div>
+
       </div>
     </header>
   );
 };
+
 export default Header;
