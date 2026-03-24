@@ -2,6 +2,7 @@ import React from 'react';
 import HeroSection from './HeroSection';
 import ProductCard from '../../components/ui/ProductCard';
 import { mockProducts } from '../../data/mockProducts';
+import AboutSection from '../../components/ui/AboutSection';
 import './Home.css';
 
 const Home = () => {
@@ -19,6 +20,10 @@ const Home = () => {
           ))}
         </div>
       </section>
+
+      {/* THÊM COMPONENT ABOUT Ở ĐÂY NÈ! */}
+      <AboutSection />
+
     </div>
   );
 };
