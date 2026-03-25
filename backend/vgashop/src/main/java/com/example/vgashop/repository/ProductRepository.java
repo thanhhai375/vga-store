@@ -40,5 +40,11 @@ public interface  ProductRepository extends JpaRepository<Product, Long> {
     // full tính năng lọc
     Page<Product> findByNameContainingAndBrand_IdInAndPriceBetween(String keyWord, List<Long> brandIds, Double minPrice, Double maxPrice, Pageable pageable);
 
+    // Kiểm tra xem đã tồn tại sản phẩm với tên này chưa 
+   
+    boolean existsByNameIgnoreCase(String name);
+
+    // kiểm tra trùng sku
+    // boolean existsBySkuIgnoreCase(String sku);
 
 }

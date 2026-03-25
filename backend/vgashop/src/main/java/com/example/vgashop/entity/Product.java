@@ -1,5 +1,6 @@
 package com.example.vgashop.entity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -12,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.CascadeType;
 
 @Entity
 @Table(name = "products")
@@ -27,10 +27,13 @@ public class Product {
     private String name;
 
     @Column(name= "price", nullable= false)
-    private Double price;
+    private BigDecimal price;
 
     @Column(name="stock", nullable=false)
     private Integer stock;
+
+    @Column(unique = true, length = 50)
+    private String sku;        // Mã sản phẩm duy nhất
 
     @Column(name= "description", columnDefinition= "TEXT")
     private String description;
@@ -69,11 +72,11 @@ public class Product {
         this.name = name;
     }
 
-    public Double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -133,5 +136,13 @@ public class Product {
      public void setCategory(Category category) {
         this.category = category;
     }
+
+     public String getSku() {
+         return sku;
+     }
+
+     public void setSku(String sku) {
+         this.sku = sku;
+     }
 
 }

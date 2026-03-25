@@ -14,8 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.vgashop.dto.CategoryDTO;
 import com.example.vgashop.entity.Category;
 import com.example.vgashop.service.CategoryService;
+
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -73,16 +76,41 @@ public class CategoryController {
     }
 
     // tạo mới
+    // @PostMapping
+    // public ResponseEntity<Category> create(@RequestBody Category category) {
+    //     return ResponseEntity.ok(categoryService.createCategory(category));
+    // }
+
     @PostMapping
-    public ResponseEntity<Category> create(@RequestBody Category category) {
+    public ResponseEntity<Category> create(
+            @Valid @RequestBody CategoryDTO dto) {    
+
+        // Chuyển DTO → Entity trước khi gọi service
+        Category category = new Category();
+        category.setName(dto.getName());
+        category.setDescription(dto.getDescription());
+        category.setActive(dto.isActive());
+
         return ResponseEntity.ok(categoryService.createCategory(category));
     }
 
     // cập nhật
+    // @PutMapping("/{id}")
+    // public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody Category newCategory) {
+    //     return ResponseEntity.ok(categoryService.updateCategory(id, newCategory));
+    // }
+
+    // cập nhật mới dùng DTO
     @PutMapping("/{id}")
-    public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody Category newCategory) {
-        return ResponseEntity.ok(categoryService.updateCategory(id, newCategory));
+    public ResponseEntity<Category> update(@PathVariable Long id, @Valid @RequestBody CategoryDTO dto) {
+        Category category = new Category();
+        category.setName(dto.getName());
+        category.setDescription(dto.getDescription());
+        category.setActive(dto.isActive());
+
+        return ResponseEntity.ok(categoryService.updateCategory(id, category));
     }
+
 
     // xóa
     @DeleteMapping("/{id}")

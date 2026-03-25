@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.vgashop.dto.ProductDTO;
 import com.example.vgashop.entity.Product;
 import com.example.vgashop.service.ProductService;
+
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -97,16 +101,33 @@ public class ProductController {
         return productService.filterProducts(keyWord, brandIds, minPrice, maxPrice, page, size, sortBy, direction);
     }
 
+    // Lấy 1 sản phẩm theo ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
+    }
+
     // tạo mới
+    // @PostMapping
+    // public Product create(@RequestBody Product product) {
+    //     return productService.creatProduct(product);
+    // }
     @PostMapping
-    public Product create(@RequestBody Product product) {
-        return productService.creatProduct(product);
+    public ResponseEntity<Product> create(@Valid @RequestBody ProductDTO dto) {
+        Product product = convertDtoToEntity(dto);
+        return ResponseEntity.ok(productService.creatProduct(product));
     }
 
     // cập nhật
+    // @PutMapping("/{id}")
+    // public Product update(@PathVariable Long id, @RequestBody Product product) {
+    //     return productService.updateProduct(id, product);
+    // }
+
     @PutMapping("/{id}")
-    public Product update(@PathVariable Long id, @RequestBody Product product) {
-        return productService.updateProduct(id, product);
+    public ResponseEntity<Product> Update(@PathVariable Long id, @Valid @RequestBody ProductDTO dto) {
+        Product product = convertDtoToEntity(dto);
+        return ResponseEntity.ok(productService.updateProduct(id, product));
     }
 
     // xóa
@@ -114,5 +135,21 @@ public class ProductController {
     public String delete(@PathVariable Long id) {
         productService.deleteProduct(id);
         return "Deleted Successfully";
+    }
+
+    // CONVERT DTO → ENTITY
+    private Product convertDtoToEntity(ProductDTO dto) {
+        Product product = new Product();
+        product.setName(dto.getName());
+        product.setPrice(dto.getPrice());
+        product.setDescription(dto.getDescription());
+        product.setStock(dto.getStock());
+        product.setImgUrl(dto.getImgUrl());
+        product.setSku(dto.getSku());
+
+        // TODO: Map brandId và categoryId thành object thực tế
+        // product.setBrand(brandService.getBrandById(dto.getBrandId()));
+        // product.setCategory(categoryService.getCategoryById(dto.getCategoryId()));
+        return product;
     }
 }

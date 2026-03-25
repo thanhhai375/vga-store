@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.vgashop.dto.BrandDTO;
 import com.example.vgashop.entity.Brand;
 import com.example.vgashop.service.BrandService;
 
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/brands")
@@ -57,9 +59,12 @@ public class BrandController {
     // lấy 1 brand 
     @GetMapping("/{id}")
     public ResponseEntity<Brand> getBrandById(@PathVariable Long id) {
-        return brandService.getBrandId(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        // return brandService.getBrandId(id)
+        //         .map(ResponseEntity::ok)
+        //         .orElseGet(() -> ResponseEntity.notFound().build());
+
+        Brand brand = brandService.getBrandId(id);
+        return ResponseEntity.ok(brand);
     }
 
     // tìm kiếm
@@ -77,17 +82,32 @@ public class BrandController {
     }
 
     // tạo mới 
+    // @PostMapping
+    // public Brand create(
+    //     @RequestBody Brand brand
+    // ) {
+    //     return brandService.createBrand(brand);
+    // }
+
     @PostMapping
-    public Brand create(
-        @RequestBody Brand brand
+    public ResponseEntity<Brand> create(
+        @Valid @RequestBody BrandDTO dto
     ) {
-        return brandService.createBrand(brand);
+
+        Brand brand = convertDtoToEntity(dto);
+        return ResponseEntity.ok(brandService.createBrand(brand));
     }
 
     // cập nhật
+    // @PutMapping("/{id}")
+    // public Brand update(@PathVariable Long id, @RequestBody Brand brand) {
+    //     return brandService.updateBrand(id, brand);
+    // }
+
     @PutMapping("/{id}")
-    public Brand update(@PathVariable Long id, @RequestBody Brand brand) {
-        return brandService.updateBrand(id, brand);
+    public ResponseEntity<Brand> update(@PathVariable Long id, @Valid @RequestBody BrandDTO dto) {
+        Brand brand = convertDtoToEntity(dto);
+        return ResponseEntity.ok(brandService.updateBrand(id, brand));
     }
 
     // xóa
@@ -95,6 +115,15 @@ public class BrandController {
     public String delete(@PathVariable Long id) {
         brandService.deleteBrand(id);
         return "Deleted successfully";
+    }
+
+    // CONVERT DTO → ENTITY
+    private Brand convertDtoToEntity(BrandDTO dto) {
+        Brand brand = new Brand();
+        brand.setName(dto.getName());
+        brand.setStatus(dto.getStatus());
+
+        return brand;
     }
 }
 

@@ -5,8 +5,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.vgashop.entity.Category;
+import com.example.vgashop.exception.DuplicateResourceException;
+import com.example.vgashop.exception.ResourceNotFoundException;
 import com.example.vgashop.repository.CategoryRepository;
-
 
 @Service
 public class CategoryService {
@@ -28,8 +29,9 @@ public class CategoryService {
     }
 
     // get by id
+    // nếu kh tìm thấy thì trả về ResourceNotFoundException
     public Category getCategoryById(Long id) {
-        return categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("không tìm thấy danh mục!"));
+        return categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("không tìm thấy danh mục với ID " + id));
     }
 
     // tìm kiếm 
@@ -41,21 +43,24 @@ public class CategoryService {
     }
 
     // tạo mới
+    // trả về DuplicateResourceException nếu tên đã tồn tại
     public Category createCategory(Category category) {
         if (categoryRepository.existsByNameIgnoreCase(category.getName())) {
-            throw new RuntimeException("Tên danh mục '" + category.getName() + "' đã tồn tại!");
+            throw new DuplicateResourceException("Tên danh mục '" + category.getName() + "' đã tồn tại!");
         }
         return categoryRepository.save(category);
     }
 
     // cập nhật
+    // nếu kh tìm thấy Id thì trả về ResourceNotFoundException
+    // nếu tên mới bị trùng vói danh mục khác thì trả về DuplicateResourceException
     public Category updateCategory(Long id, Category newCategory) {
         return categoryRepository.findById(id)
                 .map(category -> {
                     // Check trùng tên nếu đổi tên
                     if (!category.getName().equalsIgnoreCase(newCategory.getName()) &&
                         categoryRepository.existsByNameIgnoreCase(newCategory.getName())) {
-                        throw new RuntimeException("Tên danh mục '" + newCategory.getName() + "' đã tồn tại!");
+                        throw new DuplicateResourceException("Tên danh mục '" + newCategory.getName() + "' đã tồn tại!");
                     }
 
                     category.setName(newCategory.getName());
@@ -64,13 +69,14 @@ public class CategoryService {
 
                     return categoryRepository.save(category);
                 })
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với ID " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục với ID " + id));
     }
 
     // xóa 
+    // nếu kh tìm thấy id trả về ResourceNotFoundException
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new RuntimeException("Không tìm thấy danh mục có ID " + id);
+            throw new ResourceNotFoundException("Không tìm thấy danh mục có ID " + id);
         }
         categoryRepository.findById(id);
     }

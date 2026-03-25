@@ -2,16 +2,16 @@ package com.example.vgashop.service;
 
 import java.util.List;
 
-import org.springframework.boot.data.autoconfigure.web.DataWebProperties;
-
-import com.example.vgashop.entity.Product;
-import com.example.vgashop.repository.ProductRepository;
-
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import com.example.vgashop.entity.Product;
+import com.example.vgashop.exception.DuplicateResourceException;
+import com.example.vgashop.exception.ResourceNotFoundException;
+import com.example.vgashop.repository.ProductRepository;
 
 @Service
 public class ProductService {
@@ -47,6 +47,15 @@ public class ProductService {
         PageRequest pageable = PageRequest.of(page, size, sort);
 
         return productRepository.findAll(pageable);
+    }
+
+    // lấy 1 sp theo id
+    // nếu kh thì thấy Id trả về ResourceNotFoundException
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> 
+                    new ResourceNotFoundException("Không tìm thấy sản phẩm với ID " + id)
+                );
     }
 
     // tìm kiếm 
@@ -116,6 +125,29 @@ public class ProductService {
 
     // tạo mới
     public Product creatProduct(Product product) {
+        if (productRepository.existsByNameIgnoreCase(product.getName())) {
+            throw new DuplicateResourceException("Sản phẩm với tên '" + product.getName() + "' đã tồn tại!");
+        }
+
+        // 2. Kiểm tra SKU bị trùng (nếu có nhập SKU)
+        if (product.getSku() != null && !product.getSku().trim().isEmpty()) {
+            throw new DuplicateResourceException("Sku '" + product.getSku() + "' đã tồn tại!");
+        }
+
+        // kiểm tra giá hợp lệ
+        if (product.getPrice() == null || product.getPrice().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Giá sản phẩm phải lớn hơn 0");
+        }
+
+        // kiểm tra stock hợp lệ
+        if (product.getStock() == null || product.getStock() < 0) {
+            throw new IllegalArgumentException("Số lượng tồn kho không thể âm!");
+        }
+
+        // kiểm tra tên sản phẩm kh được để trống
+        if (product.getName() == null || product.getName().isEmpty()) {
+            throw new IllegalArgumentException("Tên sản phẩm không để trống!");
+        }
         return productRepository.save(product);
     }
 
@@ -139,6 +171,9 @@ public class ProductService {
 
     // xóa sản phẩm
     public void deleteProduct(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Không tìm thấy sản phẩm với ID " + id);
+        }
         productRepository.deleteById(id);
     }
 }

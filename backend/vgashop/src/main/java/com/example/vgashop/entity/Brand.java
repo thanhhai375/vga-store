@@ -24,11 +24,22 @@ public class Brand {
     @Column(name= "name", nullable= false, unique= true, length= 100)
     private String name;
 
+    private String logo;
+
+    @Column(name= "description", columnDefinition= "TEXT")
+    private String description;
+
+    @Column(nullable = false)
+    private Boolean status = true;
+
     // mối quan hệ 
     @OneToMany(mappedBy= "brand", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private List<Product> products;
 
     //constructor
+
+    public Brand(){}
+
     public Brand(String name) {
         this.name = name;
     }
@@ -57,6 +68,30 @@ public class Brand {
 
     public void setProducts(List<Product> products) {
         this.products = products;
+    }
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(Boolean status) {
+        this.status = status;
     }
     
 }
