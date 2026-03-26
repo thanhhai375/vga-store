@@ -1,10 +1,15 @@
-﻿import { Layout, Menu } from "antd";
+﻿import { Layout, Menu, Button } from "antd";
 import { Outlet, useNavigate } from "react-router-dom";
 
 const { Sider, Header, Content } = Layout;
 
 export default function AdminLayout() {
     const nav = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        nav("/login");
+    };
 
     return (
         <Layout style={{ minHeight: "100vh" }}>
@@ -18,8 +23,9 @@ export default function AdminLayout() {
             </Sider>
 
             <Layout>
-                <Header style={{ background: "#fff" }}>
-                    🔍 Search | 🔔 | Admin
+                <Header style={{ background: "#fff", display: "flex", justifyContent: "space-between" }}>
+                    <div>🔍 Search | 🔔 | Admin</div>
+                    <Button danger onClick={handleLogout}>Đăng xuất</Button>
                 </Header>
 
                 <Content style={{ margin: 16 }}>
