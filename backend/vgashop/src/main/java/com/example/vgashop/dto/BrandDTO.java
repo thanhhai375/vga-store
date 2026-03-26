@@ -1,7 +1,6 @@
 package com.example.vgashop.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class BrandDTO {
@@ -12,13 +11,17 @@ public class BrandDTO {
     @Size(min= 4, max= 255, message= "Tên thương hiệu phải từ 4 đến 255 ký tự")
     private String name;
 
-    @NotNull(message= "Logo là bắt buộc")
+   @Size(max = 255, message = "Đường dẫn logo không được vượt quá 255 ký tự")
     private String logo;
 
     @Size(max= 250, message= "Mô tả không vượt quá 250 ký tự")
     private String description;
 
     private Boolean status = true;
+
+    // Slug dùng cho SEO và URL thân thiện (rất quan trọng)
+    @Size(max = 150, message = "Slug không được vượt quá 150 ký tự")
+    private String slug;
 
     // constructor
     public BrandDTO() {}
@@ -62,6 +65,14 @@ public class BrandDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
     
 }

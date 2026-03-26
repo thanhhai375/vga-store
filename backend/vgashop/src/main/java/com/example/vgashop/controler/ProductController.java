@@ -17,7 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vgashop.dto.ProductDTO;
+import com.example.vgashop.entity.Brand;
+import com.example.vgashop.entity.Category;
 import com.example.vgashop.entity.Product;
+import com.example.vgashop.service.BrandService;
+import com.example.vgashop.service.CategoryService;
 import com.example.vgashop.service.ProductService;
 
 import jakarta.validation.Valid;
@@ -28,9 +32,13 @@ import jakarta.validation.Valid;
 @CrossOrigin
 public class ProductController {
     private final ProductService productService;
+    private final BrandService brandService;
+    private final CategoryService categoryService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, BrandService brandService, CategoryService categoryService) {
         this.productService = productService;
+        this.brandService = brandService;
+        this.categoryService = categoryService;
     }
 
     // get all + pagination
@@ -147,9 +155,16 @@ public class ProductController {
         product.setImgUrl(dto.getImgUrl());
         product.setSku(dto.getSku());
 
-        // TODO: Map brandId và categoryId thành object thực tế
-        // product.setBrand(brandService.getBrandById(dto.getBrandId()));
-        // product.setCategory(categoryService.getCategoryById(dto.getCategoryId()));
+       // map id -> object
+       if (dto.getBrandId() != null) {
+        Brand brand = brandService.getBrandId(dto.getBrandId());
+        product.setBrand(brand);
+       }
+
+       if (dto.getCategoryID() != null) {
+        Category category = categoryService.getCategoryById(dto.getCategoryID());
+        product.setCategory(category);
+       }
         return product;
     }
 }

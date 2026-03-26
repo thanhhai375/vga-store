@@ -58,7 +58,10 @@ public class BrandService {
         int page, int size
     ) {
 
-        PageRequest pageable = PageRequest.of(page, size);
+        if (keyWord == null || keyWord.trim().isEmpty()) {
+            return getAllBrands(page, size, "name", "asc");
+        }
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("name").ascending());
 
         return brandRepository.findByNameContaining(keyWord.trim(), pageable);
     }
@@ -67,6 +70,11 @@ public class BrandService {
     public Brand createBrand(Brand brand) {
         if (brandRepository.existsByNameIgnoreCase(brand.getName())) {
             throw new DuplicateResourceException("Thương hiệu '" + brand.getName() + "' đã tồn tại!");
+        }
+
+        // tự động sinh slug nếu ch có
+        if (brand.getSlug() == null || brand.getSlug().trim().isEmpty()) {
+            brand.setSlug(generateSlug(brand.getName()));
         }
         return  brandRepository.save(brand);
     }
@@ -88,6 +96,16 @@ public class BrandService {
                 throw new DuplicateResourceException("Tên thương hiệu '" + newBrand.getName() + "' đã tồn tại!");
             }
             brand.setName(newBrand.getName());
+            brand.setLogo(newBrand.getLogo());
+            brand.setDescription(newBrand.getDescription());
+            brand.setStatus(newBrand.getStatus());
+
+            // cập nhật slug nếu tên thay đổi và slug chưa set
+            if (!brand.getName().equalsIgnoreCase(newBrand.getName()) && (newBrand.getSlug() == null || newBrand.getSlug().trim().isEmpty())) {
+                brand.setSlug(generateSlug(newBrand.getName()));
+            } else if(newBrand.getSlug() != null) {
+                brand.setSlug(newBrand.getSlug());
+            }
             return brandRepository.save(brand);
         })
 
@@ -101,5 +119,16 @@ public class BrandService {
             throw new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + id);
         }
         brandRepository.deleteById(id);
+    }
+
+    // hàm tự sinh slug
+    private String generateSlug(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "";
+        }
+        return name.toLowerCase()
+                   .trim()
+                   .replaceAll("\\s+", "-")
+                   .replaceAll("[^a-z0-9-]", "");
     }
 }

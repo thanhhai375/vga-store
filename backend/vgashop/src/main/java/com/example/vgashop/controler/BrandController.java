@@ -121,9 +121,29 @@ public class BrandController {
     private Brand convertDtoToEntity(BrandDTO dto) {
         Brand brand = new Brand();
         brand.setName(dto.getName());
-        brand.setStatus(dto.getStatus());
+        brand.setDescription(dto.getDescription());
+        brand.setStatus(dto.getStatus() != null ? dto.getStatus() : true);
 
+        // xủ lý slug
+        if (dto.getSlug() != null && !dto.getSlug().trim().isEmpty()) {
+            brand.setSlug(dto.getSlug().trim().toLowerCase());
+        } else {
+            // tự sinh slug từ tên nếu người dùng không truyên
+            brand.setSlug(generateSlug(dto.getName()));
+        }
         return brand;
+    }
+
+    // Hàm tự sinh slug
+    private String generateSlug(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "";
+        }
+
+        return name.toLowerCase()
+                   .trim()
+                   .replaceAll("\\s+", "-") // khoảng trắng thành -
+                   .replaceAll("[^a-z0-9-]", ""); // bỏ ký tự đặc biệt
     }
 }
 

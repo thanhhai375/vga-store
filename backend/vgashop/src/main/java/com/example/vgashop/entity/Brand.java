@@ -29,6 +29,10 @@ public class Brand {
     @Column(name= "description", columnDefinition= "TEXT")
     private String description;
 
+    // chuỗi ký tự hỗ trợ URL
+    @Column(name = "slug", unique = true, length = 150)   
+    private String slug;
+
     @Column(nullable = false)
     private Boolean status = true;
 
@@ -92,6 +96,14 @@ public class Brand {
 
     public void setStatus(Boolean status) {
         this.status = status;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
     
 }
