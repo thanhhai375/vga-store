@@ -2,20 +2,24 @@
 .product-card {
   position: relative;
   background: #fff;
-  border-radius: 8px; /* Bo góc nhẹ hơn cho giống form gear */
+  border-radius: 8px;
   padding: 12px;
   border: 1px solid #f0f0f0;
   display: flex;
   flex-direction: column;
   height: 100%;
-  text-decoration: none; /* Bỏ gạch chân của Link */
+  text-decoration: none;
   transition: all 0.3s ease;
   overflow: hidden;
+
+  /* THÊM 2 DÒNG NÀY ĐỂ THU NHỎ VÀ CĂN GIỮA KHUNG */
+  max-width: 290px;
+  margin: 0 auto;
 }
 
 .product-card:hover {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  border-color: #ed1b24; /* Viền đỏ khi hover */
+  border-color: #ed1b24;
   transform: translateY(-4px);
 }
 
@@ -34,31 +38,35 @@
   box-shadow: 0 2px 5px rgba(237, 27, 36, 0.3);
 }
 
-/* KHUNG ẢNH */
+/* KHUNG ẢNH - ĐÃ SỬA TỈ LỆ VÀ XÓA PADDING */
 .card-image-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1; /* Tỉ lệ vuông chuẩn cho linh kiện */
+  /* Đổi thành 16/9 (hình chữ nhật ngang) để khớp chuẩn với ảnh VGA */
+  aspect-ratio: 16 / 9;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
-  border: 1px solid transparent; /* Đợi hover lên viền đỏ */
+  border: 1px solid transparent;
   border-radius: 4px;
-  padding: 10px;
+  padding: 0; /* XÓA PADDING thừa */
   transition: all 0.3s ease;
+  overflow: hidden; /* Cực kỳ quan trọng: Cắt bỏ ảnh thừa ra ngoài khung */
 }
 
-/* Hiệu ứng viền đỏ cho khung ảnh (Giống ảnh mẫu có khung viền đỏ) */
+/* Hiệu ứng viền đỏ cho khung ảnh */
 .product-card:hover .card-image-wrapper {
   border-color: #ed1b24;
 }
 
+/* HÌNH ẢNH - ĐÃ ÉP KHỚP 100% VỚI KHUNG */
 .card-image {
-  width: 90%;
-  height: 90%;
-  object-fit: contain;
+  width: 100%; /* Phóng to hết cỡ */
+  height: 100%; /* Phóng to hết cỡ */
+  object-fit: cover; /* CHÌA KHÓA: Lấp đầy hoàn toàn khung, không để lại viền trắng */
   transition: transform 0.5s ease;
+  display: block;
 }
 
 .product-card:hover .card-image {
@@ -77,15 +85,15 @@
   font-weight: 600;
   color: #333;
   line-height: 1.5;
-  margin-bottom: auto; /* Đẩy phần giá xuống dưới cùng */
+  margin-bottom: auto;
 
-  /* Cắt chữ nếu quá 2 dòng (Ellipsis) */
+  /* Cắt chữ nếu quá 2 dòng */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 39px; /* Giữ khung luôn cố định kể cả tên ngắn */
+  min-height: 39px;
 }
 
 .card-name:hover {
@@ -101,7 +109,7 @@
 }
 
 .old-price-group {
-  min-height: 18px; /* Giữ khoảng trống kể cả khi không có giá cũ */
+  min-height: 18px;
 }
 
 .old-price {
@@ -119,7 +127,7 @@
 .new-price {
   font-size: 16px;
   font-weight: 800;
-  color: #ed1b24; /* Giá màu đỏ */
+  color: #ed1b24;
 }
 
 .discount-percent {
@@ -141,7 +149,7 @@
 }
 
 .stars {
-  color: #f59e0b; /* Vàng cam */
+  color: #f59e0b;
   font-weight: 600;
 }
 

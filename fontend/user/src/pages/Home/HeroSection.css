@@ -1,6 +1,6 @@
 .hero {
   position: relative;
-  height: 570px; /* TRẢ LẠI CHIỀU CAO CHUẨN ĐỂ ẢNH CHÍNH KHÔNG BỊ ĐẨY LÊN TRÊN */
+  height: 530px; /* TRẢ LẠI CHIỀU CAO CHUẨN ĐỂ ẢNH CHÍNH KHÔNG BỊ ĐẨY LÊN TRÊN */
   display: flex;
   align-items: center;
   background-color: #e7e4e4;
@@ -23,7 +23,7 @@
 }
 .hero-title {
   font-family: "Playfair Display", serif;
-  font-size: 60px;
+  font-size: 50px;
   font-weight: 700;
   line-height: 1.05;
   margin-bottom: 20px;
@@ -48,7 +48,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 14px; /* Cỡ chữ của bạn, ví dụ là 16px */
+  font-size: 16px; /* Cỡ chữ của bạn, ví dụ là 16px */
   color: #111;
   margin-top: -10px;
 }

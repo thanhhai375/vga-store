@@ -1,0 +1,200 @@
+.track-order-page {
+  padding-top: 120px !important;
+  padding-bottom: 80px;
+  background-color: #f8f9fa;
+  min-height: 70vh;
+}
+
+.track-order-layout {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Khối tìm kiếm */
+.track-search-section {
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  text-align: center;
+}
+
+.track-title {
+  font-size: 24px;
+  color: #111;
+  margin-bottom: 10px;
+}
+
+.track-desc {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 25px;
+}
+
+.track-search-box {
+  display: flex;
+  max-width: 500px;
+  margin: 0 auto;
+  gap: 10px;
+}
+
+.track-input {
+  flex: 1;
+  padding: 14px 20px;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.track-input:focus {
+  border-color: #ed1b24;
+}
+
+.track-btn {
+  padding: 0 30px;
+  background-color: #ed1b24;
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.track-btn:hover {
+  background-color: #c81018;
+}
+
+/* Khối Lịch sử */
+.track-history-section {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.history-title {
+  font-size: 20px;
+  color: #111;
+  margin-bottom: 20px;
+}
+
+/* ================= TABS LỌC TRẠNG THÁI ================= */
+.order-tabs {
+  display: flex;
+  gap: 30px;
+  border-bottom: 2px solid #eaeaea;
+  margin-bottom: 25px;
+}
+
+.order-tab {
+  background: none;
+  border: none;
+  padding: 10px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #777;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.order-tab:hover {
+  color: #111;
+}
+
+.order-tab.active {
+  color: #ed1b24;
+}
+
+/* Đường gạch ngang màu đỏ chạy dưới Tab đang active */
+.order-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #ed1b24;
+}
+
+/* ================= BẢNG LỊCH SỬ ================= */
+.history-table-wrapper {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th, .history-table td {
+  padding: 15px;
+  text-align: left; /* Đã canh trái lại cho ngay hàng thẳng lối */
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.history-table th {
+  background-color: #f8f9fa;
+  color: #444;
+  font-weight: 600;
+}
+
+.order-price {
+  font-weight: 700;
+  color: #ed1b24;
+}
+
+.status-badge {
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.empty-orders {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  font-style: italic;
+  background: #fdfdfd;
+  border-radius: 8px;
+  border: 1px dashed #ddd;
+}
+
+@media (max-width: 768px) {
+  .track-search-box { flex-direction: column; }
+  .track-btn { padding: 14px; }
+  .track-search-section, .track-history-section { padding: 20px; }
+  .order-tabs { gap: 15px; overflow-x: auto; white-space: nowrap; }
+}
+/* --- CSS THÊM CHO LOGIC TÌM KIẾM --- */
+.history-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.clear-search-btn {
+  background: none;
+  border: 1px solid #ed1b24;
+  color: #ed1b24;
+  padding: 6px 15px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-search-btn:hover {
+  background: #ed1b24;
+  color: #fff;
+}
