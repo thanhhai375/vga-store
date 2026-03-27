@@ -1,8 +1,11 @@
-import React from 'react';
-import { NavLink, Link } from 'react-router-dom'; // Import NavLink
+import React, { useState } from 'react';
+import { NavLink, Link } from 'react-router-dom';
+import AuthModal from '../AuthModal/AuthModal';
 import './Header.css';
 
 const Header = () => {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
   return (
     <header className="header">
       <div className="container header-content">
@@ -16,14 +19,21 @@ const Header = () => {
         <nav className="nav-links">
           <NavLink to="/" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>HOME</NavLink>
           <NavLink to="/products" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>SHOP</NavLink>
-          {/* Thay thế dòng BRANDS bằng dòng BLOG này */}
-<NavLink to="/blog" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>BLOG</NavLink>
-          <NavLink to="/contact" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>CONTACT</NavLink>
+          <NavLink to="/blog" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>BLOG</NavLink>
+          <NavLink to="/service" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>SERVICE</NavLink>
         </nav>
 
         {/* ACTIONS */}
         <div className="header-actions">
-          <button className="btn-signin">SIGN IN</button>
+
+          {}
+          <Link to="/service?tab=Tra cứu thông tin bảo hành" className="nav-item track-order-btn">
+            TRACK ORDER
+          </Link>
+
+          <button className="btn-signin" onClick={() => setIsLoginModalOpen(true)}>
+            SIGN IN
+          </button>
 
           <Link to="/cart" className="cart-icon">
              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -36,6 +46,12 @@ const Header = () => {
         </div>
 
       </div>
+
+      <AuthModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
+
     </header>
   );
 };

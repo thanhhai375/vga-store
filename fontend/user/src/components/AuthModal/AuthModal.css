@@ -1,0 +1,171 @@
+/* Lớp phủ đen mờ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Đảm bảo nổi lên trên cùng */
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Khối nội dung trắng */
+.modal-content {
+  background: #fff;
+  width: 100%;
+  max-width: 450px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.modal-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #888;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+.close-btn:hover { color: #ed1b24; }
+
+.modal-body {
+  padding: 20px 30px 30px;
+}
+
+.text-right { text-align: right; }
+.mb-10 { margin-bottom: 10px; }
+.mb-20 { margin-bottom: 20px; }
+
+.link-text {
+  font-size: 13px;
+  color: #666;
+  text-decoration: none;
+}
+.link-text:hover { color: #3b82f6; text-decoration: underline; }
+
+.auth-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.auth-input:focus { border-color: #3b82f6; }
+
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper .auth-input { margin-bottom: 5px; }
+
+.eye-icon {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.btn-main-login {
+  width: 100%;
+  padding: 14px;
+  background-color: #ed1b24;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.btn-main-login:hover { background-color: #c81018; }
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 25px 0;
+  color: #888;
+  font-size: 13px;
+}
+.auth-divider::before, .auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #eaeaea;
+}
+.auth-divider span { padding: 0 10px; }
+
+.social-login-group {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-social {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.btn-google { background-color: #ea4335; }
+.btn-google:hover { background-color: #c53427; }
+.btn-facebook { background-color: #3b5998; }
+.btn-facebook:hover { background-color: #2d4373; }
+.btn-social .icon { font-size: 18px; font-weight: bold; }
+
+.modal-footer {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 14px;
+  color: #555;
+}
+.register-link {
+  color: #3b82f6;
+  font-weight: 600;
+  text-decoration: none;
+}
+.register-link:hover { text-decoration: underline; }

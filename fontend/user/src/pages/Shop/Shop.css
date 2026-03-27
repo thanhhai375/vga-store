@@ -1,5 +1,5 @@
 .shop-page {
-  padding-top: 100px; /* Đẩy xuống để không bị Header che mất */
+  padding-top: 100px !important; /* Đẩy xuống để không bị Header che mất */
   padding-bottom: 80px;
 }
 
