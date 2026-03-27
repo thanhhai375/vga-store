@@ -7,6 +7,7 @@ import Shop from './pages/Shop/Shop';
 import Blog from './pages/Blog/Blog';
 import Service from './pages/Service/Service';
 import Cart from './pages/Cart/Cart';
+import TrackOrder from './pages/TrackOrder/TrackOrder';
 function App() {
   return (
     <BrowserRouter>
@@ -20,6 +21,7 @@ function App() {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/service" element={<Service />} />
          <Route path="/cart" element={<Cart />} />
+         <Route path="/track-order" element={<TrackOrder />} />
         </Routes>
 
         {/* 2. ĐẶT FOOTER Ở NGAY DƯỚI ROUTES */}
