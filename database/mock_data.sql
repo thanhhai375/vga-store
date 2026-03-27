@@ -1,30 +1,28 @@
--- 1. Thêm Người dùng mẫu (Mật khẩu đang để tạm là '123456', Backend sẽ mã hóa sau)
-INSERT INTO users (username, password_hash, email, role) VALUES
-('admin_hai', '123456', 'admin@vgastore.com', 'ADMIN'),
-('khachhang_01', '123456', 'khach1@gmail.com', 'CUSTOMER'),
-('khachhang_02', '123456', 'khach2@gmail.com', 'CUSTOMER');
+-- CHÈN DỮ LIỆU MẪU (MOCK DATA) ĐỂ FRONTEND TEST BỘ LỌC
 
--- 2. Thêm Thương hiệu
-INSERT INTO brands (name, logo_url) VALUES
-('ASUS', 'logo_asus.png'),
-('GIGABYTE', 'logo_giga.png'),
-('MSI', 'logo_msi.png');
+-- 1. Thêm Hãng (Brands)
+INSERT INTO brands (id, name, slug) VALUES
+(1, 'ASUS', 'asus'),
+(2, 'GIGABYTE', 'gigabyte'),
+(3, 'MSI', 'msi');
 
--- 3. Thêm Sản phẩm VGA
-INSERT INTO products (brand_id, name, vram, price, stock, description, img_url) VALUES
-(1, 'ASUS ROG Strix GeForce RTX 4090 OC', '24GB GDDR6X', 55000000, 5, 'Card đồ họa đỉnh cao cho 4K Gaming.', 'rtx4090_asus.jpg'),
-(2, 'GIGABYTE AORUS GeForce RTX 4080 SUPER', '16GB GDDR6X', 32000000, 10, 'Hiệu năng mạnh mẽ, tản nhiệt cực mát.', 'rtx4080_giga.jpg'),
-(3, 'MSI GeForce RTX 4060 Ti Gaming X', '8GB GDDR6', 12500000, 30, 'Lựa chọn quốc dân cho độ phân giải Full HD.', 'rtx4060ti_msi.jpg'),
-(1, 'ASUS Dual Radeon RX 7600', '8GB GDDR6', 7500000, 20, 'Card đội đỏ P/P ngon nhất phân khúc.', 'rx7600_asus.jpg');
+-- 2. Thêm Dòng VGA (Categories)
+INSERT INTO categories (id, name, slug) VALUES
+(1, 'NVIDIA RTX 40 Series', 'nvidia-rtx-40-series'),
+(2, 'AMD Radeon RX 7000', 'amd-radeon-rx-7000');
 
--- 4. Tạo Giỏ hàng cho Khách hàng 1 (user_id = 2)
-INSERT INTO carts (user_id) VALUES (2);
+-- 3. Thêm Sản phẩm (Products) - CÓ ĐỦ VRAM VÀ GPU ĐỂ LỌC
+INSERT INTO products (brand_id, category_id, name, slug, price, old_price, stock, thumbnail, vram, gpu_model, status) VALUES
+(1, 1, 'ASUS ROG Strix RTX 4090 Black Edition', 'asus-rog-strix-rtx-4090-black', 55000000, 60500000, 10, 'link_anh_1.jpg', '24GB', 'RTX 4090', 'ACTIVE'),
+(1, 1, 'ASUS ROG Strix RTX 4090 White Edition', 'asus-rog-strix-rtx-4090-white', 56000000, 61000000, 5, 'link_anh_2.jpg', '24GB', 'RTX 4090', 'ACTIVE'),
+(2, 1, 'GIGABYTE AORUS RTX 4070 Ti SUPER', 'gigabyte-aorus-rtx-4070-ti-super', 25990000, 28000000, 15, 'link_anh_3.jpg', '16GB', 'RTX 4070 Ti SUPER', 'ACTIVE'),
+(3, 2, 'MSI Radeon RX 7900 XTX Gaming Trio', 'msi-radeon-rx-7900-xtx', 28500000, 31000000, 8, 'link_anh_4.jpg', '24GB', 'RX 7900 XTX', 'ACTIVE');
 
--- 5. Thêm sản phẩm vào Giỏ hàng của Khách hàng 1 (Mua 2 con RTX 4060 Ti)
-INSERT INTO cart_items (cart_id, product_id, quantity) VALUES (1, 3, 2);
+-- 4. Thêm 1 Tài khoản Admin và 1 Khách hàng để test Đăng nhập
+INSERT INTO users (full_name, email, password_hash, role) VALUES
+('Admin VGA', 'admin@vgastore.com', '$2a$10$VD1... (mã hash của pass 123456)', 'ADMIN'),
+('Khách Hàng VIP', 'khach@gmail.com', '$2a$10$VD1... (mã hash của pass 123456)', 'USER');
 
--- 6. Khách hàng 2 (user_id = 3) đã Đặt hàng thành công
-INSERT INTO orders (user_id, total_price, status) VALUES (3, 32000000, 'PROCESSING');
-
--- 7. Chi tiết Đơn hàng của Khách hàng 2 (Mua 1 con RTX 4080 SUPER)
-INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (1, 2, 1, 32000000);
+-- 5. Thêm 1 Đơn hàng mẫu để hiển thị ở trang Track Order
+INSERT INTO orders (order_code, user_id, customer_name, customer_phone, shipping_address, total_amount, status) VALUES
+('VGA-240399', 2, 'Khách Hàng VIP', '0987654321', 'Q1, TP.HCM', 55000000, 'SHIPPING');
