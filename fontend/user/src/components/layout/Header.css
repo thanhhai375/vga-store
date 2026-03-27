@@ -1,3 +1,6 @@
+/* =========================================
+   1. BỐ CỤC CHUNG HEADER
+   ========================================= */
 .header {
   position: fixed; /* Khóa chặt trên cùng */
   top: 0px;
@@ -5,7 +8,7 @@
   width: 100%;
   background-color: #d6d5d5; /* Nền xám nhạt */
   z-index: 9999; /* Luôn nằm trên cùng mọi thứ */
-  height: 50px;
+  height: 60px; /* Tăng nhẹ để chứa vừa Icon + Chữ */
   display: flex;
   align-items: center;
   border-bottom: 1px solid #6261616a;
@@ -18,11 +21,15 @@
   width: 100%;
 }
 
+/* =========================================
+   2. LOGO & MENU ĐIỀU HƯỚNG BÊN TRÁI
+   ========================================= */
 .logo {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.5px;
   color: #000;
+  text-decoration: none;
 }
 
 .nav-links {
@@ -30,7 +37,7 @@
   gap: 40px;
 }
 
-/* --- XỬ LÝ NAV ITEM CHO NAVLINK --- */
+/* Xử lý NavItem cho NavLink */
 .nav-item {
   font-size: 12px;
   font-weight: 700;
@@ -54,24 +61,66 @@
   border-bottom: 2px solid #000; /* Hiện đường gạch chân */
 }
 
+/* =========================================
+   3. KHU VỰC CÁC NÚT TƯƠNG TÁC BÊN PHẢI
+   ========================================= */
 .header-actions {
   display: flex;
   align-items: center;
   gap: 24px;
 }
 
+/* CSS CHO TRACK ORDER VÀ SIGN IN (ICON TRÊN - CHỮ DƯỚI) */
+.nav-action-item {
+  display: flex;
+  flex-direction: column; /* Chìa khóa: Ép xếp dọc */
+  align-items: center;
+  justify-content: center;
+  gap: 3px; /* Khoảng cách giữa icon và chữ */
+  background: none;
+  border: none;
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 0;
+}
+
+.nav-action-item:hover {
+  color: #ed1b24; /* Đổi màu đỏ khi trỏ chuột */
+}
+
+.action-icon {
+  width: 20px; /* Kích thước icon */
+  height: 20px;
+}
+
+.nav-action-item span {
+  font-size: 10px; /* Chữ nhỏ xinh xắn */
+  font-weight: 700;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+/* CSS CHO ICON GIỎ HÀNG */
 .cart-icon {
   position: relative;
   display: flex;
   align-items: center;
   cursor: pointer;
+  color: #000;
+  transition: color 0.2s ease;
+}
+
+.cart-icon:hover {
+  color: #ed1b24;
 }
 
 .cart-badge {
   position: absolute;
   top: -8px;
   right: -10px;
-  background: #000;
+  background: #ed1b24; /* Nền đỏ cho cục badge thông báo nổi bật */
   color: white;
   border-radius: 50%;
   width: 18px;
@@ -81,14 +130,4 @@
   justify-content: center;
   align-items: center;
   font-weight: bold;
-}
-
-.btn-signin {
-  background: transparent;
-  color: #000;
-  font-size: 12px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  text-transform: uppercase;
 }
