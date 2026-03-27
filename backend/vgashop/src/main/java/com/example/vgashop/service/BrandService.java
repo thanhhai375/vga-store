@@ -12,8 +12,6 @@ import com.example.vgashop.exception.DuplicateResourceException;
 import com.example.vgashop.exception.ResourceNotFoundException;
 import com.example.vgashop.repository.BrandRepository;
 
-// import jdk.jshell.spi.ExecutionControl;
-
 
 
 @Service
@@ -47,9 +45,12 @@ public class BrandService {
 
     // lấy 1 brand theo id
     public Brand getBrandId(Long Id) {
-        return brandRepository.findById(Id).orElseThrow(() ->
-               new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + Id)
-            );
+        // return brandRepository.findById(Id).orElseThrow(() ->
+        //        new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + Id)
+        //     );
+
+        return brandRepository.findByIdAndDeletedFalse(Id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + Id));
     }
 
     // tìm kiếm 
@@ -64,6 +65,30 @@ public class BrandService {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("name").ascending());
 
         return brandRepository.findByNameContaining(keyWord.trim(), pageable);
+    }
+
+    // lọc thương hiệu (tên + status)
+    public Page<Brand> filterBrands(String keyWord, Boolean status, int page, int size, String sortBy, String direction) {
+        keyWord = (keyWord == null) ? "" : keyWord.trim();
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+        PageRequest pageable = PageRequest.of(page, size, sort);
+        if (keyWord.isEmpty() && status == null) {
+            return brandRepository.findAll(pageable);
+        }
+
+        if (keyWord.isEmpty()) {
+            return brandRepository.findByStatus(status, pageable);
+        }
+
+        if (status == null) {
+            return brandRepository.findByNameContaining(keyWord, pageable);
+        }
+
+        // lọc cả tên + status
+        return brandRepository.findByNameContainingIgnoreCaseAndStatus(keyWord, status, pageable);
     }
 
     // tạo mới 
@@ -89,7 +114,7 @@ public class BrandService {
         // }
         // return null;
 
-        return brandRepository.findById(id)
+        return brandRepository.findByIdAndDeletedFalse(id)
         .map(brand -> {
             // kiểm tra trùng tên nếu đổi tên
             if (!brand.getName().equalsIgnoreCase(newBrand.getName()) && brandRepository.existsByNameIgnoreCase(newBrand.getName())) {
@@ -115,10 +140,20 @@ public class BrandService {
     // xóa 
     public void  deleteBrand(Long id) {
 
-        if (!brandRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + id);
-        }
-        brandRepository.deleteById(id);
+        // if (!brandRepository.existsById(id)) {
+        //     throw new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + id);
+        // }
+        // brandRepository.deleteById(id);
+       if (!brandRepository.existsByIdAndDeletedFalse(id)) {
+        throw new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + id);
+    }
+
+    // Lấy Brand ra để set deleted = true
+    Brand brand = brandRepository.findByIdAndDeletedFalse(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + id));
+
+    brand.setDeleted(true);           // Soft delete
+    brandRepository.save(brand);
     }
 
     // hàm tự sinh slug

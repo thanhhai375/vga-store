@@ -52,7 +52,7 @@ public class ProductService {
     // lấy 1 sp theo id
     // nếu kh thì thấy Id trả về ResourceNotFoundException
     public Product getProductById(Long id) {
-        return productRepository.findById(id)
+        return productRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> 
                     new ResourceNotFoundException("Không tìm thấy sản phẩm với ID " + id)
                 );
@@ -60,6 +60,9 @@ public class ProductService {
 
     // tìm kiếm 
     public Page<Product> searchProducts(String keyWord, Pageable pageable) {
+        if (keyWord == null || keyWord.trim().isEmpty()) {
+            return productRepository.findAll(pageable);
+        }
         return productRepository.findByNameContaining(keyWord, pageable);
     }
 
@@ -131,7 +134,9 @@ public class ProductService {
 
         // 2. Kiểm tra SKU bị trùng (nếu có nhập SKU)
         if (product.getSku() != null && !product.getSku().trim().isEmpty()) {
-            throw new DuplicateResourceException("Sku '" + product.getSku() + "' đã tồn tại!");
+            if (productRepository.existsBySkuIgnoreCase(product.getSku().trim())) {
+                throw new DuplicateResourceException("Sku '" + product.getSku() + "' đã tồn tại!");
+            }
         }
 
         // kiểm tra giá hợp lệ
@@ -153,27 +158,45 @@ public class ProductService {
 
     // cập nhật
     public Product updateProduct(Long id, Product newProduct) {
-        Product product = productRepository.findById(id).orElse(null);
+        // Product product = productRepository.findById(id).orElse(null);
 
-        if (product != null) {
-            product.setName(newProduct.getName());
-            product.setPrice(newProduct.getPrice());
-            product.setStock(newProduct.getStock());
-            product.setDescription(newProduct.getDescription());
-            product.setImgUrl(newProduct.getImgUrl());
-            product.setBrand(newProduct.getBrand());
+        // if (product != null) {
+        //     product.setName(newProduct.getName());
+        //     product.setPrice(newProduct.getPrice());
+        //     product.setStock(newProduct.getStock());
+        //     product.setDescription(newProduct.getDescription());
+        //     product.setImgUrl(newProduct.getImgUrl());
+        //     product.setBrand(newProduct.getBrand());
 
-            return productRepository.save(product);
-        }
+        //     return productRepository.save(product);
+        // }
 
-        return null;
+        // return null;
+        return productRepository.findByIdAndDeletedFalse(id)
+                .map(product -> {
+                    product.setName(newProduct.getName());
+                    product.setPrice(newProduct.getPrice());
+                    product.setStock(newProduct.getStock());
+                    product.setDescription(newProduct.getDescription());
+                    product.setImgUrl(newProduct.getImgUrl());
+                    product.setBrand(newProduct.getBrand());
+                    product.setCategory(newProduct.getCategory());
+
+                    return productRepository.save(product);
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("không tìm thấy sản phẩm với ID " + id));
     }
 
     // xóa sản phẩm
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
+        if (!productRepository.existsByIdAndDeletedFalse(id)) {
             throw new ResourceNotFoundException("Không tìm thấy sản phẩm với ID " + id);
         }
-        productRepository.deleteById(id);
+        // productRepository.deleteById(id);
+        Product product = productRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với ID " + id));
+
+        product.setDeleted(true);
+        productRepository.save(product);
     }
 }

@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +19,7 @@ import com.example.vgashop.dto.ProductDTO;
 import com.example.vgashop.entity.Brand;
 import com.example.vgashop.entity.Category;
 import com.example.vgashop.entity.Product;
+import com.example.vgashop.repository.ApiResponse;
 import com.example.vgashop.service.BrandService;
 import com.example.vgashop.service.CategoryService;
 import com.example.vgashop.service.ProductService;
@@ -43,7 +43,7 @@ public class ProductController {
 
     // get all + pagination
     @GetMapping
-    public Page<Product> getAll(
+    public ApiResponse<Page<Product>> getAll(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue= "id") String sortBy,
@@ -51,17 +51,19 @@ public class ProductController {
     ) {
         // return productService.getAllProducts(PageRequest.of(page, size));
 
-        return productService.getAllProducts(page, size, sortBy, direction);
+        Page<Product> data = productService.getAllProducts(page, size, sortBy, direction);
+        return ApiResponse.success("Lấy danh sách sản phẩm thành công", data);
     }
 
     // tìm kiếm 
     @GetMapping("/search")
-    public Page<Product> search(
+    public ApiResponse<Page<Product>> search(
         @RequestParam String keyWord,
         @RequestParam(defaultValue= "0") int page,
         @RequestParam(defaultValue= "10") int size
     ) {
-        return productService.searchProducts(keyWord, PageRequest.of(page, size));
+        Page<Product> data = productService.searchProducts(keyWord, PageRequest.of(page, size));
+        return ApiResponse.success("Tìm kiếm sản phẩm thành công", data);
     }
 
     // lọc brand
@@ -70,49 +72,58 @@ public class ProductController {
     }
 
     // tìm kiếm và lọc
+    // Lọc sản phẩm đầy đủ (tìm kiếm + brand + khoảng giá)
     @GetMapping("/filter")
-    public Page<Product> searchAndFilter(
-        @RequestParam String keyWord,
-        @RequestParam String brand,
-        @RequestParam(defaultValue= "0") int page,
-        @RequestParam(defaultValue= "10") int size
+    public ApiResponse<Page<Product>> filter(
+        @RequestParam(required = false) String keyWord,
+            @RequestParam(required = false) List<Long> brandIds,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
     ) {
-        return productService.searchAndFilter(keyWord, brand, PageRequest.of(page, size));
+        Page<Product> data = productService.filterProducts(keyWord, brandIds, minPrice, maxPrice,
+                page, size, sortBy, direction);
+
+        return ApiResponse.success("Lọc sản phẩm thành công", data);
     }
 
     // filter đầy đủ
-    @GetMapping("/filter")
-    public Page<Product> filter(
+    // @GetMapping("/filter")
+    // public Page<Product> filter(
 
-        @RequestParam(required= false)
-        String keyWord,
+    //     @RequestParam(required= false)
+    //     String keyWord,
 
-        @RequestParam(required= false)
-        List<Long> brandIds,
+    //     @RequestParam(required= false)
+    //     List<Long> brandIds,
 
-        @RequestParam(required= false)
-        Double minPrice,
+    //     @RequestParam(required= false)
+    //     Double minPrice,
 
-        @RequestParam(required= false)
-        Double maxPrice,
+    //     @RequestParam(required= false)
+    //     Double maxPrice,
 
-        @RequestParam(defaultValue = "0")
-        int page,
-        @RequestParam(defaultValue = "10")
-        int size,
-        @RequestParam(defaultValue= "id")
-        String sortBy,
-        @RequestParam(defaultValue= "asc")
-        String direction
+    //     @RequestParam(defaultValue = "0")
+    //     int page,
+    //     @RequestParam(defaultValue = "10")
+    //     int size,
+    //     @RequestParam(defaultValue= "id")
+    //     String sortBy,
+    //     @RequestParam(defaultValue= "asc")
+    //     String direction
 
-    ) {
-        return productService.filterProducts(keyWord, brandIds, minPrice, maxPrice, page, size, sortBy, direction);
-    }
+    // ) {
+    //     return productService.filterProducts(keyWord, brandIds, minPrice, maxPrice, page, size, sortBy, direction);
+    // }
 
     // Lấy 1 sản phẩm theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getProductById(id));
+   public ApiResponse<Product> getById(@PathVariable Long id) {
+        Product product = productService.getProductById(id);
+        return ApiResponse.success("Lấy sản phẩm thành công", product);
     }
 
     // tạo mới
@@ -121,9 +132,11 @@ public class ProductController {
     //     return productService.creatProduct(product);
     // }
     @PostMapping
-    public ResponseEntity<Product> create(@Valid @RequestBody ProductDTO dto) {
+    public ApiResponse<Product> create(@Valid @RequestBody ProductDTO dto) {
         Product product = convertDtoToEntity(dto);
-        return ResponseEntity.ok(productService.creatProduct(product));
+        Product saved = productService.creatProduct(product);
+
+        return ApiResponse.success("Tạo sản phẩm thành công", saved);
     }
 
     // cập nhật
@@ -133,16 +146,18 @@ public class ProductController {
     // }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> Update(@PathVariable Long id, @Valid @RequestBody ProductDTO dto) {
+    public ApiResponse<Product> update(@PathVariable Long id, @Valid @RequestBody ProductDTO dto) {
         Product product = convertDtoToEntity(dto);
-        return ResponseEntity.ok(productService.updateProduct(id, product));
+        Product updated = productService.updateProduct(id, product);
+
+        return ApiResponse.success("Cập nhật sản phẩm thành công", updated);
     }
 
     // xóa
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
+    public ApiResponse<Void> delete(@PathVariable Long id) {
         productService.deleteProduct(id);
-        return "Deleted Successfully";
+        return ApiResponse.message("Xóa sản phẩm thành công");
     }
 
     // CONVERT DTO → ENTITY

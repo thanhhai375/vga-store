@@ -3,7 +3,6 @@ package com.example.vgashop.controler;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vgashop.dto.BrandDTO;
 import com.example.vgashop.entity.Brand;
+import com.example.vgashop.repository.ApiResponse;
 import com.example.vgashop.service.BrandService;
 
 import jakarta.validation.Valid;
@@ -34,7 +34,7 @@ public class BrandController {
 
     // get all
     @GetMapping
-    public Page<Brand> getAll(
+    public ApiResponse<Page<Brand>> getAll(
         @RequestParam(defaultValue= "0")
         int page,
 
@@ -48,28 +48,44 @@ public class BrandController {
         String direction
 
     ) {
-        return brandService.getAllBrands(page, size, sortBy, direction);
+        Page<Brand> data = brandService.getAllBrands(page, size, sortBy, direction);
+        return ApiResponse.success("Lấy danh sách thương hiệu thành công", data);
     }
 
+    // lọc 
+    @GetMapping("/filter")
+    public ApiResponse<Page<Brand>> filterBrands(
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) Boolean status,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "name") String sortBy,
+        @RequestParam(defaultValue = "asc") String direction) {
+
+    Page<Brand> data = brandService.filterBrands(keyword, status, page, size, sortBy, direction);
+    return ApiResponse.success("Lọc thương hiệu thành công", data);
+}
+
     // lấy tất cả kh phân trang
-    public List<Brand> getAllBrandNoPage() {
-        return brandService.getAllNoPage();
+    public ApiResponse<List<Brand>> getAllBrandNoPage() {
+        List<Brand> data = brandService.getAllNoPage();
+        return ApiResponse.success("Lấy tất cả thương hiệu thành công", data);
     }
 
     // lấy 1 brand 
     @GetMapping("/{id}")
-    public ResponseEntity<Brand> getBrandById(@PathVariable Long id) {
+    public ApiResponse<Brand> getBrandById(@PathVariable Long id) {
         // return brandService.getBrandId(id)
         //         .map(ResponseEntity::ok)
         //         .orElseGet(() -> ResponseEntity.notFound().build());
 
         Brand brand = brandService.getBrandId(id);
-        return ResponseEntity.ok(brand);
+        return ApiResponse.success("Lấy thương hiệu thành công", brand);
     }
 
     // tìm kiếm
     @GetMapping("/search")
-    public Page<Brand> search(
+    public ApiResponse<Page<Brand>> search(
         @RequestParam String keyWord,
 
         @RequestParam(defaultValue= "0")
@@ -78,7 +94,8 @@ public class BrandController {
         @RequestParam(defaultValue= "10")
         int size
     ) {
-        return brandService.searchBrand(keyWord, page, size);
+       Page<Brand> data = brandService.searchBrand(keyWord, page, size);
+       return ApiResponse.success("Tìm kiếm thương hiệu thành công", data);
     }
 
     // tạo mới 
@@ -90,12 +107,14 @@ public class BrandController {
     // }
 
     @PostMapping
-    public ResponseEntity<Brand> create(
+    public ApiResponse<Brand> create(
         @Valid @RequestBody BrandDTO dto
     ) {
 
         Brand brand = convertDtoToEntity(dto);
-        return ResponseEntity.ok(brandService.createBrand(brand));
+        Brand saved = brandService.createBrand(brand);
+
+        return ApiResponse.success("Tạo thương hiệu thành công", saved);
     }
 
     // cập nhật
@@ -105,16 +124,17 @@ public class BrandController {
     // }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Brand> update(@PathVariable Long id, @Valid @RequestBody BrandDTO dto) {
+    public ApiResponse<Brand> update(@PathVariable Long id, @Valid @RequestBody BrandDTO dto) {
         Brand brand = convertDtoToEntity(dto);
-        return ResponseEntity.ok(brandService.updateBrand(id, brand));
+        Brand updated = brandService.updateBrand(id, brand);
+        return ApiResponse.success("Cập nhật thương hiệu thành công", updated);
     }
 
     // xóa
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
+    public ApiResponse<Void> delete(@PathVariable Long id) {
         brandService.deleteBrand(id);
-        return "Deleted successfully";
+        return ApiResponse.message("Xóa thương hiệu thành công");
     }
 
     // CONVERT DTO → ENTITY

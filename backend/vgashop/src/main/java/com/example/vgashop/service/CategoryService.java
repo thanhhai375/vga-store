@@ -1,7 +1,9 @@
 package com.example.vgashop.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.example.vgashop.entity.Category;
@@ -31,16 +33,46 @@ public class CategoryService {
     // get by id
     // nếu kh tìm thấy thì trả về ResourceNotFoundException
     public Category getCategoryById(Long id) {
-        return categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("không tìm thấy danh mục với ID " + id));
+        return categoryRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục với ID " + id));
     }
 
     // tìm kiếm 
     public Page<Category> searchCategory(String keyWord, Pageable pageable) {
-        // if (keyWord == null || keyWord.trim().isEmpty()) {
-        //     return categoryRepository.getAllCategories(pageable);
-        // }
+        if (keyWord == null || keyWord.trim().isEmpty()) {
+            return getAllCategories(pageable);
+        }
         return categoryRepository.findByNameContaining(keyWord.trim(), pageable);
     }
+
+    // Lọc danh sách theo tên + status
+    public Page<Category> filterCategories(String keyWord, Boolean active, int page, int size, String sortBy, String direction) {
+        keyWord = (keyWord == null) ? "" : keyWord.trim();
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+        PageRequest pageable = PageRequest.of(page, size, sort);
+
+        // nếu kh có điều kiện lọc nào
+        if (keyWord.isEmpty() && active == null) {
+            return categoryRepository.findAll(pageable);
+        }
+
+        // chỉ lọc theo status
+        if (keyWord.isEmpty()) {
+            return categoryRepository.findByActive(active, pageable);
+        }
+
+        // chỉ lọc theo tên
+        if (active == null) {
+            return categoryRepository.findByNameContaining(keyWord, pageable);
+        }
+
+        // lọc kết hợp tên + status
+        return categoryRepository.findByNameContainingIgnoreCaseAndActive(keyWord, active, pageable);
+    }
+
 
     // tạo mới
     // trả về DuplicateResourceException nếu tên đã tồn tại
@@ -55,7 +87,7 @@ public class CategoryService {
     // nếu kh tìm thấy Id thì trả về ResourceNotFoundException
     // nếu tên mới bị trùng vói danh mục khác thì trả về DuplicateResourceException
     public Category updateCategory(Long id, Category newCategory) {
-        return categoryRepository.findById(id)
+        return categoryRepository.findByIdAndDeletedFalse(id)
                 .map(category -> {
                     // Check trùng tên nếu đổi tên
                     if (!category.getName().equalsIgnoreCase(newCategory.getName()) &&
@@ -75,9 +107,15 @@ public class CategoryService {
     // xóa 
     // nếu kh tìm thấy id trả về ResourceNotFoundException
     public void deleteCategory(Long id) {
-        if (!categoryRepository.existsById(id)) {
+        if (!categoryRepository.existsByIdAndDeletedFalse(id)) {
             throw new ResourceNotFoundException("Không tìm thấy danh mục có ID " + id);
         }
-        categoryRepository.findById(id);
+        // categoryRepository.findById(id);
+
+        Category category = categoryRepository.findByIdAndDeletedFalse(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục với ID " + id));
+
+        category.setDeleted(true);
+        categoryRepository.save(category); 
     }
 }

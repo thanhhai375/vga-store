@@ -1,6 +1,7 @@
 package com.example.vgashop.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +46,19 @@ public interface  ProductRepository extends JpaRepository<Product, Long> {
     boolean existsByNameIgnoreCase(String name);
 
     // kiểm tra trùng sku
-    // boolean existsBySkuIgnoreCase(String sku);
+    boolean existsBySkuIgnoreCase(String sku);
+
+    // Lấy tất cả chưa bị xóa
+    Page<Product> findByDeletedFalse(Pageable pageable);
+
+    // Lấy theo ID và chưa bị xóa
+   Optional<Product> findByIdAndDeletedFalse(Long id);
+
+    // Kiểm tra tồn tại và chưa bị xóa
+    boolean existsByIdAndDeletedFalse(Long id);
+
+    // Nếu sau này cần lọc theo brand/category chưa xóa
+    long countByBrand_IdAndDeletedFalse(Long brandId);
+    long countByCategory_IdAndDeletedFalse(Long categoryId);
 
 }
