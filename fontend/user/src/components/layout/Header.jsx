@@ -1,30 +1,68 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { NavLink, Link } from 'react-router-dom';
+import AuthModal from '../AuthModal/AuthModal';
 import './Header.css';
 
 const Header = () => {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
   return (
     <header className="header">
       <div className="container header-content">
-        <Link to="/" className="logo">VGA STORE</Link>
+
+        {/* LOGO */}
+        <Link to="/" className="logo">
+          VGA STORE
+        </Link>
+
+        {/* NAVIGATION LINKS */}
         <nav className="nav-links">
-          <Link to="/">HOME</Link>
-          <Link to="/products">SHOP</Link>
-          <Link to="/brands">BRANDS</Link>
-          <Link to="/contact">CONTACT</Link>
+          <NavLink to="/" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>HOME</NavLink>
+          <NavLink to="/products" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>SHOP</NavLink>
+          <NavLink to="/blog" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>BLOG</NavLink>
+          <NavLink to="/service" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>SERVICE</NavLink>
         </nav>
+
+        {/* ACTIONS */}
         <div className="header-actions">
-          <Link to="/login" className="btn-signin">SIGN IN</Link>
-          <div className="cart-icon">
-            {}
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+
+          {/* NÚT 1: TRACK ORDER (Icon Tờ giấy) */}
+          <Link to="/track-order" className="nav-action-item">
+            <svg className="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
+            <span>TRACK ORDER</span>
+          </Link>
+
+          {/* NÚT 2: SIGN IN (Icon Hình người) */}
+          <button className="nav-action-item" onClick={() => setIsLoginModalOpen(true)}>
+            <svg className="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>SIGN IN</span>
+          </button>
+
+          {/* NÚT 3: GIỎ HÀNG */}
+          <Link to="/cart" className="cart-icon">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+             </svg>
             <span className="cart-badge">3</span>
-          </div>
+          </Link>
+
         </div>
+
       </div>
+
+      <AuthModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
+
     </header>
   );
 };
+
 export default Header;

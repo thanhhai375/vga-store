@@ -1,0 +1,110 @@
+.footer {
+  background-color: #e0dcdc; /* Nền đen Gaming */
+  color: #928f8f;
+  padding: 60px 0 30px; /* Thụt trên dưới cho thoáng */
+}
+
+/* PHẦN TRÊN: 4 CỘT */
+.footer-top {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Chia đều 4 cột giống ảnh mẫu */
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.footer-heading {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #040404; /* Lấy màu kem của trang chủ làm điểm nhấn */
+}
+
+.footer-links, .footer-support {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+}
+
+.footer-links a, .footer-support li {
+  color: #1f1a1a;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #272323;
+}
+
+/* HIỆU ỨNG RIÊNG CHO CỘT SỐ ĐIỆN THOẠI */
+.footer-support a {
+  color: #3b82f6; /* Màu xanh dương giống ảnh mẫu */
+  font-weight: 600;
+}
+.footer-support a:hover {
+  text-decoration: underline;
+}
+
+/* ĐƯỜNG KẺ NGANG */
+.footer-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #2a2a2c; /* Màu kẻ chỉ chìm, không bị gắt */
+  margin: 30px 0;
+}
+
+/* PHẦN DƯỚI CÙNG */
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.social-connect {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.social-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0e0c0c;
+}
+
+.social-links {
+  display: flex;
+  gap: 12px;
+}
+
+.social-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cec4c4;
+  transition: all 0.3s ease;
+}
+
+.social-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Màu thương hiệu khi Hover */
+.social-icon:hover { transform: translateY(-3px); }
+.social-icon.fb:hover { background: #1877f2; }
+.social-icon.tk:hover { background: #000; border: 1px solid #0c0b0b; }
+.social-icon.yt:hover { background: #ff0000; }
+
+.copyright-text {
+  font-size: 13px;
+  color: #1b1919;
+}

@@ -1,85 +1,158 @@
+/* Bao bọc toàn bộ thẻ, xóa style mặc định của thẻ Link */
 .product-card {
+  position: relative;
   background: #fff;
-  border-radius: 16px;
-  padding: 12px; /* Khoảng cách từ viền thẻ vào hình */
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
   display: flex;
   flex-direction: column;
-  height: 96%;
+  height: 100%;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  overflow: hidden;
+
+  /* THÊM 2 DÒNG NÀY ĐỂ THU NHỎ VÀ CĂN GIỮA KHUNG */
+  max-width: 290px;
+  margin: 0 auto;
 }
 
 .product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border-color: #ed1b24;
+  transform: translateY(-4px);
 }
 
+/* NHÃN HOT DEAL DẠNG PILL */
+.card-badge-hot {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(90deg, #ff4e00, #ed1b24);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 20px;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(237, 27, 36, 0.3);
+}
+
+/* KHUNG ẢNH - ĐÃ SỬA TỈ LỆ VÀ XÓA PADDING */
 .card-image-wrapper {
-  background: transparent;
-  border-radius: 12px;
-  aspect-ratio: 4 / 3;
-  height: auto;
+  position: relative;
+  width: 100%;
+  /* Đổi thành 16/9 (hình chữ nhật ngang) để khớp chuẩn với ảnh VGA */
+  aspect-ratio: 16 / 9;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  margin-bottom: 16px;
-  overflow: hidden;
+  margin-bottom: 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0; /* XÓA PADDING thừa */
+  transition: all 0.3s ease;
+  overflow: hidden; /* Cực kỳ quan trọng: Cắt bỏ ảnh thừa ra ngoài khung */
 }
 
+/* Hiệu ứng viền đỏ cho khung ảnh */
+.product-card:hover .card-image-wrapper {
+  border-color: #ed1b24;
+}
+
+/* HÌNH ẢNH - ĐÃ ÉP KHỚP 100% VỚI KHUNG */
 .card-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
+  width: 100%; /* Phóng to hết cỡ */
+  height: 100%; /* Phóng to hết cỡ */
+  object-fit: cover; /* CHÌA KHÓA: Lấp đầy hoàn toàn khung, không để lại viền trắng */
   transition: transform 0.5s ease;
+  display: block;
 }
 
 .product-card:hover .card-image {
   transform: scale(1.08);
 }
 
+/* THÔNG TIN SẢN PHẨM */
 .card-info {
   display: flex;
   flex-direction: column;
   flex: 1;
-  justify-content: space-between;
-}
-.card-brand {
-  font-size: 11px;
-  color: #666;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-.card-name {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 6px 0 14px;
-  line-height: 1.4;
-  color: #111;
-}
-.card-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.card-price {
-  font-size: 15px;
-  font-weight: 700;
-  color: #000;
 }
 
-.btn-add-cart {
-  background: #111;
-  color: #fff;
-  border: none;
-  padding: 6px 18px;
-  border-radius: 30px;
+.card-name {
+  font-size: 13px;
   font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-  transition: 0.2s;
+  color: #333;
+  line-height: 1.5;
+  margin-bottom: auto;
+
+  /* Cắt chữ nếu quá 2 dòng */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 39px;
 }
-.btn-add-cart:hover {
-  background: #333;
+
+.card-name:hover {
+  color: #ed1b24;
+}
+
+/* KHU VỰC GIÁ CẢ */
+.card-price-area {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.old-price-group {
+  min-height: 18px;
+}
+
+.old-price {
+  font-size: 12px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.new-price-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.new-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ed1b24;
+}
+
+.discount-percent {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ed1b24;
+  border: 1px solid #ed1b24;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* ĐÁNH GIÁ SAO */
+.card-rating {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.stars {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.review-count {
+  color: #888;
 }

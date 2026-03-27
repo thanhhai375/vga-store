@@ -24,3 +24,4 @@ export const mockProducts = [
     img: img2,
   }
 ];
+

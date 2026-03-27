@@ -1,0 +1,107 @@
+.shop-page {
+  padding-top: 100px !important; /* Đẩy xuống để không bị Header che mất */
+  padding-bottom: 80px;
+}
+
+/* --- THANH TOOLBAR (TÌM KIẾM & LỌC) --- */
+.shop-toolbar {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Tìm kiếm */
+.search-bar-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 45px 12px 20px;
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: #111;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+}
+
+.search-btn {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+}
+
+/* Bộ lọc */
+.filter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-btn, .filter-select, .sort-select {
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover, .filter-select:hover, .sort-select:hover {
+  border-color: #999;
+}
+
+.active-filter {
+  font-weight: 600;
+  color: #000;
+  border-color: #000;
+}
+
+/* --- LƯỚI SẢN PHẨM 5 CỘT --- */
+.shop-product-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* CHIA ĐỀU 5 CỘT */
+  gap: 16px; /* Khoảng cách giữa các thẻ sản phẩm */
+}
+
+/* Responsive để khi thu nhỏ màn hình thì giảm số cột */
+@media (max-width: 1200px) {
+  .shop-product-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 992px) {
+  .shop-product-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .shop-product-grid { grid-template-columns: repeat(2, 1fr); }
+}
