@@ -1,67 +1,102 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { addToCart, decreaseCart, removeFromCart, clearCart } from '../../redux/cartSlice'; // Đảm bảo đường dẫn import đúng
 import './Cart.css';
 
 const Cart = () => {
+  // Lấy danh sách sản phẩm từ kho Redux
+  const cartItems = useSelector((state) => state.cart.cartItems);
+  const dispatch = useDispatch();
+
+  // Hàm format tiền tệ
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN').format(price) + '₫';
+  };
+
+  // Tính tổng tiền trực tiếp từ các sản phẩm đang có trong giỏ
+  const totalAmount = cartItems.reduce((total, item) => total + (item.price * item.cartQuantity), 0);
+
   return (
-    <div className="cart-page container">
-      <div className="cart-content-wrapper">
+    <div className="cart-page-container">
+      <h2 className="cart-page-title">GIỎ HÀNG CỦA BẠN</h2>
 
-        {/* ================= THANH TIẾN TRÌNH (STEPPER) ================= */}
-        <div className="cart-stepper-box">
-          <div className="cart-stepper">
-
-            {/* Bước 1: Giỏ hàng (Đang Active) */}
-            <div className="step active">
-              <div className="step-icon">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 8h-3V6a4 4 0 0 0-8 0v2H5c-1.1 0-2 .9-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-9-2a2 2 0 0 1 4 0v2h-4V6zm9 14H5V10h14v10z"/></svg>
-              </div>
-              <span>Giỏ hàng</span>
-            </div>
-
-            <div className="step-line"></div>
-
-            {/* Bước 2: Thông tin đặt hàng */}
-            <div className="step">
-              <div className="step-icon">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm0 4c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1.4c0-2 4-3.1 6-3.1s6 1.1 6 3.1V19z"/></svg>
-              </div>
-              <span>Thông tin đặt hàng</span>
-            </div>
-
-            <div className="step-line"></div>
-
-            {/* Bước 3: Thanh toán */}
-            <div className="step">
-              <div className="step-icon">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-              </div>
-              <span>Thanh toán</span>
-            </div>
-
-            <div className="step-line"></div>
-
-            {/* Bước 4: Hoàn tất */}
-            <div className="step">
-              <div className="step-icon">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-              </div>
-              <span>Hoàn tất</span>
-            </div>
-
-          </div>
-        </div>
-
-        {/* ================= TRẠNG THÁI GIỎ HÀNG TRỐNG ================= */}
-        <div className="empty-cart-section">
-          <p className="empty-message">Giỏ hàng của bạn đang trống</p>
-          {/* Trỏ link về trang /products để khách mua tiếp */}
+      {cartItems.length === 0 ? (
+        // NẾU GIỎ HÀNG TRỐNG
+        <div className="cart-empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+          </svg>
+          <p>Hiện tại chưa có sản phẩm nào trong giỏ hàng.</p>
           <Link to="/products" className="btn-continue-shopping">
-            TIẾP TỤC MUA HÀNG
+            QUAY LẠI CỬA HÀNG
           </Link>
         </div>
+      ) : (
+        // NẾU CÓ HÀNG TRONG GIỎ
+        <div className="cart-content-wrapper">
 
-      </div>
+          {/* CỘT TRÁI: DANH SÁCH SẢN PHẨM */}
+          <div className="cart-items-list">
+            <div className="cart-header-row">
+              <div className="col-product">Sản phẩm</div>
+              <div className="col-price">Đơn giá</div>
+              <div className="col-quantity">Số lượng</div>
+              <div className="col-total">Thành tiền</div>
+              <div className="col-action"></div>
+            </div>
+
+            {cartItems.map((item) => (
+              <div className="cart-item-row" key={item.id}>
+                <div className="col-product">
+                  <img src={item.thumbnail} alt={item.name} className="cart-item-img" />
+                  <Link to={`/product/${item.id}`} className="cart-item-name">{item.name}</Link>
+                </div>
+                <div className="col-price">{formatPrice(item.price)}</div>
+                <div className="col-quantity">
+                  <div className="qty-controls">
+                    <button onClick={() => dispatch(decreaseCart(item))}>-</button>
+                    <span className="qty-number">{item.cartQuantity}</span>
+                    <button onClick={() => dispatch(addToCart(item))}>+</button>
+                  </div>
+                </div>
+                <div className="col-total">{formatPrice(item.price * item.cartQuantity)}</div>
+                <div className="col-action">
+                  <button className="btn-remove-item" onClick={() => dispatch(removeFromCart(item))}>
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <button className="btn-clear-all" onClick={() => dispatch(clearCart())}>
+              Xóa toàn bộ giỏ hàng
+            </button>
+          </div>
+
+          {/* CỘT PHẢI: TỔNG KẾT ĐƠN HÀNG */}
+          <div className="cart-summary-box">
+            <h3 className="summary-title">Tóm tắt đơn hàng</h3>
+            <div className="summary-line">
+              <span>Tạm tính:</span>
+              <span>{formatPrice(totalAmount)}</span>
+            </div>
+            <div className="summary-line">
+              <span>Phí vận chuyển:</span>
+              <span>Chưa tính</span>
+            </div>
+            <hr className="summary-divider" />
+            <div className="summary-line summary-total">
+              <span>Tổng cộng:</span>
+              <span className="final-price">{formatPrice(totalAmount)}</span>
+            </div>
+           <Link to="/checkout" className="btn-checkout-now" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+  TIẾN HÀNH THANH TOÁN
+</Link>
+          </div>
+
+        </div>
+      )}
     </div>
   );
 };
