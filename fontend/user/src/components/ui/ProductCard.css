@@ -156,3 +156,133 @@
 .review-count {
   color: #888;
 }
+
+/* =========================================
+   CSS CHO POPUP THÊM GIỎ HÀNG THÀNH CÔNG
+   ========================================= */
+
+/* Lớp phủ làm mờ màn hình phía sau */
+.custom-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4); /* Nền đen mờ */
+  z-index: 999999; /* Luôn nằm trên cùng mọi thứ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Hộp thông báo màu trắng */
+.custom-popup-content {
+  background: #ffffff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  text-align: center;
+  width: 360px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative; /* Cần position relative để định vị dấu X ở góc */
+  animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Dấu X đóng ở góc */
+.popup-corner-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.popup-corner-close:hover {
+  color: #ed1b24; /* Red on hover, matching theme */
+}
+
+/* Biểu tượng dấu check màu xanh */
+.popup-icon-success {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #3ca95a;
+  color: #3ca95a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px auto 15px auto;
+}
+
+.popup-icon-success svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* Tiêu đề thông báo */
+.popup-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 25px;
+  line-height: 1.4;
+}
+
+/* Vùng chứa 2 nút bấm */
+.popup-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Nút Tiếp tục mua sắm */
+.popup-btn-continue {
+  background-color: #3ca95a;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+.popup-btn-continue:hover {
+  background-color: #154923; /* Xanh đậm hơn khi di chuột */
+}
+
+/* Nút Đi đến giỏ hàng nhỏ gọn */
+.popup-btn-close {
+  background-color: #d40b0b;
+  color: #ffffff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.popup-btn-close:hover {
+  background-color: #133b26;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

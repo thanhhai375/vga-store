@@ -1,0 +1,482 @@
+/* =========================================
+   GIAO DIỆN CHÍNH TRANG THANH TOÁN
+   ========================================= */
+.checkout-page {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  min-height: 60vh;
+}
+
+.checkout-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 15px;
+}
+
+.checkout-content {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* CỘT FORM TRÁI */
+.checkout-form-section {
+  flex: 6;
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.checkout-form-section h3 {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #ed1b24;
+}
+
+.btn-place-order {
+  width: 100%;
+  padding: 16px;
+  background: #ed1b24;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.btn-place-order:hover {
+  background: #c8151e;
+}
+
+/* CỘT SUMMARY BÊN PHẢI */
+.checkout-summary-section {
+  flex: 4;
+  background: #f9f9f9;
+  padding: 30px;
+  border-radius: 12px;
+  position: sticky;
+  top: 80px;
+}
+
+.checkout-summary-section h3 {
+  margin-bottom: 20px;
+  font-size: 18px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 15px;
+}
+
+.checkout-items-list {
+  margin-bottom: 20px;
+}
+
+.checkout-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.item-name-qty {
+  flex: 3;
+  padding-right: 15px;
+}
+
+.item-name {
+  color: #333;
+}
+
+.item-qty {
+  font-weight: 600;
+  margin-left: 5px;
+  color: #ed1b24;
+}
+
+.item-price {
+  flex: 1;
+  text-align: right;
+  font-weight: 600;
+}
+
+.checkout-total-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 15px;
+  color: #555;
+}
+
+.checkout-total-line.final {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111;
+}
+
+.final-price {
+  color: #ed1b24;
+  font-size: 24px;
+}
+
+.checkout-empty {
+  text-align: center;
+  padding: 100px 0;
+}
+
+
+/* =========================================
+   GIAO DIỆN POPUP ĐẶT HÀNG THÀNH CÔNG
+   ========================================= */
+.checkout-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 999999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.checkout-popup-content {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.checkout-popup-content .popup-icon-success {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid #3ca95a;
+  color: #3ca95a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 20px auto;
+}
+
+.checkout-popup-content .popup-icon-success svg {
+  width: 35px;
+  height: 35px;
+}
+
+.checkout-popup-content .popup-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.checkout-popup-content .popup-message {
+  color: #555;
+  margin-bottom: 30px;
+  font-size: 15px;
+}
+
+.checkout-popup-content .popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.popup-btn-track {
+  background-color: #ed1b24;
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.popup-btn-track:hover {
+  background-color: #c8151e;
+}
+
+.popup-btn-home {
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.popup-btn-home:hover {
+  background-color: #e2e2e2;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clickable-row:hover {
+  background-color: #fcfcfc;
+}
+
+.btn-cancel-sm {
+  background: none;
+  border: 1px solid #ed1b24;
+  color: #ed1b24;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.btn-cancel-sm:hover {
+  background: #ed1b24;
+  color: #fff;
+}
+
+/* LỚP PHỦ POPUP */
+.order-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s;
+}
+
+.order-detail-modal {
+  background: #fff;
+  width: 500px;
+  max-width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  animation: slideUp 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #111;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #888;
+}
+
+.modal-body {
+  padding: 25px;
+  overflow-y: auto;
+}
+
+.detail-status-box {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.detail-customer-box, .detail-items-box {
+  border: 1px solid #eee;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.detail-customer-box h4, .detail-items-box h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: #111;
+  border-bottom: 1px dashed #ddd;
+  padding-bottom: 10px;
+}
+
+.detail-customer-box p {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #444;
+}
+
+.current-address {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f4f4f4;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 5px;
+}
+
+.btn-edit-address {
+  background: none;
+  border: none;
+  color: #ed1b24;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.edit-address-form {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-address-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-save-address {
+  background: #3ca95a;
+  color: #fff;
+  border: none;
+  padding: 6px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-cancel-address {
+  background: #eee;
+  border: none;
+  padding: 6px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.detail-item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.detail-item-list li {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.detail-total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.total-red {
+  color: #ed1b24;
+}
+
+.btn-cancel-lg {
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  color: #ed1b24;
+  border: 1px solid #ed1b24;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel-lg:hover {
+  background: #ed1b24;
+  color: #fff;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
