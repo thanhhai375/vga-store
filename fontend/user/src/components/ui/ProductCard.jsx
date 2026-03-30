@@ -1,91 +1,92 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Thêm useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../../redux/cartSlice"; // Đảm bảo đường dẫn import đúng
+import { addToCart } from "../../redux/cartSlice";
 import "./ProductCard.css";
+
+// TỐI ƯU HIỆU NĂNG: Khởi tạo bộ format tiền tệ ở ngoài Component
+// để không bị tạo lại hàng chục lần mỗi khi render 20 cái card, chống giật web.
+const currencyFormatter = new Intl.NumberFormat("vi-VN");
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Khởi tạo điều hướng
-
-  // TẠO STATE QUẢN LÝ ẨN/HIỆN POPUP
+  const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
 
-  // Format tiền tệ chuẩn Việt Nam (vd: 12.990.000₫)
+  // SỬ DỤNG STATE ĐỂ XỬ LÝ ẢNH LỖI (Cách chuẩn của React, chống vòng lặp vô tận)
+  const [imgError, setImgError] = useState(false);
+
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN").format(price) + "₫";
+    return currencyFormatter.format(price) + "₫";
   };
 
-  // Giả lập dữ liệu khuyến mãi
   const currentPrice = Number(product.price);
-  const oldPrice = currentPrice * 1.1; // Giả sử giá gốc đắt hơn 10%
+  const oldPrice = currentPrice * 1.1;
   const discountPercent = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
 
-  // Hàm xử lý thêm vào giỏ hàng
+  // 1. Lấy link ảnh từ Database
+  const dbImageUrl = product.imgUrl || product.img_url || product.img || product.image;
+
+  // 2. CHỐT HẠ: Nếu ảnh trong DB bị lỗi (imgError) hoặc không có, tự động dùng ảnh local đã tải về máy.
+  // Bạn cần để 1 tấm ảnh tên là 'default-vga.jpg' vào thư mục public/images/ để làm ảnh phòng hờ.
+  const finalImageUrl = imgError || !dbImageUrl
+    ? '/images/default-vga.jpg'
+    : dbImageUrl;
+
   const handleQuickAdd = (e) => {
-    e.preventDefault(); // Chặn thẻ <Link> chuyển trang
-    e.stopPropagation(); // Ngăn sự kiện click lan ra ngoài
+    e.preventDefault();
+    e.stopPropagation();
 
     const itemToAdd = {
       id: product.id,
       name: product.name,
       price: currentPrice,
-      thumbnail: product.img || product.image,
+      thumbnail: finalImageUrl,
     };
 
-    // Đẩy lên Redux
     dispatch(addToCart(itemToAdd));
-
-    // BẬT POPUP THAY VÌ DÙNG alert()
     setShowPopup(true);
   };
 
   return (
     <>
       <Link to={`/product/${product.id}`} className="product-card">
-        {/* NHÃN HOT DEAL GÓC TRÁI */}
-        <div className="card-badge-hot">
-          🔥 HOT DEAL
-        </div>
+        <div className="card-badge-hot">🔥 HOT DEAL</div>
 
-        {/* KHUNG ẢNH */}
         <div className="card-image-wrapper">
-          <img src={product.img || product.image} alt={product.name} className="card-image" />
+          {/* Dùng onError với State để chống sập web */}
+          <img
+            src={finalImageUrl}
+            alt={product.name}
+            className="card-image"
+            onError={() => {
+              if (!imgError) setImgError(true); // Chỉ đổi state 1 lần duy nhất, ngắt vòng lặp
+            }}
+          />
         </div>
 
         <div className="card-info">
-          {/* Tên sản phẩm giới hạn 2 dòng */}
-          <h3 className="card-name">{product.name}</h3>
+          <h3 className="card-name" title={product.name}>{product.name}</h3>
 
           <div className="card-price-area">
-            {/* Giá cũ gạch chéo */}
             <div className="old-price-group">
               <span className="old-price">{formatPrice(oldPrice)}</span>
             </div>
-
-            {/* Giá mới màu đỏ & Phần trăm giảm giá */}
             <div className="new-price-group">
               <span className="new-price">{formatPrice(currentPrice)}</span>
               <span className="discount-percent">-{discountPercent}%</span>
             </div>
           </div>
 
-          {/* Đánh giá sao (Rating) & Nút MUA */}
-          <div className="card-bottom-action" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
             <div className="card-rating">
               <span className="stars">⭐ 0.0</span>
-              <span className="review-count" style={{ fontSize: '11px' }}>(0 đánh giá)</span>
+              <span className="review-count">(0 đánh giá)</span>
             </div>
 
-            {/* NÚT MUA NHANH (Màu đỏ chủ đạo) */}
             <button
               className="btn-quick-add"
               onClick={handleQuickAdd}
-              style={{
-                background: '#ed1b24', color: '#fff', border: 'none',
-                padding: '5px 10px', borderRadius: '4px', cursor: 'pointer',
-                fontWeight: 'bold', fontSize: '12px'
-              }}
             >
               MUA
             </button>
@@ -93,39 +94,22 @@ const ProductCard = ({ product }) => {
         </div>
       </Link>
 
-      {/* GIAO DIỆN POPUP THÔNG BÁO XỊN SÒ */}
+      {/* POPUP GIỎ HÀNG (Giữ nguyên giao diện của bạn) */}
       {showPopup && (
         <div className="custom-popup-overlay" onClick={() => setShowPopup(false)}>
-          {/* Ngăn không cho click vào box trắng bị đóng popup */}
           <div className="custom-popup-content" onClick={(e) => e.stopPropagation()}>
-
-            {/* DẤU X ĐÓNG CỬA SỔ (Ở góc trên bên phải) */}
-            <button className="popup-corner-close" onClick={() => setShowPopup(false)}>
-              ✕
-            </button>
-
-            {/* Icon Checkmark màu xanh */}
+            <button className="popup-corner-close" onClick={() => setShowPopup(false)}>✕</button>
             <div className="popup-icon-success">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
               </svg>
             </div>
-
             <h3 className="popup-title">Đã thêm sản phẩm vào giỏ hàng!</h3>
-
             <div className="popup-actions">
-              {/* Nút 1: Tiếp tục mua sắm (Đóng popup) */}
-              <button className="popup-btn-continue" onClick={() => setShowPopup(false)}>
-                Tiếp tục mua sắm
-              </button>
-
-              {/* Nút 2: Đi đến giỏ hàng (Chuyển trang) */}
-              <button className="popup-btn-close" onClick={() => navigate('/cart')}>
-                Đi đến giỏ hàng
-              </button>
+              <button className="popup-btn-continue" onClick={() => setShowPopup(false)}>Tiếp tục mua sắm</button>
+              <button className="popup-btn-close" onClick={() => navigate('/cart')}>Đi đến giỏ hàng</button>
             </div>
-
           </div>
         </div>
       )}

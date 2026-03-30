@@ -3,6 +3,8 @@ package com.example.vgashop.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // 1. ĐÃ THÊM IMPORT NÀY
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,23 +43,24 @@ public class Category extends BaseEntity {
     // constuctor mặc định
     public Category() {}
 
-   // mối quan hệ
-   @OneToMany(mappedBy= "category", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
-   private List<Product> products;
+    // mối quan hệ
+    @JsonIgnore // 2. ĐÃ THÊM CHỐT CHẶN VÒNG LẶP VÀO ĐÂY
+    @OneToMany(mappedBy= "category", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
+    private List<Product> products;
 
-   // tự động set hay up time
-   @PrePersist
-   protected void onCreate() {
-    createdAt = LocalDateTime.now();
-    updatedAt = LocalDateTime.now();
-   }
+    // tự động set hay up time
+    @PrePersist
+    protected void onCreate() {
+     createdAt = LocalDateTime.now();
+     updatedAt = LocalDateTime.now();
+    }
 
-   @PreUpdate
-   protected void onUpdate() {
-    updatedAt = LocalDateTime.now();
-   }
+    @PreUpdate
+    protected void onUpdate() {
+     updatedAt = LocalDateTime.now();
+    }
 
-   // GETTER SETTER
+    // GETTER SETTER
     public Long getId() {
         return id;
     }
