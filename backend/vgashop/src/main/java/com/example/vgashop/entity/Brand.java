@@ -2,6 +2,7 @@ package com.example.vgashop.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // 1. ĐÃ THÊM IMPORT NÀY
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,13 +31,14 @@ public class Brand extends BaseEntity {
     private String description;
 
     // chuỗi ký tự hỗ trợ URL
-    @Column(name = "slug", unique = true, length = 150)   
+    @Column(name = "slug", unique = true, length = 150)
     private String slug;
 
     @Column(nullable = false)
     private Boolean status = true;
 
-    // mối quan hệ 
+    // mối quan hệ
+    @JsonIgnore // 2. ĐÃ THÊM CHỐT CHẶN VÒNG LẶP VÀO ĐÂY
     @OneToMany(mappedBy= "brand", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private List<Product> products;
 
@@ -105,5 +107,5 @@ public class Brand extends BaseEntity {
     public void setSlug(String slug) {
         this.slug = slug;
     }
-    
+
 }
