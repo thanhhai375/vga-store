@@ -27,3 +27,6 @@ Thay khoảng trắng bằng dấu -
 Không có ký tự đặc biệt
 Thường là unique (không trùng nhau)
 */
+
+# ApiResponse (cách chuẩn production):
+Tất cả API đều trả về cùng một cấu trúc:

@@ -38,7 +38,7 @@ public class Product extends BaseEntity {
     @Column(name= "description", columnDefinition= "TEXT")
     private String description;
 
-    @Column(name= "img_url")
+    @Column(name= "img_url", length= 500)
     private String imgUrl;
 
     @ManyToOne(fetch= FetchType.EAGER)

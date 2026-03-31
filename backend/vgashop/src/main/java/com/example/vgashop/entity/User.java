@@ -12,27 +12,41 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import com.example.vgashop.entity.Role;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity // đánh dấu là bảng trong DB
 @Table(name="users")
-public class User {
-
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name= "id")
-    private Long id;
+public class User extends BaseEntity {
 
     @Column(name= "username", nullable=false, unique=true, length=100)
     private String username;
 
     @Column(name = "password", nullable=false, length=255)
-    private String password;
+    private String password; // sẽ mã hóa BCrypt
+
+    @Column(name = "full_name", length = 100)
+    private String fullName;
+
+    @Column(length = 15)
+    private String phone;
 
    @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
-    @Column(name= "role", nullable=false)
-    private String role;
+    @Column(columnDefinition = "TEXT")
+    private String address;
+
+    @Column(length = 255)
+    private String avatar;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
+
+    @Column(nullable = false)
+    private Boolean status = true;
 
     @OneToMany(mappedBy= "user", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private List<Order> orders;
@@ -40,20 +54,16 @@ public class User {
     @OneToOne(mappedBy= "user", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private Cart cart;
 
+    // Constructor
+    public User() {}
+
     // getter và setter
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUserName() {
+    public String getUsername() {
         return username;
     }
 
-    public void setUserName(String username) {
+    public void setUsername(String username) {
         this.username = username;
     }
 
@@ -65,6 +75,14 @@ public class User {
         this.password = password;
     }
 
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -73,12 +91,36 @@ public class User {
         this.email = email;
     }
 
-    public String getRole() {
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(Boolean status) {
+        this.status = status;
     }
 
     public List<Order> getOrders() {
@@ -97,6 +139,13 @@ public class User {
         this.cart = cart;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
     
 }
 
