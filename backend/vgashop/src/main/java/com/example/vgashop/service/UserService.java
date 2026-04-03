@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.example.vgashop.dto.UserDTO;
@@ -46,6 +47,20 @@ public class UserService {
     public User getUserById(Long id) {
         return userRepository.findByIdAndDeleted(id, false)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID " + id));
+    }
+
+    // lấy user hiện tại từ JWT token
+    public User getCurrentUser() {
+        // lấy username từ SecurityContext (JWT token đã được xác thực)
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if (username == null || username.trim().isEmpty()) {
+            throw new ResourceNotFoundException("Không tìm thấy người dùng đang đăng nhập");
+        }
+
+        // Tìm user theo username, chỉ lấy những user chưa bị xóa
+        return userRepository.findByUsernameAndDeletedFalse(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + username));
     }
 
     // tạo mới

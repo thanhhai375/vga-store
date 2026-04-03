@@ -1,7 +1,10 @@
 package com.example.vgashop.entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -11,32 +14,31 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name= "cart_items")
-public class CartItem {
-
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Long id;
+public class CartItem extends BaseEntity {
 
     @Column(name= "quantity", nullable= false)
     private Integer quantity;
 
-    @ManyToOne
+    @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name= "cart_id", nullable= false)
     private Cart cart;
 
-    @ManyToOne
+    @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name= "product_id", nullable= false)
     private Product product;
 
+    // tạo biến subtotal để lưu tổng tiền của item này (quantity * product price), có thể tính lại mỗi khi thay đổi quantity hoặc product
+    @Column(name= "subtotal", precision= 12, scale= 2)
+    private BigDecimal subtotal;
+
+    public void calculateSubtotal() {
+        if (product != null && quantity != null) {
+            this.subtotal = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+        } else {
+            this.subtotal = BigDecimal.ZERO;
+        }
+    }
     // getter setter
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public Integer getQuantity() {
         return quantity;
     }
@@ -59,5 +61,11 @@ public class CartItem {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
     }
 }

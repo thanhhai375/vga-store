@@ -20,6 +20,8 @@ public interface  UserRepository extends JpaRepository<User, Long>  {
     Optional<User> findByIdAndDeleted(Long id, boolean deleted);
     boolean existsByIdAndDeleted(Long id, boolean deleted);
 
+    Optional<User> findByUsernameAndDeletedFalse(String username);
+
     // Tìm kiếm theo username hoặc email
     Page<User> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(String username, String email, Pageable pageable);
 }
