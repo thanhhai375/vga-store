@@ -8,6 +8,7 @@ import com.example.vgashop.dto.UserDTO;
 import com.example.vgashop.entity.Role;
 import com.example.vgashop.entity.User;
 import com.example.vgashop.exception.DuplicateResourceException;
+import com.example.vgashop.exception.ResourceNotFoundException;
 import com.example.vgashop.repository.UserRepository;
 import com.example.vgashop.security.JwtUtil;
 
@@ -53,19 +54,54 @@ public class AuthService {
     }
 
     // Đăng nhập
-    public AuthResponse login(String username, String password) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Tài khoản hoặc mật khau không đúng!"));
+    // public AuthResponse login(String username, String password) {
+    //     User user = userRepository.findByUsername(username)
+    //             .orElseThrow(() -> new RuntimeException("Tài khoản hoặc mật khau không đúng!"));
         
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Tài khoản hoặc mật khau không đúng!");
+    //     if (!passwordEncoder.matches(password, user.getPassword())) {
+    //         throw new RuntimeException("Tài khoản hoặc mật khau không đúng!");
+    //     }
+
+    //     if (!user.getStatus()) {
+    //         throw new RuntimeException("Tài khoản đã bị khóa!");
+    //     }
+
+    //     String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
+
+    //     return new AuthResponse(token, "Đăng nhập thành công", user.getRole().name());
+    // }
+
+    public AuthResponse login(String username, String password) {
+        System.out.println("=== LOGIN ATTEMPT ===");
+        System.out.println("Username input: [" + username + "]");
+
+        // Tìm user
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> {
+                    System.out.println("ERROR: User not found with username: " + username);
+                    return new ResourceNotFoundException("Tài khoản hoặc mật khẩu không đúng");
+                });
+
+        System.out.println("User found - ID: " + user.getId() + ", Role: " + user.getRole() + ", Status: " + user.getStatus());
+
+        // Kiểm tra trạng thái tài khoản
+        if (Boolean.FALSE.equals(user.getStatus())) {
+            System.out.println("ERROR: Account is disabled");
+            throw new RuntimeException("Tài khoản đã bị khóa");
         }
 
-        if (!user.getStatus()) {
-            throw new RuntimeException("Tài khoản đã bị khóa!");
+        // Kiểm tra mật khẩu
+        boolean passwordMatch = passwordEncoder.matches(password, user.getPassword());
+        System.out.println("Password match result: " + passwordMatch);
+
+        if (!passwordMatch) {
+            System.out.println("ERROR: Password does not match");
+            throw new RuntimeException("Tài khoản hoặc mật khẩu không đúng");
         }
 
+        // Tạo token
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
+        System.out.println("Login successful - Token generated");
 
         return new AuthResponse(token, "Đăng nhập thành công", user.getRole().name());
     }

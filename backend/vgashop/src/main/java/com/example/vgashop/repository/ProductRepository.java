@@ -52,10 +52,10 @@ public interface  ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByDeletedFalse(Pageable pageable);
 
     // Lấy theo ID và chưa bị xóa
-   Optional<Product> findByIdAndDeletedFalse(Long id);
+    Optional<Product> findByIdAndDeleted(Long id, boolean deleted);
 
     // Kiểm tra tồn tại và chưa bị xóa
-    boolean existsByIdAndDeletedFalse(Long id);
+    boolean existsByIdAndDeleted(Long id, boolean deleted);
 
     // Nếu sau này cần lọc theo brand/category chưa xóa
     long countByBrand_IdAndDeletedFalse(Long brandId);

@@ -10,6 +10,7 @@ import com.example.vgashop.dto.AuthResponse;
 import com.example.vgashop.dto.UserDTO;
 import com.example.vgashop.repository.ApiResponse;
 import com.example.vgashop.service.AuthService;
+import com.example.vgashop.dto.LoginRequest;
 
 import jakarta.validation.Valid;
 
@@ -37,28 +38,5 @@ public class AuthController {
     public ApiResponse<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
         AuthResponse response = authService.login(loginRequest.getUsername(), loginRequest.getPassword());
         return ApiResponse.success("Đăng nhập thành công", response);
-    }
-
-    // class hỗ trợ đăng nhập
-    class LoginRequest {
-        private String username;
-        private String password;
-
-        // getters và setters
-        public String getUsername() {
-            return username;
-        }
-        public void setUsername(String username) {
-            this.username = username;
-        }
-        public String getPassword() {
-            return password;
-        }
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        
-
     }
 }

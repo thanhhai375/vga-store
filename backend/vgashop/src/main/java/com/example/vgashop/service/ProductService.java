@@ -53,13 +53,13 @@ public class ProductService {
 
         PageRequest pageable = PageRequest.of(page, size, sort);
 
-        return productRepository.findAll(pageable);
+        return productRepository.findByDeletedFalse(pageable);
     }
 
     // lấy 1 sp theo id
     // nếu kh thì thấy Id trả về ResourceNotFoundException
     public Product getProductById(Long id) {
-        return productRepository.findByIdAndDeletedFalse(id)
+        return productRepository.findByIdAndDeleted(id, false)
                 .orElseThrow(() -> 
                     new ResourceNotFoundException("Không tìm thấy sản phẩm với ID " + id)
                 );
@@ -179,7 +179,7 @@ public class ProductService {
         // }
 
         // return null;
-        return productRepository.findByIdAndDeletedFalse(id)
+        return productRepository.findByIdAndDeleted(id, false)
                 .map(product -> {
                     product.setName(newProduct.getName());
                     product.setPrice(newProduct.getPrice());
@@ -196,11 +196,11 @@ public class ProductService {
 
     // xóa sản phẩm
     public void deleteProduct(Long id) {
-        if (!productRepository.existsByIdAndDeletedFalse(id)) {
+        if (!productRepository.existsByIdAndDeleted(id, false)) {
             throw new ResourceNotFoundException("Không tìm thấy sản phẩm với ID " + id);
         }
         // productRepository.deleteById(id);
-        Product product = productRepository.findByIdAndDeletedFalse(id)
+        Product product = productRepository.findByIdAndDeleted(id, false)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm với ID " + id));
 
         product.setDeleted(true);

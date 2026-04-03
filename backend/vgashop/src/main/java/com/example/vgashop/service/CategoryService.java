@@ -23,7 +23,7 @@ public class CategoryService {
 
     // lấy tất cả
     public Page<Category> getAllCategories(Pageable pageable) {
-        return  categoryRepository.findAll(pageable);
+        return  categoryRepository.findByDeletedFalse(pageable);
     }
 
     public Page<Category> getActiveCategories(Pageable pageable) {
@@ -33,7 +33,7 @@ public class CategoryService {
     // get by id
     // nếu kh tìm thấy thì trả về ResourceNotFoundException
     public Category getCategoryById(Long id) {
-        return categoryRepository.findByIdAndDeletedFalse(id)
+        return categoryRepository.findByIdAndDeleted(id, false)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục với ID " + id));
     }
 
@@ -87,7 +87,7 @@ public class CategoryService {
     // nếu kh tìm thấy Id thì trả về ResourceNotFoundException
     // nếu tên mới bị trùng vói danh mục khác thì trả về DuplicateResourceException
     public Category updateCategory(Long id, Category newCategory) {
-        return categoryRepository.findByIdAndDeletedFalse(id)
+        return categoryRepository.findByIdAndDeleted(id, false)
                 .map(category -> {
                     // Check trùng tên nếu đổi tên
                     if (!category.getName().equalsIgnoreCase(newCategory.getName()) &&
@@ -107,12 +107,12 @@ public class CategoryService {
     // xóa 
     // nếu kh tìm thấy id trả về ResourceNotFoundException
     public void deleteCategory(Long id) {
-        if (!categoryRepository.existsByIdAndDeletedFalse(id)) {
+        if (!categoryRepository.existsByIdAndDeleted(id, false)) {
             throw new ResourceNotFoundException("Không tìm thấy danh mục có ID " + id);
         }
         // categoryRepository.findById(id);
 
-        Category category = categoryRepository.findByIdAndDeletedFalse(id)
+        Category category = categoryRepository.findByIdAndDeleted(id, false)
             .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục với ID " + id));
 
         category.setDeleted(true);
