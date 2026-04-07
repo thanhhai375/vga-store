@@ -1,22 +1,24 @@
 .footer {
-  background-color: #e0dcdc; /* Nền đen Gaming */
-  color: #928f8f;
-  padding: 60px 0 30px; /* Thụt trên dưới cho thoáng */
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  padding: 60px 0 30px;
+  border-top: 1px solid #333;
 }
 
 /* PHẦN TRÊN: 4 CỘT */
 .footer-top {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* Chia đều 4 cột giống ảnh mẫu */
+  grid-template-columns: repeat(4, 1fr);
   gap: 30px;
   margin-bottom: 40px;
 }
 
 .footer-heading {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 900;
   margin-bottom: 20px;
-  color: #040404; /* Lấy màu kem của trang chủ làm điểm nhấn */
+  color: var(--text-primary);
+  text-transform: uppercase;
 }
 
 .footer-links, .footer-support {
@@ -28,30 +30,28 @@
 }
 
 .footer-links a, .footer-support li {
-  color: #1f1a1a;
+  color: var(--text-secondary);
   font-size: 14px;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .footer-links a:hover {
-  color: #272323;
+  color: var(--accent-color);
 }
 
-/* HIỆU ỨNG RIÊNG CHO CỘT SỐ ĐIỆN THOẠI */
 .footer-support a {
-  color: #3b82f6; /* Màu xanh dương giống ảnh mẫu */
-  font-weight: 600;
+  color: var(--accent-color);
+  font-weight: 700;
 }
 .footer-support a:hover {
   text-decoration: underline;
 }
 
-/* ĐƯỜNG KẺ NGANG */
 .footer-divider {
   width: 100%;
   height: 1px;
-  background-color: #2a2a2c; /* Màu kẻ chỉ chìm, không bị gắt */
+  background-color: #333;
   margin: 30px 0;
 }
 
@@ -73,7 +73,8 @@
 .social-text {
   font-size: 14px;
   font-weight: 700;
-  color: #0e0c0c;
+  color: var(--text-primary);
+  text-transform: uppercase;
 }
 
 .social-links {
@@ -84,27 +85,27 @@
 .social-icon {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  background: #333;
+  border-radius: 4px;
+  background: #222;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #cec4c4;
+  color: var(--text-primary);
   transition: all 0.3s ease;
+  border: 1px solid #444;
 }
 
 .social-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
-/* Màu thương hiệu khi Hover */
-.social-icon:hover { transform: translateY(-3px); }
-.social-icon.fb:hover { background: #1877f2; }
-.social-icon.tk:hover { background: #000; border: 1px solid #0c0b0b; }
-.social-icon.yt:hover { background: #ff0000; }
+.social-icon:hover { transform: translateY(-3px); border-color: var(--accent-color); color: var(--accent-color); }
+.social-icon.fb:hover { background: #1877f2; color: #fff; border-color: #1877f2; }
+.social-icon.tk:hover { background: #000; color: #fff; border-color: #fff; }
+.social-icon.yt:hover { background: #ff0000; color: #fff; border-color: #ff0000; }
 
 .copyright-text {
   font-size: 13px;
-  color: #1b1919;
+  color: var(--text-secondary);
 }

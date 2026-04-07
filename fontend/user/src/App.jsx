@@ -15,7 +15,7 @@ import Checkout from './pages/Checkout/Checkout';
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-white text-gray-900 font-sans">
+      <div className="app-wrapper">
         <Header />
 
         <Routes>

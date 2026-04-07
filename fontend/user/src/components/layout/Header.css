@@ -1,17 +1,25 @@
-/* =========================================
-   1. BỐ CỤC CHUNG HEADER
-   ========================================= */
+/* =============================================
+   HEADER - Professional Gaming Style
+   ============================================= */
 .header {
-  position: fixed; /* Khóa chặt trên cùng */
-  top: 0px;
+  position: fixed;
+  top: 0;
   left: 0;
   width: 100%;
-  background-color: #d6d5d5; /* Nền xám nhạt */
-  z-index: 9999; /* Luôn nằm trên cùng mọi thứ */
-  height: 60px; /* Tăng nhẹ để chứa vừa Icon + Chữ */
+  height: 60px;
+  z-index: 9999;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #6261616a;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 0.4s, border-color 0.4s;
+}
+
+.header.scrolled {
+  background: rgba(0, 0, 0, 0.97);
+  border-bottom: 1px solid rgba(255, 0, 41, 0.25);
 }
 
 .header-content {
@@ -21,113 +29,150 @@
   width: 100%;
 }
 
-/* =========================================
-   2. LOGO & MENU ĐIỀU HƯỚNG BÊN TRÁI
-   ========================================= */
-.logo {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: #000;
+/* ===== LOGO ===== */
+.logo-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  transition: filter 0.3s;
+  filter: drop-shadow(0 0 6px rgba(255, 0, 41, 0.6));
+}
+
+.logo-brand:hover .logo-icon {
+  filter: drop-shadow(0 0 12px rgba(255, 0, 41, 1));
+}
+
+.logo-text-block {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 1px;
+}
+
+.logo-line1 {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--accent-color);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.logo-line2 {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+
+/* ===== NAV ===== */
 .nav-links {
   display: flex;
-  gap: 40px;
+  gap: 4px;
+  align-items: center;
 }
 
-/* Xử lý NavItem cho NavLink */
 .nav-item {
+  position: relative;
   font-size: 12px;
-  font-weight: 700;
-  color: #555; /* Màu nhạt hơn cho các tab không được chọn */
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.65);
   text-transform: uppercase;
   text-decoration: none;
-  padding-bottom: 4px; /* Tạo khoảng trống giữa chữ và đường gạch */
-  border-bottom: 2px solid transparent; /* Đường gạch tàng hình làm sẵn */
-  transition: all 0.3s ease;
+  padding: 8px 16px;
+  letter-spacing: 1.5px;
+  transition: color 0.3s;
 }
 
-/* Khi di chuột vào */
+.nav-item::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background: var(--accent-color);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
 .nav-item:hover {
-  color: #000;
-  border-bottom: 2px solid #000;
+  color: #fff;
 }
 
-/* KHI TAB ĐƯỢC CHỌN (ACTIVE) */
 .nav-item.active {
-  color: #000; /* Đậm màu lên */
-  border-bottom: 2px solid #000; /* Hiện đường gạch chân */
+  color: #fff;
 }
 
-/* =========================================
-   3. KHU VỰC CÁC NÚT TƯƠNG TÁC BÊN PHẢI
-   ========================================= */
+.nav-item.active::after,
+.nav-item:hover::after {
+  transform: scaleX(1);
+}
+
+/* ===== ACTIONS ===== */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 6px;
 }
 
-/* CSS CHO TRACK ORDER VÀ SIGN IN (ICON TRÊN - CHỮ DƯỚI) */
 .nav-action-item {
   display: flex;
-  flex-direction: column; /* Chìa khóa: Ép xếp dọc */
   align-items: center;
   justify-content: center;
-  gap: 3px; /* Khoảng cách giữa icon và chữ */
+  width: 38px;
+  height: 38px;
   background: none;
   border: none;
-  color: #000;
-  text-decoration: none;
+  color: rgba(255, 255, 255, 0.65);
   cursor: pointer;
-  transition: color 0.2s ease;
-  padding: 0;
+  transition: color 0.3s, background 0.3s;
+  border-radius: 4px;
 }
 
 .nav-action-item:hover {
-  color: #ed1b24; /* Đổi màu đỏ khi trỏ chuột */
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
 }
 
-.action-icon {
-  width: 20px; /* Kích thước icon */
-  height: 20px;
-}
-
-.nav-action-item span {
-  font-size: 10px; /* Chữ nhỏ xinh xắn */
-  font-weight: 700;
-  white-space: nowrap;
-  text-transform: uppercase;
-}
-
-/* CSS CHO ICON GIỎ HÀNG */
 .cart-icon {
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: rgba(255, 255, 255, 0.65);
   cursor: pointer;
-  color: #000;
-  transition: color 0.2s ease;
+  transition: color 0.3s, background 0.3s;
+  border-radius: 4px;
 }
 
 .cart-icon:hover {
-  color: #ed1b24;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .cart-badge {
   position: absolute;
-  top: -8px;
-  right: -10px;
-  background: #ed1b24; /* Nền đỏ cho cục badge thông báo nổi bật */
-  color: white;
+  top: 4px;
+  right: 4px;
+  background: var(--accent-color);
+  color: #fff;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  font-size: 10px;
+  width: 15px;
+  height: 15px;
+  font-size: 9px;
+  font-weight: 900;
   display: flex;
-  justify-content: center;
   align-items: center;
-  font-weight: bold;
+  justify-content: center;
+  box-shadow: 0 0 6px var(--accent-color);
 }

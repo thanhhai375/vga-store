@@ -1,30 +1,34 @@
 import React from 'react';
 import HeroSection from './HeroSection';
-import ProductCard from '../../components/ui/ProductCard';
-import { mockProducts } from '../../data/mockProducts';
-import AboutSection from '../../components/ui/AboutSection';
+import CategoryNav from '../../components/ui/CategoryNav';
+import SeriesSection from '../../components/ui/SeriesSection';
+import HelpChoose from '../../components/ui/HelpChoose';
+import BestSellers from '../../components/ui/BestSellers';
+import ExplodedVga from '../../components/ui/ExplodedVga';
 import './Home.css';
 
 const Home = () => {
   return (
     <div className="home-page">
+      {/* 1. Hero - ảnh thật ROG CDN full-width 16:9 */}
       <HeroSection />
 
-      <section className="categories-section container">
-        <div className="categories-header">
-          <h2 className="section-title">New Arrivals</h2>
-        </div>
-        <div className="product-grid">
-          {mockProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+      {/* 2. Category tabs (Card Đồ Họa | Phụ kiện) */}
+      <CategoryNav />
 
-      {/* THÊM COMPONENT ABOUT Ở ĐÂY NÈ! */}
-      <AboutSection />
+      {/* 3. Series Cards (ROG Matrix | ROG Astral | ROG Strix) */}
+      <SeriesSection />
 
+      {/* 4. Giúp tôi lựa chọn - Filter dropdowns */}
+      <HelpChoose />
+
+      {/* 5. Sản phẩm bán chạy */}
+      <BestSellers />
+
+      {/* 6. 3D Anatomy section */}
+      <ExplodedVga />
     </div>
   );
 };
+
 export default Home;

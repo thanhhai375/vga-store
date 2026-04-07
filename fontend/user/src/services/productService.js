@@ -1,18 +1,30 @@
 import axiosClient from '../api/axiosClient.js';
 
 export const productService = {
-  getAll: async () => {
+  getAll: async (params = {}) => {
     try {
-      const response = await axiosClient.get('/products');
+      // axiosClient interceptor đã unwrap response.data rồi
+      // nên 'data' ở đây chính là body của backend (VD: { content: [...], totalElements: ... })
+      const data = await axiosClient.get('/products', { params });
 
-      // Backend giờ đã chuẩn, chỉ cần lấy data.content là ra mảng 20 sản phẩm
-      if (response && response.data && response.data.content) {
-        return response.data.content;
-      }
+      // Spring Boot Pageable
+      if (data && Array.isArray(data.content)) return data.content;
+      // Trả về mảng thẳng
+      if (Array.isArray(data)) return data;
       return [];
     } catch (error) {
-      console.error("Lỗi gọi API:", error);
+      console.error('Lỗi gọi API sản phẩm:', error);
       return [];
     }
-  }
+  },
+
+  getById: async (id) => {
+    try {
+      const data = await axiosClient.get(`/products/${id}`);
+      return data;
+    } catch (error) {
+      console.error('Lỗi lấy chi tiết sản phẩm:', error);
+      return null;
+    }
+  },
 };

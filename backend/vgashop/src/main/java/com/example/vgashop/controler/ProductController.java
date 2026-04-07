@@ -55,7 +55,7 @@ public class ProductController {
         return ApiResponse.success("Lấy danh sách sản phẩm thành công", data);
     }
 
-    // tìm kiếm 
+    // tìm kiếm
     @GetMapping("/search")
     public ApiResponse<Page<Product>> search(
         @RequestParam String keyWord,
