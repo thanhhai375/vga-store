@@ -8,6 +8,7 @@ const Header = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const cartTotalQuantity = useSelector((state) => state.cart.cartTotalQuantity);
+  const wishlistCount = useSelector((state) => state.wishlist.wishlistItems.length);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -39,10 +40,10 @@ const Header = () => {
         {/* NAVIGATION */}
         <nav className="nav-links">
           {[
-            { to: '/', label: 'HOME' },
-            { to: '/products', label: 'SHOP' },
-            { to: '/blog', label: 'BLOG' },
-            { to: '/service', label: 'SERVICE' },
+            { to: '/', label: 'TRANG CHỦ' },
+            { to: '/products', label: 'SẢN PHẨM' },
+            { to: '/blog', label: 'TIN TỨC' },
+            { to: '/service', label: 'DỊCH VỤ' },
           ].map(({ to, label }) => (
             <NavLink
               key={to}
@@ -65,6 +66,16 @@ const Header = () => {
               <line x1="16" y1="17" x2="8" y2="17"/>
               <polyline points="10 9 9 9 8 9"/>
             </svg>
+          </Link>
+
+          {/* WISHLIST ICON */}
+          <Link to="/wishlist" className="cart-icon" title="Yêu thích">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={wishlistCount > 0 ? "#e53935" : "none"} stroke="#e53935" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            {wishlistCount > 0 && (
+              <span className="cart-badge" style={{background: '#e53935'}}>{wishlistCount}</span>
+            )}
           </Link>
 
           <button className="nav-action-item" onClick={() => setIsLoginModalOpen(true)} title="Đăng nhập">

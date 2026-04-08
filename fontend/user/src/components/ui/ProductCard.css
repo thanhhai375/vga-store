@@ -36,6 +36,42 @@
   text-transform: uppercase;
 }
 
+/* NÚT WISHLIST TIM */
+.btn-wishlist {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  font-size: 15px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
+.btn-wishlist:hover {
+  transform: scale(1.2);
+  border-color: #e53935;
+  background: #fff5f5;
+}
+.btn-wishlist.wishlisted {
+  background: #fff5f5;
+  border-color: #e53935;
+  animation: heartPop 0.3s ease;
+}
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+
 /* KHUNG ẢNH */
 .card-image-wrapper {
   position: relative;

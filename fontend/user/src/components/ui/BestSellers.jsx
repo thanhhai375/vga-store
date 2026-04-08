@@ -10,7 +10,7 @@ const BestSellers = () => {
 
   useEffect(() => {
     productService.getAll()
-      .then(data => setProducts(data.slice(0, 8)))
+      .then(data => setProducts(data.slice(0, 3)))  // Chỉ lấy 3 sản phẩm bán chạy nhất
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

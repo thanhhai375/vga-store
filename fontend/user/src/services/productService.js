@@ -1,30 +1,42 @@
 import axiosClient from '../api/axiosClient.js';
+import { mockProducts } from '../data/mockProducts';
 
 export const productService = {
   getAll: async (params = {}) => {
     try {
-      // axiosClient interceptor đã unwrap response.data rồi
-      // nên 'data' ở đây chính là body của backend (VD: { content: [...], totalElements: ... })
-      const data = await axiosClient.get('/products', { params });
+      // Backend trả về: { success: true, message: "...", data: { content: [...], totalElements: ... } }
+      // axiosClient interceptor đã unwrap response.data (HTTP layer) → ta nhận được ApiResponse object
+      // Nên đây là: { success, message, data: Page<Product> }
+      const apiResponse = await axiosClient.get('/products', { params });
 
-      // Spring Boot Pageable
-      if (data && Array.isArray(data.content)) return data.content;
-      // Trả về mảng thẳng
-      if (Array.isArray(data)) return data;
-      return [];
+      // Lấy phần data từ ApiResponse wrapper
+      const pageData = apiResponse?.data;
+
+      // Spring Boot Page object có field 'content'
+      if (pageData && Array.isArray(pageData.content)) return pageData.content;
+      // Nếu backend trả mảng thẳng (không paginate)
+      if (Array.isArray(pageData)) return pageData;
+      // Fallback mock nếu backend offline
+      console.warn('⚠️ API trả dữ liệu không đúng format, dùng mock data:', apiResponse);
+      return mockProducts;
     } catch (error) {
-      console.error('Lỗi gọi API sản phẩm:', error);
-      return [];
+      console.error('Lỗi gọi API sản phẩm (dùng mock data):', error.message);
+      return mockProducts; // Fallback về mock khi backend offline
     }
   },
 
   getById: async (id) => {
     try {
-      const data = await axiosClient.get(`/products/${id}`);
-      return data;
+      // Backend trả về: { success: true, message: "...", data: Product }
+      const apiResponse = await axiosClient.get(`/products/${id}`);
+      // Lấy Product từ ApiResponse.data
+      const product = apiResponse?.data;
+      if (product && product.id) return product;
+      // Fallback mock
+      return mockProducts.find(p => p.id?.toString() === id?.toString()) || mockProducts[0];
     } catch (error) {
-      console.error('Lỗi lấy chi tiết sản phẩm:', error);
-      return null;
+      console.error('Lỗi lấy chi tiết sản phẩm (dùng mock data):', error.message);
+      return mockProducts.find(p => p.id?.toString() === id?.toString()) || mockProducts[0];
     }
   },
 };

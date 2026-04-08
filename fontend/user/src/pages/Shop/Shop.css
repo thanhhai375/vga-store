@@ -1,15 +1,16 @@
+/* ===== SHOP PAGE OVERALL ===== */
 .shop-page {
-  background-color: var(--bg-color);
+  background-color: #f5f7fa; /* Nền xám nhạt cao cấp */
+  color: #111; /* Đổi màu chữ toàn trang sang màu đen/tối */
   min-height: 100vh;
-  color: var(--text-primary);
 }
 
 /* ===== SHOP HERO BANNER ===== */
 .shop-hero {
   margin-top: 60px;
   padding: 80px 0 70px;
-  background: linear-gradient(135deg, #000 0%, #0d0d0d 40%, #111 100%);
-  border-bottom: 1px solid #222;
+  background: #000;
+  border-bottom: 1px solid #111;
   position: relative;
   overflow: hidden;
 }
@@ -20,9 +21,9 @@
   right: 5%;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 100px;
+  font-size: 150px;
   font-weight: 900;
-  color: rgba(255,255,255,0.02);
+  color: rgba(255,255,255,0.015);
   pointer-events: none;
   letter-spacing: 6px;
   white-space: nowrap;
@@ -48,7 +49,7 @@
 .shop-hero-title {
   font-size: 46px;
   font-weight: 900;
-  color: var(--text-primary);
+  color: #fff;
   text-transform: uppercase;
   line-height: 1.1;
   letter-spacing: -1px;
@@ -62,55 +63,170 @@
 
 .shop-hero-desc {
   font-size: 15px;
-  color: var(--text-secondary);
+  color: #ccc;
 }
 
-/* ===== SERIES FILTER BAR ===== */
-.series-filter-bar {
+/* ===== LAYOUT ====== */
+.shop-layout {
   display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  padding-top: 40px;
+}
+
+/* ===== SIDEBAR ====== */
+/* Đã gộp xuống ACCORDION */
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  padding: 24px 0;
-  border-bottom: 1px solid #222;
   margin-bottom: 24px;
 }
 
-.filter-label {
-  font-size: 11px;
+.sidebar-main-title {
+  font-size: 16px;
   font-weight: 900;
-  letter-spacing: 3px;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-
-.series-tags {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.series-tag {
-  background: transparent;
-  border: 1px solid #333;
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 7px 18px;
-  cursor: pointer;
-  transition: all 0.25s;
+  color: #111;
+  margin: 0;
   text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
-.series-tag:hover {
-  border-color: var(--accent-color);
-  color: var(--text-primary);
+.sidebar-reset-btn {
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  color: var(--accent-color);
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: 700;
+  transition: opacity 0.3s;
 }
 
-.series-tag.active {
+.sidebar-reset-btn:hover {
+  opacity: 0.8;
+}
+
+/* ===== SIDEBAR ACCORDION ===== */
+.shop-sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 90px; /* Cố định khi cuộn */
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  padding-right: 12px;
+}
+
+/* Custom Scrollbar cho Sidebar */
+.shop-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.shop-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.shop-sidebar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+.shop-sidebar::-webkit-scrollbar-thumb:hover {
   background: var(--accent-color);
-  border-color: var(--accent-color);
-  color: #fff;
+}
+
+.sidebar-section {
+  margin-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sidebar-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Ẩn dấu mũi tên mặc định của details */
+details.sidebar-section summary::-webkit-details-marker {
+  display: none;
+}
+details.sidebar-section summary {
+  list-style: none; /* Dành cho Firefox */
+  padding: 16px 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+/* Icon cộng/trừ bên phải */
+details.sidebar-section summary::after {
+  content: "+";
+  font-size: 18px;
+  color: #555;
+  transition: all 0.2s;
+  font-weight: 400;
+}
+details.sidebar-section[open] summary::after {
+  content: "−";
+  color: var(--accent-color);
+}
+
+details.sidebar-section[open] .sidebar-title {
+  color: var(--accent-color);
+}
+
+.sidebar-content {
+  padding-bottom: 16px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.filter-checkbox:hover {
+  color: #111;
+}
+
+.filter-checkbox span {
+  position: relative;
+  top: 1px;
+}
+
+.filter-checkbox input[type="checkbox"],
+.filter-checkbox input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+.empty-text {
+  font-size: 13px;
+  color: #777;
+  font-style: italic;
+}
+
+/* ===== SHOP MAIN ====== */
+.shop-main {
+  flex: 1;
+  min-width: 0;
 }
 
 /* ===== TOOLBAR ===== */
@@ -151,48 +267,46 @@
   pointer-events: none;
 }
 
-.search-input {
-  background: #0c0c0c;
-  border: 1px solid #333;
-  color: var(--text-primary);
+.styled-input {
+  background: #fff;
+  border: 1px solid #ddd;
+  color: #111;
   font-size: 14px;
-  padding: 10px 16px 10px 38px;
-  width: 260px;
   outline: none;
-  transition: border-color 0.3s;
+  border-radius: 4px;
+  transition: all 0.3s ease;
 }
 
-.search-input:focus {
-  border-color: var(--accent-color);
+.search-input {
+  padding: 12px 16px 12px 42px;
+  width: 280px;
+}
+
+.search-input:focus, .sort-select:focus, .styled-input:hover {
+  border-color: #aaa;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
 .search-input::placeholder {
-  color: #555;
+  color: #888;
 }
 
-.filter-select,
 .sort-select {
-  background: #0c0c0c;
-  border: 1px solid #333;
-  color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
-  padding: 10px 14px;
+  padding: 12px 16px;
   cursor: pointer;
-  outline: none;
-  transition: border-color 0.3s;
 }
 
-.filter-select:hover,
-.sort-select:hover,
-.filter-select:focus,
-.sort-select:focus {
-  border-color: var(--accent-color);
+.sort-select option {
+  background: #fff;
+  color: #111;
 }
 
 .result-count {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: #666;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -200,28 +314,31 @@
 /* ===== PRODUCT GRID ===== */
 .shop-product-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   padding-bottom: 80px;
 }
 
 @media (max-width: 1200px) {
-  .shop-product-grid { grid-template-columns: repeat(3, 1fr); }
+  .shop-product-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 900px) {
-  .shop-product-grid { grid-template-columns: repeat(2, 1fr); }
+  .shop-layout { flex-direction: column; }
+  .shop-sidebar { width: 100%; position: relative; top: 0; display: flex; gap: 20px; flex-wrap: wrap; border-bottom: 1px solid #222; padding-bottom: 20px; margin-bottom: 20px; }
+  .sidebar-section { border: none; margin: 0; padding: 0; }
 }
 @media (max-width: 600px) {
   .shop-product-grid { grid-template-columns: 1fr; }
   .search-input { width: 200px; }
   .shop-hero-title { font-size: 30px; }
+  .shop-sidebar { flex-direction: column; }
 }
 
 /* ===== LOADING STATE ===== */
 .shop-loading {
   text-align: center;
   padding: 100px 0;
-  color: var(--text-secondary);
+  color: #555;
 }
 
 .loading-dots {
@@ -251,20 +368,20 @@
 .shop-empty {
   text-align: center;
   padding: 100px 20px;
-  color: var(--text-secondary);
+  color: #555;
 }
 
 .shop-empty svg {
   width: 64px;
   height: 64px;
-  color: #333;
+  color: #ccc;
   margin-bottom: 20px;
 }
 
 .shop-empty h3 {
   font-size: 22px;
   font-weight: 900;
-  color: var(--text-primary);
+  color: #111;
   margin-bottom: 10px;
   text-transform: uppercase;
 }
@@ -288,4 +405,63 @@
 
 .btn-reset-filter:hover {
   background: var(--accent-hover);
+}
+
+/* ===== LOAD MORE BUTTON ===== */
+.shop-load-more {
+  text-align: center;
+  padding: 40px 0 100px;
+}
+
+.load-more-info {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 24px;
+  font-weight: 400;
+}
+
+.load-more-info strong {
+  color: #111;
+  font-weight: 700;
+}
+
+.glass-btn {
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #111;
+  padding: 16px 40px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px; 
+  transition: all 0.3s ease;
+}
+
+.glass-btn::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,0,41,0.1);
+  transform: translateX(-100%);
+  transition: 0.5s;
+}
+
+.glass-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: #fff;
+}
+
+.glass-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.btn-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }

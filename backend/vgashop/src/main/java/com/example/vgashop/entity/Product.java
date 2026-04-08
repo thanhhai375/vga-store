@@ -41,6 +41,30 @@ public class Product extends BaseEntity {
     @Column(name= "img_url")
     private String imgUrl;
 
+    @Column(name= "images_json", columnDefinition= "TEXT")
+    private String imagesJson; // Mảng URL ảnh [url1, url2...] format JSON
+
+    @Column(name= "gpu_model", length= 100)
+    private String gpuModel;
+
+    @Column(name= "vram", length= 50)
+    private String vram;
+
+    @Column(name= "memory_type", length= 50)
+    private String memoryType;
+
+    @Column(name= "cooling_type", length= 100)
+    private String coolingType;
+
+    @Column(name= "power_connectors", length= 100)
+    private String powerConnectors;
+
+    @Column(name= "recommended_psu", length= 50)
+    private String recommendedPsu;
+
+    @Column(name= "dimension", length= 150)
+    private String dimension;
+
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name= "brand_id", nullable= false)
     private Brand brand;
@@ -111,6 +135,30 @@ public class Product extends BaseEntity {
     public void setBrand(Brand brand) {
         this.brand = brand;
     }
+
+    public String getImagesJson() { return imagesJson; }
+    public void setImagesJson(String imagesJson) { this.imagesJson = imagesJson; }
+
+    public String getGpuModel() { return gpuModel; }
+    public void setGpuModel(String gpuModel) { this.gpuModel = gpuModel; }
+
+    public String getVram() { return vram; }
+    public void setVram(String vram) { this.vram = vram; }
+
+    public String getMemoryType() { return memoryType; }
+    public void setMemoryType(String memoryType) { this.memoryType = memoryType; }
+
+    public String getCoolingType() { return coolingType; }
+    public void setCoolingType(String coolingType) { this.coolingType = coolingType; }
+
+    public String getPowerConnectors() { return powerConnectors; }
+    public void setPowerConnectors(String powerConnectors) { this.powerConnectors = powerConnectors; }
+
+    public String getRecommendedPsu() { return recommendedPsu; }
+    public void setRecommendedPsu(String recommendedPsu) { this.recommendedPsu = recommendedPsu; }
+
+    public String getDimension() { return dimension; }
+    public void setDimension(String dimension) { this.dimension = dimension; }
 
     public List<CartItem> getCartItems() {
         return cartItems;

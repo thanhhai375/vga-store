@@ -32,6 +32,7 @@ public class CategoryController {
     }
 
     // lấy tất cả có phân trang + sort
+    @GetMapping
     public ApiResponse<Page<Category>> getAll(
         @RequestParam(defaultValue= "0")
         int page,

@@ -1,220 +1,172 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import ProductCard from '../../components/ui/ProductCard';
-import { mockProducts } from '../../data/mockProducts';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './ProductDetail.css';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '../../redux/cartSlice'; // Giả sử có action
+import { toggleWishlist } from '../../redux/wishlistSlice';
+import RelatedProducts from './RelatedProducts'; // Component phụ
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // Hoặc slug nếu bạn chỉnh React Router lấy slug
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Trạng thái cho thư viện ảnh (Image Carousel)
+  const [mainImage, setMainImage] = useState('');
+  const [gallery, setGallery] = useState([]);
 
-  // STATE
-  // 1. Mảng chứa các đánh giá
-  const [reviews, setReviews] = useState([
-    { id: 1, author: 'Hoàng Minh', rating: 5, date: '22/03/2026', text: 'Card siêu mạnh, tản nhiệt mát mẻ. Chơi max setting mượt mà!', images: ['https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=200'] },
-    { id: 2, author: 'Tuấn PC', rating: 4, date: '18/03/2026', text: 'Hàng chuẩn chính hãng, đóng gói kỹ. Giao hàng hơi chậm 1 ngày.', images: [] }
-  ]);
-
-  // 2. State cho form viết đánh giá mới
-  const [rating, setRating] = useState(5);
-  const [reviewText, setReviewText] = useState('');
-  const [reviewImages, setReviewImages] = useState([]);
-
-  // Hàm xử lý khi chọn ảnh từ máy tính
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    const imageUrls = files.map(file => URL.createObjectURL(file));
-    setReviewImages(prev => [...prev, ...imageUrls]);
-  };
-
-  const handleReviewSubmit = (e) => {
-    e.preventDefault();
-    if (!reviewText.trim()) return alert("Vui lòng nhập nội dung đánh giá!");
-
-    // Giả lập đưa dữ liệu vào Database
-    const newReview = {
-      id: Date.now(),
-      author: 'Khách hàng (Bạn)',
-      rating: rating,
-      date: new Date().toLocaleDateString('vi-VN'),
-      text: reviewText,
-      images: reviewImages
-    };
-
-    // Cập nhật giao diện: Đẩy review mới lên đầu mảng
-    setReviews([newReview, ...reviews]);
-
-    // Reset form
-    setReviewText('');
-    setRating(5);
-    setReviewImages([]);
-  };
+  // Tab
+  const [activeTab, setActiveTab] = useState('specs'); // 'specs' hoặc 'desc'
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    setLoading(true);
-    const fetchProductFromDB = () => {
+    // 1. Kéo dữ liệu từ Backend
+    // Lưu ý: Tùy theo logic API hiện tại, bạn có thể gọi theo ID
+    // Tôi giả định API là /api/products/{id} hoặc nếu bạn dùng mock tạm thời thì code tự filter.
+    const fetchProduct = async () => {
       try {
-        const foundProduct = mockProducts.find(p => p?.id?.toString() === id?.toString());
-        setProduct(foundProduct || mockProducts[0]);
-      // eslint-disable-next-line no-unused-vars
-      } catch (error) {
-        setProduct(mockProducts[0]);
+        setLoading(true);
+        // THAY ĐỔI: Gọi endpoint thực tế của bạn
+        const res = await axios.get(`http://localhost:8080/api/products/${id}`);
+        // Chú ý với ApiResponse wrapper của backend: res.data.data
+        const pData = res.data.data || res.data; 
+        
+        setProduct(pData);
+        
+        // Khởi tạo mảng ảnh
+        let images = [];
+        if (pData.imagesJson) {
+           try {
+              images = JSON.parse(pData.imagesJson);
+           } catch(e) {
+              console.error("Lỗi parse imagesJson", e);
+           }
+        }
+        
+        if(images.length === 0 && pData.imgUrl) {
+            images = [pData.imgUrl]; // Fallback
+        }
+
+        setGallery(images);
+        if(images.length > 0) setMainImage(images[0]);
+
+      } catch (err) {
+        console.error(err);
+        setError("Không thể tải thông tin sản phẩm. Có thể API chưa cấu hình route này.");
       } finally {
         setLoading(false);
       }
     };
-    const timer = setTimeout(fetchProductFromDB, 300);
-    return () => clearTimeout(timer);
+
+    fetchProduct();
   }, [id]);
 
-  if (loading) return <div className="container" style={{ paddingTop: '150px', textAlign: 'center', minHeight: '50vh' }}><h3>Đang tải dữ liệu...</h3></div>;
-
-  const formatPrice = (price) => {
-    if (!price) return "0₫";
-    const cleanPrice = price.toString().replace(/\D/g, '');
-    return new Intl.NumberFormat("vi-VN").format(cleanPrice) + "₫";
-  };
-  const currentPrice = product?.price ? Number(product.price.toString().replace(/\D/g, '')) : 0;
-  const oldPrice = currentPrice * 1.1;
+  if (loading) return <div className="detail-loading"><div className="spinner"></div> Đang tải thông số siêu phẩm...</div>;
+  if (error || !product) return <div className="detail-error">{error || 'Không tìm thấy sản phẩm này!'}</div>;
 
   return (
-    <div className="product-detail-page container" style={{ paddingTop: '100px' }}>
-
-      {/* PHẦN 1: THÔNG TIN SẢN PHẨM */}
-      <div className="pd-main-section">
-        <div className="pd-image-gallery">
-          <div className="pd-main-image-wrapper">
-            <img src={product?.img || product?.image} alt={product?.name} className="pd-main-image" />
-          </div>
-        </div>
-
-        <div className="pd-info">
-          <h1 className="pd-title">{product?.name || 'Đang cập nhật'}</h1>
-          <div className="pd-brand">Thương hiệu: <span>{product?.brand || 'ASUS'}</span></div>
-
-          <div className="pd-price-area">
-            <div className="pd-current-price">{formatPrice(currentPrice)}</div>
-            <div className="pd-old-price">{formatPrice(oldPrice)}</div>
-          </div>
-
-          <button className="pd-buy-btn">
-            <span className="btn-text-main">MUA NGAY</span>
-            <span className="btn-text-sub">Giao tận nơi hoặc nhận tại cửa hàng</span>
+    <div className="product-detail-page">
+      
+      {/* KHỐI 1: TỔNG QUAN (ẢNH TRÁI - GIÁ PHẢI) */}
+      <div className="detail-hero">
+        <div className="container">
+          
+          <button className="btn-back" onClick={() => navigate('/shop')}>
+            ← Quay lại Cửa hàng
           </button>
 
-          <div className="pd-specs-box">
-            <h3 className="specs-title">TÓM TẮT THÔNG SỐ</h3>
-            <table className="specs-table">
-              <tbody>
-                <tr><td>Mã SP</td><td>#{product?.id || 'N/A'}</td></tr>
-                <tr><td>Trạng thái</td><td>Còn hàng</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* PHẦN 2: SẢN PHẨM ĐỀ XUẤT */}
-      <div className="pd-similar-section">
-        <h2 className="section-title" style={{ marginBottom: '20px', fontSize: '24px', fontWeight: 'bold' }}>Sản phẩm đề xuất</h2>
-        <div className="similar-products-scroll">
-          {mockProducts && [...mockProducts, ...mockProducts, ...mockProducts].slice(0, 10).map((p, index) => (
-            <div className="scroll-item" key={`similar-${p?.id}-${index}`}>
-              <ProductCard product={p} />
+          <div className="detail-grid">
+            {/* CỘT TRÁI: ẢNH SẢN PHẨM DUY NHẤT */}
+            <div className="detail-gallery">
+               <div className="main-image-box">
+                  <img src={product.imgUrl || product.img_url} alt={product.name} />
+               </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* PHẦN 3: ĐÁNH GIÁ SẢN PHẨM (MỚI THÊM) */}
-      <div className="pd-reviews-section">
-        <h2 className="section-title">Khách hàng đánh giá</h2>
+            {/* CỘT PHẢI: THÔNG TIN MUA HÀNG */}
+            <div className="detail-info">
+               <div className="brand-tag">
+                 {product.category?.name || 'Card Đồ Họa'} • {product.brand?.name || 'VGA'}
+               </div>
+               <h1 className="product-title">{product.name}</h1>
+               <div className="sku-code">Mã SP: <span>{product.sku}</span> | Tình trạng: {product.stock > 0 ? <span className="in-stock">Còn {product.stock} hàng</span> : <span className="out-stock">Hết hàng</span>}</div>
+               
+               <div className="price-box">
+                  <span className="current-price">{new Intl.NumberFormat('vi-VN').format(product.price)}đ</span>
+                  {/* Tính năng giảm giá giả định */}
+                  <span className="old-price">{new Intl.NumberFormat('vi-VN').format(product.price * 1.1)}đ</span>
+                  <span className="discount-badge">-9%</span>
+               </div>
 
-        <div className="reviews-container">
-          {/* Form viết đánh giá */}
-          <div className="review-form-box">
-            <h3>Viết đánh giá của bạn</h3>
-            <form onSubmit={handleReviewSubmit}>
+               <div className="policy-box">
+                  <ul>
+                    <li>✅ Đổi trả trong 7 ngày nếu lỗi nhà sản xuất.</li>
+                    <li>✅ Miễn phí giao hàng toàn quốc (Hóa đơn trên 1tr).</li>
+                    <li>✅ Bảo hành chính hãng 36 Tháng. Tặng gói vệ sinh định kỳ.</li>
+                  </ul>
+               </div>
 
-              <div className="form-group">
-                <label>Đánh giá sao:</label>
-                <div className="star-selector">
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <span
-                      key={num}
-                      className={`star ${num <= rating ? 'selected' : ''}`}
-                      onClick={() => setRating(num)}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <textarea
-                  placeholder="Mời bạn chia sẻ cảm nhận về sản phẩm..."
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
-                  rows="4"
-                  className="review-textarea"
-                />
-              </div>
-
-              <div className="form-group image-upload-group">
-                <label className="upload-btn">
-                  📷 Thêm hình ảnh thực tế
-                  {/* Input ẩn đi, click vào label sẽ kích hoạt */}
-                  <input type="file" multiple accept="image/*" onChange={handleImageChange} style={{display: 'none'}} />
-                </label>
-
-                {/* Khu vực hiển thị ảnh xem trước */}
-                {reviewImages.length > 0 && (
-                  <div className="image-preview-area">
-                    {reviewImages.map((src, idx) => (
-                      <img key={idx} src={src} alt="preview" className="preview-img" />
-                    ))}
-                    <button type="button" className="clear-images-btn" onClick={() => setReviewImages([])}>Xóa ảnh</button>
+               <div className="action-buttons">
+                  <button className="btn-buy-now" disabled={product.stock <= 0}>MUA NGAY <small>Giao tận nơi hoặc nhận tại cửa hàng</small></button>
+                  <div className="sub-actions">
+                     <button className="btn-add-cart" disabled={product.stock <= 0} onClick={() => dispatch(addToCart(product))}>
+                        🛒 Thêm vào Giỏ
+                     </button>
+                     <button className="btn-wishlist-detail" onClick={() => dispatch(toggleWishlist(product))}>
+                        ❤️ Yêu Thích
+                     </button>
                   </div>
-                )}
-              </div>
-
-              <button type="submit" className="submit-review-btn">GỬI ĐÁNH GIÁ</button>
-            </form>
-          </div>
-
-          {/* Danh sách các đánh giá hiện có */}
-          <div className="reviews-list">
-            {reviews.map((rev) => (
-              <div key={rev.id} className="review-item">
-                <div className="review-header">
-                  <div className="reviewer-info">
-                    <div className="reviewer-avatar">{rev.author.charAt(0)}</div>
-                    <span className="reviewer-name">{rev.author}</span>
-                  </div>
-                  <span className="review-date">{rev.date}</span>
-                </div>
-                <div className="review-stars">
-                  {'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}
-                </div>
-                <p className="review-content">{rev.text}</p>
-
-                {/* Hiển thị ảnh kèm theo đánh giá */}
-                {rev.images && rev.images.length > 0 && (
-                  <div className="review-attached-images">
-                    {rev.images.map((imgSrc, idx) => (
-                      <img key={idx} src={imgSrc} alt="attached" className="attached-img" />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+               </div>
+            </div>
           </div>
         </div>
       </div>
 
+      {/* KHỐI 2: THÔNG SỐ VÀ BÀI VIẾT TẠI TAB */}
+      <div className="detail-tabs-section">
+         <div className="container">
+            <div className="tab-headers">
+               <button className={`tab-btn ${activeTab === 'specs' ? 'active' : ''}`} onClick={() => setActiveTab('specs')}>Thông Số Kỹ Thuật</button>
+               <button className={`tab-btn ${activeTab === 'desc' ? 'active' : ''}`} onClick={() => setActiveTab('desc')}>Khám Phá Sức Mạnh</button>
+            </div>
+
+            <div className="tab-content">
+               {activeTab === 'specs' && (
+                  <div className="specs-table-wrapper">
+                     <table className="specs-table">
+                        <tbody>
+                           <tr><td>Model GPU</td><td>{product.gpuModel || 'Đang cập nhật'}</td></tr>
+                           <tr><td>Dung lượng VRAM</td><td>{product.vram || 'Đang cập nhật'}</td></tr>
+                           <tr><td>Loại bộ nhớ (Thế hệ)</td><td>{product.memoryType || 'GDDR6 / GDDR6X'}</td></tr>
+                           <tr><td>Hệ thống tản nhiệt</td><td>{product.coolingType || 'Đang cập nhật'}</td></tr>
+                           <tr><td>Nguồn cung cấp đề nghị (PSU)</td><td>{product.recommendedPsu || 'Đang cập nhật'}</td></tr>
+                           <tr><td>Đầu cấp nguồn</td><td>{product.powerConnectors || 'Đang cập nhật'}</td></tr>
+                           <tr><td>Kích thước Vật lý</td><td>{product.dimension || 'Đang cập nhật'}</td></tr>
+                           <tr><td>Thương hiệu sản xuất</td><td>{product.brand?.name || 'Unknown'}</td></tr>
+                        </tbody>
+                     </table>
+                  </div>
+               )}
+
+               {activeTab === 'desc' && (
+                  <div className="article-content" dangerouslySetInnerHTML={{ __html: product.description || '<p>Đang cập nhật bài viết chi tiết.</p>' }}>
+                  </div>
+               )}
+            </div>
+         </div>
+      </div>
+
+      {/* KHỐI 3: SẢN PHẨM TƯƠNG TỰ */}
+      <div className="related-section">
+         <div className="container">
+            <h2 className="related-title">Sản Phẩm Tương Tự</h2>
+            <RelatedProducts categoryId={product.categoryId || product.category?.id} currentId={product.id} />
+         </div>
+      </div>
     </div>
   );
 };
