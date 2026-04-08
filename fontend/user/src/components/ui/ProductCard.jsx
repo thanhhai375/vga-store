@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../redux/cartSlice";
+import { toggleWishlist } from "../../redux/wishlistSlice";
 import "./ProductCard.css";
+
 
 // TỐI ƯU HIỆU NĂNG: Khởi tạo bộ format tiền tệ ở ngoài Component
 // để không bị tạo lại hàng chục lần mỗi khi render 20 cái card, chống giật web.
@@ -12,9 +14,17 @@ const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
-
-  // SỬ DỤNG STATE ĐỂ XỬ LÝ ẢNH LỖI (Cách chuẩn của React, chống vòng lặp vô tận)
   const [imgError, setImgError] = useState(false);
+
+  // Kiểm tra sản phẩm này có trong wishlist không
+  const wishlistItems = useSelector(state => state.wishlist.wishlistItems);
+  const isWishlisted = wishlistItems.some(item => item.id === product.id);
+
+  const handleToggleWishlist = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(toggleWishlist(product));
+  };
 
   const formatPrice = (price) => {
     return currencyFormatter.format(price) + "₫";
@@ -51,7 +61,17 @@ const ProductCard = ({ product }) => {
   return (
     <>
       <Link to={`/product/${product.id}`} className="product-card">
-        <div className="card-badge-hot">🔥 HOT DEAL</div>
+        {/* Badge động từ product.badge */}
+        {product.badge && <div className="card-badge-hot">{product.badge}</div>}
+
+        {/* Nút Wishlist ❤️ */}
+        <button
+          className={`btn-wishlist ${isWishlisted ? 'wishlisted' : ''}`}
+          onClick={handleToggleWishlist}
+          title={isWishlisted ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
+        >
+          {isWishlisted ? '❤️' : '🤍'}
+        </button>
 
         <div className="card-image-wrapper">
           {/* Dùng onError với State để chống sập web */}

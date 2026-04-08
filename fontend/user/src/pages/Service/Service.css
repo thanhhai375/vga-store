@@ -4,17 +4,18 @@
 .service-page {
   padding-top: 100px !important;
   padding-bottom: 80px;
-  background-color: #f8f9fa;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
 }
 
 .service-layout {
   display: grid;
-  grid-template-columns: 280px 1fr; /* Menu trái 280px, nội dung bên phải */
+  grid-template-columns: 280px 1fr;
   gap: 40px;
-  background: #fff;
+  background: var(--bg-secondary);
   padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+  border-radius: 4px;
+  border: 1px solid #333;
   min-height: 700px;
 }
 
@@ -25,18 +26,21 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid #333;
+  border-radius: 4px;
   overflow: hidden;
+  background: #000;
 }
 
 .service-menu li {
   padding: 14px 20px;
   font-size: 14px;
-  color: #3b82f6;
-  border-bottom: 1px solid #e0e0e0;
+  color: var(--text-secondary);
+  border-bottom: 1px solid #333;
   cursor: pointer;
   transition: all 0.2s;
+  text-transform: uppercase;
+  font-weight: 700;
 }
 
 .service-menu li:last-child {
@@ -44,13 +48,14 @@
 }
 
 .service-menu li:hover {
-  background-color: #f8fafc;
+  background-color: #111;
+  color: var(--text-primary);
 }
 
 .service-menu li.active {
-  background-color: #eff6ff;
-  font-weight: 700;
-  border-left: 4px solid #3b82f6;
+  background-color: rgba(255,0,41,0.1);
+  color: var(--text-primary);
+  border-left: 4px solid var(--accent-color);
 }
 
 /* =========================================
@@ -71,21 +76,25 @@
 
 .tab-title {
   font-size: 26px;
-  color: #111;
+  font-weight: 900;
+  color: var(--text-primary);
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid #333;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .tab-subtitle {
   font-size: 18px;
-  color: #ed1b24; /* Đỏ nhấn mạnh chuẩn Gaming */
+  font-weight: 800;
+  color: var(--accent-color); 
   margin: 25px 0 15px 0;
 }
 
 .tab-desc {
   font-size: 15px;
-  color: #444;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 15px;
 }
@@ -98,13 +107,13 @@
 .tab-list li {
   font-size: 15px;
   line-height: 1.8;
-  color: #333;
+  color: #ddd;
   margin-bottom: 8px;
 }
 
 .tab-note {
   font-size: 14px;
-  color: #888;
+  color: #777;
   font-style: italic;
   margin-top: 15px;
 }
@@ -120,67 +129,66 @@
 }
 
 .tab-table th, .tab-table td {
-  border: 1px solid #ddd;
+  border: 1px solid #333;
   padding: 12px 15px;
   text-align: left;
   font-size: 14px;
 }
 
-.tab-table th { background-color: #f4f4f4; font-weight: 700; color: #111; }
-.tab-table tbody tr:hover { background-color: #f9f9f9; }
+.tab-table th { background-color: #000; font-weight: 800; color: var(--accent-color); text-transform: uppercase;}
+.tab-table tbody tr:hover { background-color: #111; }
 
 .store-list { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
 
 .store-card {
-  background: #f8f9fa;
-  border: 1px solid #eee;
+  background: #000;
+  border: 1px solid #333;
   padding: 20px;
-  border-radius: 8px;
-  border-left: 4px solid #ed1b24;
+  border-radius: 4px;
+  border-left: 4px solid var(--accent-color);
 }
 
-.store-card h4 { font-size: 16px; margin-bottom: 10px; color: #111; }
-.store-card p { font-size: 14px; color: #555; margin-bottom: 5px; }
+.store-card h4 { font-size: 16px; font-weight: 800; margin-bottom: 10px; color: var(--text-primary); text-transform: uppercase; }
+.store-card p { font-size: 14px; color: var(--text-secondary); margin-bottom: 5px; }
 
 /* =========================================
    5. FORM BẢO HÀNH & DỊCH VỤ KỸ THUẬT (ALD)
    ========================================= */
 .warranty-form { display: flex; gap: 10px; margin-top: 20px; margin-bottom: 20px; }
-.warranty-input { flex: 1; max-width: 400px; padding: 12px 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; outline: none; }
-.warranty-input:focus { border-color: #ed1b24; }
-.warranty-btn { background-color: #ed1b24; color: #fff; border: none; padding: 0 25px; border-radius: 6px; font-weight: 700; cursor: pointer; transition: background 0.3s; }
-.warranty-btn:hover { background-color: #c81018; }
-.warranty-result { background: #f1f5f9; padding: 20px; border-radius: 6px; border: 1px dashed #cbd5e1; color: #555; }
+.warranty-input { flex: 1; max-width: 400px; padding: 12px 15px; border: 1px solid #333; background: #000; color: #fff; border-radius: 2px; font-size: 14px; outline: none; }
+.warranty-input:focus { border-color: var(--accent-color); }
+.warranty-btn { background-color: var(--accent-color); color: #fff; border: none; padding: 0 25px; border-radius: 2px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: background 0.3s; }
+.warranty-btn:hover { background-color: #c2001c; }
+.warranty-result { background: #000; padding: 20px; border-radius: 4px; border: 1px dashed #555; color: var(--text-secondary); }
 
-.technical-support h2 { font-size: 24px; color: #111; margin-bottom: 25px; line-height: 1.4; }
-.service-banner img { width: 100%; border-radius: 8px; object-fit: cover; max-height: 250px; margin-bottom: 30px; }
-.service-intro { font-size: 15px; line-height: 1.6; color: #444; margin-bottom: 40px; }
-.combo-box { border: 1px solid #e0e0e0; padding: 25px; margin-bottom: 25px; border-radius: 8px; }
-.combo-box-title { text-align: center; color: #d32f2f; font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.technical-support h2 { font-size: 24px; font-weight: 900; color: var(--text-primary); margin-bottom: 25px; line-height: 1.4; text-transform: uppercase;}
+.service-banner img { width: 100%; border-radius: 4px; border: 1px solid #333; object-fit: cover; max-height: 250px; margin-bottom: 30px; }
+.service-intro { font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 40px; }
+.combo-box { border: 1px solid #333; background: #000; padding: 25px; margin-bottom: 25px; border-radius: 4px; }
+.combo-box-title { text-align: center; color: var(--accent-color); font-size: 18px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase;}
 
 /* =========================================
-   6. GIAO DIỆN "GIỚI THIỆU" MỚI (SẠCH SẼ, CHUYÊN NGHIỆP)
+   6. GIAO DIỆN "GIỚI THIỆU"
    ========================================= */
 .about-simple-section {
-  background-color: #fff;
-  color: #111;
+  background-color: transparent;
+  color: var(--text-primary);
   padding: 0;
 }
 
 .about-simple-section .tab-title {
-  color: #111;
-  border-bottom: 2px solid #ed1b24;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--accent-color);
   padding-bottom: 10px;
 }
 
 .simple-about-layout {
   display: grid;
-  grid-template-columns: 1fr 1.5fr; /* Timeline bên trái, Sứ mệnh bên phải */
+  grid-template-columns: 1fr 1.5fr; 
   gap: 40px;
   margin-top: 30px;
 }
 
-/* Timeline đơn giản bên trái */
 .simple-timeline {
   display: flex;
   flex-direction: column;
@@ -195,8 +203,8 @@
 
 .dot-year {
   font-size: 16px;
-  font-weight: 800;
-  color: #3b82f6;
+  font-weight: 900;
+  color: var(--accent-color);
   flex-shrink: 0;
   width: 50px;
   text-align: right;
@@ -205,19 +213,20 @@
 
 .dot-content h4 {
   font-size: 15px;
-  color: #111;
+  font-weight: 800;
+  color: var(--text-primary);
   margin-bottom: 5px;
   margin-top: 0;
+  text-transform: uppercase;
 }
 
 .dot-content p {
   font-size: 13px;
-  color: #555;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 0;
 }
 
-/* Khối giá trị cốt lõi bên phải */
 .core-values-grid {
   display: flex;
   flex-direction: column;
@@ -230,38 +239,38 @@
   gap: 15px;
   align-items: flex-start;
   padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #eaeaea;
+  background-color: #000;
+  border-radius: 4px;
+  border: 1px solid #333;
 }
 
 .value-simple-icon {
   font-size: 24px;
   margin-top: -3px;
+  color: var(--accent-color);
 }
 
 .value-simple-info h4 {
   font-size: 15px;
-  color: #111;
+  font-weight: 800;
+  color: var(--text-primary);
   margin-bottom: 5px;
   margin-top: 0;
+  text-transform: uppercase;
 }
 
 .value-simple-info p {
   font-size: 13px;
-  color: #555;
+  color: var(--text-secondary);
   line-height: 1.5;
   margin: 0;
 }
 
-/* =========================================
-   7. RESPONSIVE (Dành cho Mobile & Tablet)
-   ========================================= */
 @media (max-width: 992px) {
   .service-layout {
-    grid-template-columns: 1fr; /* Thả menu lên trên */
+    grid-template-columns: 1fr; 
   }
   .simple-about-layout {
-    grid-template-columns: 1fr; /* Thả Timeline lên trên Sứ mệnh */
+    grid-template-columns: 1fr;
   }
 }

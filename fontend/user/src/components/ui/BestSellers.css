@@ -1,0 +1,58 @@
+.bs-section {
+  background: #fff;
+  padding: 60px 0 80px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.bs-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.bs-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: #111;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+
+.bs-sub {
+  font-size: 14px;
+  color: #888;
+}
+
+.bs-see-all {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-color);
+  text-decoration: none;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  transition: opacity 0.3s;
+  text-transform: uppercase;
+}
+
+.bs-see-all:hover { opacity: 0.75; }
+
+.bs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.bs-loading {
+  text-align: center;
+  padding: 60px;
+  color: #888;
+  font-size: 16px;
+}
+
+@media (max-width: 1200px) { .bs-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px)  { .bs-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px)  { .bs-grid { grid-template-columns: 1fr; } }
