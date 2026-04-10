@@ -29,12 +29,25 @@ public class Order {
     @Column(name= "status", nullable= false, length= 50)
     private String status;
 
+    @Column(name= "full_name", length= 150)
+    private String fullName;
+
+    @Column(name= "phone", length= 20)
+    private String phone;
+
+    @Column(name= "address", length= 255)
+    private String address;
+
+    @Column(name= "note", length= 500)
+    private String note;
+
     @ManyToOne
     @JoinColumn(name= "user_id", nullable= false)
     private User user;
 
     @OneToMany(mappedBy= "order", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private List<OrderItem> orderItems;
+
 
     
     // getter setter
@@ -62,6 +75,18 @@ public class Order {
         this.status = status;
     }
 
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
+
     public User getUser() {
         return user;
     }
@@ -77,6 +102,7 @@ public class Order {
     public void setOrderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
     }
+
 
     
 }
