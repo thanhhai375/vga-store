@@ -1,4 +1,4 @@
-/* SERIES SECTION - matching ROG exact layout */
+/* SERIES SECTION - original white theme */
 .series-section {
   background: #fff;
   padding: 60px 0 80px;
@@ -40,7 +40,6 @@
 }
 .series-see-all:hover { opacity: 0.7; }
 
-/* 3 col grid */
 .series-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

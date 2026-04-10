@@ -1,276 +1,489 @@
-/* =========================================
-   1. BỐ CỤC TỔNG THỂ (LAYOUT & TABS)
-   ========================================= */
-.service-page {
-  padding-top: 100px !important;
-  padding-bottom: 80px;
-  background-color: var(--bg-color);
-  color: var(--text-primary);
+/* ================================================================
+   SERVICE PAGE — Professional Dark Design
+   ================================================================ */
+
+/* ── Hero ────────────────────────────────────────────────────────── */
+.service-page { margin-top: 60px; }
+
+.sv-hero {
+  position: relative;
+  min-height: 220px;
+  background: linear-gradient(135deg, #1a0505 0%, #0d1520 100%);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
 }
 
-.service-layout {
+.sv-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(5, 7, 12, 0.96) 0%,
+    rgba(5, 7, 12, 0.65) 50%,
+    rgba(5, 7, 12, 0.3) 100%
+  );
+}
+
+.sv-hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sv-hero-icon {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.sv-hero-title {
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.sv-hero-desc {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.65);
+  max-width: 600px;
+}
+
+/* ── Body & Layout ───────────────────────────────────────────────── */
+.sv-body { padding: 36px 24px 60px; }
+
+.sv-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 40px;
-  background: var(--bg-secondary);
-  padding: 30px;
-  border-radius: 4px;
-  border: 1px solid #333;
-  min-height: 700px;
+  grid-template-columns: 256px 1fr;
+  gap: 32px;
+  align-items: start;
 }
 
-/* =========================================
-   2. MENU ĐIỀU HƯỚNG BÊN TRÁI
-   ========================================= */
-.service-menu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  border: 1px solid #333;
-  border-radius: 4px;
+/* ── Sidebar ─────────────────────────────────────────────────────── */
+.sv-sidebar {
+  position: sticky;
+  top: 80px;
+  background: #161a23;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
   overflow: hidden;
-  background: #000;
 }
 
-.service-menu li {
-  padding: 14px 20px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  border-bottom: 1px solid #333;
-  cursor: pointer;
-  transition: all 0.2s;
+.sv-sidebar-title {
+  padding: 14px 18px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
+  color: #666;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sv-sidebar-nav { padding: 8px 0; }
+
+.sv-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 18px;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  color: #888;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sv-nav-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: #ccc;
+}
+
+.sv-nav-item.active {
+  background: rgba(224, 43, 43, 0.08);
+  border-left-color: var(--accent-color, #e02b2b);
+  color: var(--accent-color, #e02b2b);
+  font-weight: 600;
+}
+
+.sv-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.sv-nav-label { flex: 1; }
+
+/* CTA Widget */
+.sv-sidebar-cta {
+  margin: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #1a0808 0%, #101620 100%);
+  border: 1px solid rgba(224, 43, 43, 0.2);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.sv-sidebar-cta-icon { font-size: 28px; margin-bottom: 8px; }
+.sv-sidebar-cta h4 { font-size: 14px; font-weight: 700; color: #e8eaf0; margin-bottom: 4px; }
+.sv-sidebar-cta p { font-size: 12px; color: #888; margin-bottom: 12px; }
+
+.sv-sidebar-cta-phone {
+  display: inline-block;
+  background: var(--accent-color, #e02b2b);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 8px 18px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.sv-sidebar-cta-phone:hover { background: #c72424; }
+
+/* ── Content Area ────────────────────────────────────────────────── */
+.sv-content {
+  background: #161a23;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.sv-content-body {
+  padding: 32px 36px;
+}
+
+/* ── Content Blocks ──────────────────────────────────────────────── */
+
+.sv-heading {
+  font-size: 18px;
+  font-weight: 800;
+  color: #e8eaf0;
+  margin: 28px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sv-heading:first-child { margin-top: 0; }
+
+.sv-text {
+  font-size: 15px;
+  color: #b0b5c3;
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+
+.sv-list {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+}
+
+.sv-list li {
+  position: relative;
+  padding: 8px 0 8px 24px;
+  font-size: 14px;
+  color: #b0b5c3;
+  line-height: 1.6;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.sv-list li:last-child { border-bottom: none; }
+
+.sv-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--accent-color, #e02b2b);
   font-weight: 700;
 }
 
-.service-menu li:last-child {
-  border-bottom: none;
+/* Note */
+.sv-note {
+  display: flex;
+  gap: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin: 20px 0;
 }
 
-.service-menu li:hover {
-  background-color: #111;
-  color: var(--text-primary);
-}
+.sv-note-icon { font-size: 20px; flex-shrink: 0; }
 
-.service-menu li.active {
-  background-color: rgba(255,0,41,0.1);
-  color: var(--text-primary);
-  border-left: 4px solid var(--accent-color);
-}
-
-/* =========================================
-   3. NỘI DUNG CHUNG CHO CÁC TAB BÊN PHẢI
-   ========================================= */
-.service-content {
-  padding-right: 20px;
-}
-
-.tab-pane {
-  animation: fadeIn 0.4s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.tab-title {
-  font-size: 26px;
-  font-weight: 900;
-  color: var(--text-primary);
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #333;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.tab-subtitle {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--accent-color); 
-  margin: 25px 0 15px 0;
-}
-
-.tab-desc {
-  font-size: 15px;
-  color: var(--text-secondary);
+.sv-note p {
+  font-size: 13px;
+  color: #d4a853;
   line-height: 1.6;
-  margin-bottom: 15px;
+  margin: 0;
 }
 
-.tab-list {
-  margin-left: 20px;
-  margin-bottom: 20px;
-}
+/* Table */
+.sv-table-wrap { overflow-x: auto; margin: 20px 0; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.07); }
 
-.tab-list li {
-  font-size: 15px;
-  line-height: 1.8;
-  color: #ddd;
-  margin-bottom: 8px;
-}
-
-.tab-note {
-  font-size: 14px;
-  color: #777;
-  font-style: italic;
-  margin-top: 15px;
-}
-
-/* =========================================
-   4. BẢNG BIỂU & THẺ SHOWROOM
-   ========================================= */
-.tab-table {
+.sv-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-.tab-table th, .tab-table td {
-  border: 1px solid #333;
-  padding: 12px 15px;
-  text-align: left;
   font-size: 14px;
 }
 
-.tab-table th { background-color: #000; font-weight: 800; color: var(--accent-color); text-transform: uppercase;}
-.tab-table tbody tr:hover { background-color: #111; }
-
-.store-list { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-
-.store-card {
-  background: #000;
-  border: 1px solid #333;
-  padding: 20px;
-  border-radius: 4px;
-  border-left: 4px solid var(--accent-color);
+.sv-table th {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #888;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.store-card h4 { font-size: 16px; font-weight: 800; margin-bottom: 10px; color: var(--text-primary); text-transform: uppercase; }
-.store-card p { font-size: 14px; color: var(--text-secondary); margin-bottom: 5px; }
-
-/* =========================================
-   5. FORM BẢO HÀNH & DỊCH VỤ KỸ THUẬT (ALD)
-   ========================================= */
-.warranty-form { display: flex; gap: 10px; margin-top: 20px; margin-bottom: 20px; }
-.warranty-input { flex: 1; max-width: 400px; padding: 12px 15px; border: 1px solid #333; background: #000; color: #fff; border-radius: 2px; font-size: 14px; outline: none; }
-.warranty-input:focus { border-color: var(--accent-color); }
-.warranty-btn { background-color: var(--accent-color); color: #fff; border: none; padding: 0 25px; border-radius: 2px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: background 0.3s; }
-.warranty-btn:hover { background-color: #c2001c; }
-.warranty-result { background: #000; padding: 20px; border-radius: 4px; border: 1px dashed #555; color: var(--text-secondary); }
-
-.technical-support h2 { font-size: 24px; font-weight: 900; color: var(--text-primary); margin-bottom: 25px; line-height: 1.4; text-transform: uppercase;}
-.service-banner img { width: 100%; border-radius: 4px; border: 1px solid #333; object-fit: cover; max-height: 250px; margin-bottom: 30px; }
-.service-intro { font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 40px; }
-.combo-box { border: 1px solid #333; background: #000; padding: 25px; margin-bottom: 25px; border-radius: 4px; }
-.combo-box-title { text-align: center; color: var(--accent-color); font-size: 18px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase;}
-
-/* =========================================
-   6. GIAO DIỆN "GIỚI THIỆU"
-   ========================================= */
-.about-simple-section {
-  background-color: transparent;
-  color: var(--text-primary);
-  padding: 0;
+.sv-table td {
+  padding: 14px 16px;
+  color: #b0b5c3;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.about-simple-section .tab-title {
-  color: var(--text-primary);
-  border-bottom: 2px solid var(--accent-color);
-  padding-bottom: 10px;
-}
+.sv-table tr:last-child td { border-bottom: none; }
+.sv-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
-.simple-about-layout {
+/* Features Grid */
+.sv-features-grid {
   display: grid;
-  grid-template-columns: 1fr 1.5fr; 
-  gap: 40px;
-  margin-top: 30px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 20px 0;
 }
 
-.simple-timeline {
+.sv-feature-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
+  transition: border-color 0.2s;
 }
 
-.timeline-dot-item {
-  display: flex;
-  gap: 15px;
-  align-items: flex-start;
+.sv-feature-card:hover { border-color: rgba(224, 43, 43, 0.3); }
+
+.sv-feature-icon { font-size: 28px; }
+
+.sv-feature-card h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e8eaf0;
+  margin-bottom: 4px;
 }
 
-.dot-year {
-  font-size: 16px;
-  font-weight: 900;
-  color: var(--accent-color);
-  flex-shrink: 0;
-  width: 50px;
-  text-align: right;
-  margin-top: 2px;
-}
-
-.dot-content h4 {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 5px;
-  margin-top: 0;
-  text-transform: uppercase;
-}
-
-.dot-content p {
+.sv-feature-card p {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: #888;
   line-height: 1.6;
-  margin: 0;
 }
 
-.core-values-grid {
+/* Stores Grid */
+.sv-stores-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.sv-store-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.2s;
+}
+
+.sv-store-card:hover { border-color: rgba(224, 43, 43, 0.3); }
+
+.sv-store-pin { font-size: 24px; margin-bottom: 10px; }
+
+.sv-store-card h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-color, #e02b2b);
+  margin-bottom: 12px;
+}
+
+.sv-store-info p {
+  font-size: 13px;
+  color: #b0b5c3;
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+
+.sv-store-info strong { color: #e8eaf0; }
+
+/* Steps */
+.sv-steps {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-bottom: 30px;
+  gap: 0;
+  margin: 20px 0;
+  position: relative;
 }
 
-.value-simple-card {
+.sv-steps::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 36px;
+  bottom: 36px;
+  width: 2px;
+  background: rgba(224, 43, 43, 0.2);
+}
+
+.sv-step {
   display: flex;
-  gap: 15px;
-  align-items: flex-start;
-  padding: 15px;
-  background-color: #000;
-  border-radius: 4px;
-  border: 1px solid #333;
+  gap: 20px;
+  padding: 18px 0;
+  position: relative;
 }
 
-.value-simple-icon {
-  font-size: 24px;
-  margin-top: -3px;
-  color: var(--accent-color);
-}
-
-.value-simple-info h4 {
-  font-size: 15px;
+.sv-step-number {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent-color, #e02b2b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
   font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 5px;
-  margin-top: 0;
-  text-transform: uppercase;
+  color: #fff;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
-.value-simple-info p {
+.sv-step-info h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e8eaf0;
+  margin-bottom: 4px;
+}
+
+.sv-step-info p {
   font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  margin: 0;
+  color: #888;
+  line-height: 1.6;
 }
 
-@media (max-width: 992px) {
-  .service-layout {
-    grid-template-columns: 1fr; 
-  }
-  .simple-about-layout {
-    grid-template-columns: 1fr;
-  }
+/* Price Box */
+.sv-price-box {
+  background: linear-gradient(135deg, rgba(224, 43, 43, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border: 1px solid rgba(224, 43, 43, 0.25);
+  border-radius: 14px;
+  padding: 28px;
+  margin: 20px 0;
+}
+
+.sv-price-box-header {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent-color, #e02b2b);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.sv-price-box-sub {
+  font-size: 14px;
+  color: #c8ccd6;
+  margin-bottom: 18px;
+  font-weight: 500;
+}
+
+.sv-price-box-note {
+  font-size: 13px;
+  color: #888;
+  font-style: italic;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Warranty Form */
+.sv-warranty-section { margin: 20px 0; }
+
+.sv-warranty-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sv-warranty-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #e8eaf0;
+  font-family: inherit;
+  font-size: 15px;
+  padding: 13px 16px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.sv-warranty-input:focus { border-color: var(--accent-color, #e02b2b); }
+.sv-warranty-input::placeholder { color: #555; }
+
+.sv-warranty-btn {
+  background: var(--accent-color, #e02b2b);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 13px 24px;
+  text-transform: uppercase;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.sv-warranty-btn:hover { background: #c72424; }
+
+.sv-warranty-result {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+}
+
+.sv-warranty-result-icon { font-size: 36px; margin-bottom: 10px; }
+.sv-warranty-result p { font-size: 15px; color: #ccc; margin-bottom: 6px; }
+.sv-warranty-result span { font-size: 13px; color: #888; }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sv-features-grid { grid-template-columns: repeat(2, 1fr); }
+  .sv-stores-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .sv-layout { grid-template-columns: 1fr; }
+  .sv-sidebar { position: static; }
+  .sv-content-body { padding: 24px 18px; }
+  .sv-features-grid { grid-template-columns: 1fr; }
+  .sv-warranty-form { flex-direction: column; }
+  .sv-warranty-btn { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .sv-hero-title { font-size: 22px; }
 }
