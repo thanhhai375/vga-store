@@ -1,115 +1,186 @@
-/* =============================================
-   HERO - Full width banner với ảnh thật ROG CDN
-   ============================================= */
-.hero {
-  position: relative;
-  margin-top: 60px;
+/* =========================================
+   TRONG FILE: src/pages/Home/HeroSection.css
+   ========================================= */
+
+.hero-wrapper {
+  background-color: #000;
   width: 100%;
-  height: 56.25vw; /* 16:9 exact ratio */
-  min-height: 400px;
-  max-height: 620px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-banner-area {
+  position: relative;
+  width: 100%;
+  /* BÍ QUYẾT LÀ ĐÂY: Dùng chính xác tỉ lệ pixel gốc của ảnh 4K Asus */
+  aspect-ratio: 1990 / 800;
   overflow: hidden;
-  background: #000;
+  background-color: #000;
 }
 
-/* Wrap chứa các slides */
-.hero-slides-wrap {
-  position: absolute;
-  inset: 0;
-  transition: opacity 0.5s ease;
-}
-
-.hero-slides-wrap.fading {
-  opacity: 0;
-}
-
-/* Mỗi slide = ảnh nền toàn màn */
 .hero-slide {
   position: absolute;
   inset: 0;
   background-size: cover;
   background-position: center;
+  /* Luôn canh giữa ảnh hoàn hảo */
   background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.8s ease;
+  transition: opacity 0.8s ease-in-out;
 }
 
 .hero-slide.active {
   opacity: 1;
 }
 
-/* Gradient dưới để dots / nút CTA nổi lên */
-.hero-gradient-overlay {
+/* Giảm bớt độ cao của lớp đen ảo bên dưới để không làm tối ảnh của bạn */
+.hero-gradient-bottom {
   position: absolute;
   bottom: 0;
   left: 0;
-  right: 0;
-  height: 160px;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+  width: 100%;
+  height: 80px;
+  /* Hạ từ 150px xuống 80px */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
-  z-index: 2;
 }
 
-/* Bottom bar: dots bên trái, nút CTA bên phải */
-.hero-bottom-bar {
+.hero-slider-controls {
   position: absolute;
-  bottom: 28px;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;
-  max-width: 1400px;
-  padding: 0 24px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  z-index: 5;
+  gap: 20px;
+  z-index: 10;
 }
 
-/* Progress dots */
-.hero-dots {
+.slider-progress-container {
   display: flex;
   gap: 10px;
 }
 
-.hdot {
-  width: 48px;
+/* Vạch chờ màu TRẮNG ĐỤC */
+.slider-progress-track {
+  width: 45px;
   height: 3px;
-  background: rgba(255,255,255,0.3);
-  border: none;
+  background-color: rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 10px 0;
+  background-clip: content-box;
+}
+
+.slider-progress-fill {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  height: 3px;
+  background-color: #d8282e;
+  /* Đỏ ROG */
+  width: 0%;
+}
+
+.slider-progress-fill.completed {
+  width: 100%;
+}
+
+.slider-progress-fill.active-anim {
+  animation: fillProgress 6s linear forwards;
+}
+
+@keyframes fillProgress {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
+/* Nút Play/Pause viền trắng */
+.slider-play-pause {
+  background: transparent;
+  border: 1px solid #ffffff;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
   padding: 0;
-  transition: background 0.3s, width 0.3s;
+  transition: border-color 0.3s;
+  margin-left: 10px;
 }
 
-.hdot.active {
-  background: var(--accent-color);
-  width: 72px;
+.slider-play-pause:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* CTA button */
-.hero-btn-explore {
-  display: inline-block;
-  background: var(--accent-color);
+.slider-play-pause svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* =========================================
+   PHẦN MENU ICON BÊN DƯỚI BANNER
+   ========================================= */
+.hero-bottom-menu {
+  background-color: #000;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+  padding: 20px 0 50px 0;
+}
+
+.rog-menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   color: #fff;
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  padding: 12px 30px;
-  text-decoration: none;
+  cursor: pointer;
+  opacity: 0.5;
+  /* Mặc định hơi mờ */
+  transition: opacity 0.3s ease;
+}
+
+/* Sáng bừng lên khi tab đang được chọn hoặc hover chuột */
+.rog-menu-item.active,
+.rog-menu-item:hover {
+  opacity: 1;
+}
+
+/* Cập nhật Icon TO RA và không bị méo */
+.rog-icon {
+  width: 140px;
+  /* Phóng to gấp 3 lần */
+  height: 90px;
+  object-fit: contain;
+  margin-bottom: 12px;
+  transition: transform 0.3s ease;
+}
+
+/* Hiệu ứng phóng to nhẹ cái ảnh VGA CHỈ KHI DI CHUỘT VÀO */
+.rog-menu-item:hover .rog-icon {
+  transform: scale(1.1);
+  /* 1.1 nghĩa là phóng to thêm 10% so với gốc */
+}
+
+.rog-menu-item span {
+  font-size: 14px;
+  font-weight: 700;
   text-transform: uppercase;
-  transition: background 0.3s;
-  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  color: #fff;
+  transition: color 0.3s ease;
 }
 
-.hero-btn-explore:hover {
-  background: #cc0022;
-}
-
-@media (max-width: 768px) {
-  .hero {
-    height: 56vw;
-    min-height: 240px;
-  }
-  .hdot { width: 32px; }
-  .hero-btn-explore { padding: 9px 18px; font-size: 11px; }
+/* Chữ chuyển sang màu Đỏ ROG CHỈ KHI DI CHUỘT VÀO */
+.rog-menu-item:hover span {
+  color: #d8282e;
 }

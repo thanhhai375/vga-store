@@ -11,6 +11,7 @@ import TrackOrder from './pages/TrackOrder/TrackOrder';
 import Checkout from './pages/Checkout/Checkout';
 import BlogDetail from './pages/Blog/BlogDetail';
 import Wishlist from './pages/Wishlist/Wishlist';
+import Profile from './pages/Profile/Profile';
 import NotFound from './pages/NotFound/NotFound';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/track-order" element={<TrackOrder />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/blog/:id" element={<BlogDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

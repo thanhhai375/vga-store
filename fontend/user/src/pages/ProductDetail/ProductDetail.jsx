@@ -24,6 +24,7 @@ const ProductDetail = () => {
   const [guestName, setGuestName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+  const { user, isAuthenticated } = useSelector(state => state.auth);
 
   const wishlistItems = useSelector(state => state.wishlist.wishlistItems);
   const isWishlisted = product ? wishlistItems.some(i => i.id === product.id) : false;
@@ -96,7 +97,7 @@ const ProductDetail = () => {
         product: { id: parseInt(id) },
         comment: newComment,
         rating: newRating,
-        guestName: guestName || 'Khách hàng'
+        guestName: isAuthenticated ? user.username : (guestName || 'Khách hàng')
       };
       const saved = await axiosClient.post('/reviews', rev);
       setReviews(prev => [saved, ...prev]);
@@ -292,14 +293,18 @@ const ProductDetail = () => {
                     ))}
                     <span>{newRating}/5 sao</span>
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Tên của bạn (để trống sẽ là 'Khách hàng')"
-                    value={guestName}
-                    onChange={e => setGuestName(e.target.value)}
-                    className="reviewer-name-input"
-                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #ddd', borderRadius: '6px', marginBottom: '10px', fontSize: '14px', boxSizing: 'border-box', background: '#fafafa' }}
-                  />
+                  
+                  {!isAuthenticated && (
+                    <input
+                      type="text"
+                      placeholder="Tên của bạn (để trống sẽ là 'Khách hàng')"
+                      value={guestName}
+                      onChange={e => setGuestName(e.target.value)}
+                      className="reviewer-name-input"
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #ddd', borderRadius: '6px', marginBottom: '10px', fontSize: '14px', boxSizing: 'border-box', background: '#fafafa' }}
+                    />
+                  )}
+
                   <textarea
                     placeholder="Nhận xét của bạn về sản phẩm này..."
                     rows="4"
