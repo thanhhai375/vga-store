@@ -1,70 +1,75 @@
-/* SERIES SECTION - original white theme */
 .series-section {
-  background: #fff;
-  padding: 60px 0 80px;
+  background-color: #ffffff;
+  padding: 80px 0 100px 0;
 }
 
-.series-header {
-  margin-bottom: 36px;
-}
-
-.series-main-title {
-  font-size: 28px;
-  font-weight: 900;
-  color: #111;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 6px;
-}
-
-.series-header-sub {
+.series-header-center {
+  text-align: center;
+  margin-bottom: 50px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
 }
 
-.series-subtitle {
-  font-size: 14px;
-  font-weight: 700;
-  color: #111;
+.series-huge-title {
+  font-size: 52px;
+  font-weight: 900;
+  color: #000;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  margin: 0 0 5px 0;
+  line-height: 1;
 }
 
-.series-see-all {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent-color);
-  text-decoration: none;
-  transition: opacity 0.3s;
+.series-sub-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #000;
+  text-transform: uppercase;
+  margin: 0 0 15px 0;
 }
-.series-see-all:hover { opacity: 0.7; }
+
+.series-link-red {
+  font-size: 14px;
+  font-weight: 800;
+  color: #d8282e;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.series-link-red:hover {
+  text-decoration: underline;
+}
 
 .series-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.series-card {
+/* Card viền liền màu đen khi Hover */
+.series-card-solid {
   display: block;
-  background: #fff;
-  border: 1px solid #e8e8e8;
+  background-color: #f8f8f8;
+  /* Xám nhạt */
+  border: 1px solid transparent;
   text-decoration: none;
-  transition: box-shadow 0.3s, transform 0.3s;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border 0.3s;
 }
 
-.series-card:hover {
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-  transform: translateY(-4px);
+.series-card-solid:hover {
+  border: 1px solid #000;
 }
 
 .series-img-wrap {
   width: 100%;
   aspect-ratio: 16/10;
   overflow: hidden;
-  background: #f5f5f5;
 }
 
 .series-card-img {
@@ -74,43 +79,33 @@
   transition: transform 0.5s ease;
 }
 
-.series-card:hover .series-card-img {
-  transform: scale(1.04);
+.series-card-solid:hover .series-card-img {
+  transform: scale(1.05);
+  /* Phóng to ảnh nhẹ khi hover */
 }
 
 .series-card-info {
-  padding: 20px 20px 24px;
+  padding: 30px 20px;
   text-align: center;
-  border-top: 1px solid #eee;
 }
 
 .series-card-name {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 900;
-  color: #111;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
+  color: #000;
+  margin: 0 0 8px 0;
 }
 
 .series-card-tag {
-  font-size: 12px;
-  color: #888;
-  font-style: italic;
-  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 400;
+  color: #333;
+  margin: 0 0 16px 0;
 }
 
-.series-card-link {
-  font-size: 12px;
+.series-card-action {
+  font-size: 13px;
   font-weight: 700;
-  color: var(--accent-color);
-  letter-spacing: 1px;
-}
-
-@media (max-width: 900px) {
-  .series-grid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 600px) {
-  .series-main-title { font-size: 22px; }
+  color: #d8282e;
+  text-transform: uppercase;
 }

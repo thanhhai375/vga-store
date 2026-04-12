@@ -1,48 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import "./HeroSection.css";
 
-// Ảnh THẬT lấy từ ROG ASUS CDN
 const slides = [
-  {
-    id: 1,
-    img: "https://dlcdnwebimgs.asus.com/gain/3CECA175-929A-4209-ACD4-CA1248E59B14/fwebp",
-    link: "/products",
-  },
-  {
-    id: 2,
-    img: "https://dlcdnwebimgs.asus.com/gain/6D386FE6-1491-490C-A3C5-F76B21E759DE/fwebp",
-    link: "/products",
-  },
-  {
-    id: 3,
-    img: "https://dlcdnwebimgs.asus.com/gain/FA648BF1-0026-4D7A-B816-5BFA387661C9/fwebp",
-    link: "/products",
-  },
+  { id: 1, img: "/images/hero/slide1.jpg" },
+  { id: 2, img: "/images/hero/slide2.jpg" },
+  { id: 3, img: "/images/hero/slide3.jpg" },
 ];
 
 const HeroSection = () => {
   const [current, setCurrent] = useState(0);
-  const [animating, setAnimating] = useState(false);
-  const total = slides.length;
+  const [isPlaying, setIsPlaying] = useState(true);
 
   useEffect(() => {
-    const t = setInterval(() => {
-      goTo((current + 1) % total);
-    }, 6000);
+    let t;
+    if (isPlaying && slides.length > 0) {
+      t = setInterval(() => {
+        setCurrent((prev) => (prev + 1) % slides.length);
+      }, 6000);
+    }
     return () => clearInterval(t);
-  }, [current]);
+  }, [current, isPlaying]);
 
-  const goTo = (idx) => {
-    if (animating || idx === current) return;
-    setAnimating(true);
-    setTimeout(() => { setCurrent(idx); setAnimating(false); }, 500);
-  };
+  if (slides.length === 0) return null;
 
   return (
-    <section className="hero">
-      {/* Slides */}
-      <div className={`hero-slides-wrap ${animating ? "fading" : ""}`}>
+    <section className="hero-wrapper">
+      <div className="hero-banner-area">
         {slides.map((s, i) => (
           <div
             key={s.id}
@@ -50,25 +33,50 @@ const HeroSection = () => {
             style={{ backgroundImage: `url('${s.img}')` }}
           />
         ))}
+
+        <div className="hero-gradient-bottom" />
+
+        <div className="hero-slider-controls">
+          <div className="slider-progress-container">
+            {slides.map((_, index) => (
+              <div
+                key={index}
+                className="slider-progress-track"
+                onClick={() => { setCurrent(index); setIsPlaying(true); }}
+              >
+                {index < current && <div className="slider-progress-fill completed" />}
+                {index === current && (
+                  <div
+                    key={`active-${current}`}
+                    className="slider-progress-fill active-anim"
+                    style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <button className="slider-play-pause" onClick={() => setIsPlaying(!isPlaying)}>
+            {isPlaying ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M10 9v6m4-6v6" strokeLinecap="square" /></svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 5v14l11-7z" strokeLinejoin="round" /></svg>
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* Gradient overlay để các nút không bị chìm */}
-      <div className="hero-gradient-overlay" />
-
-      {/* Controls & dots */}
-      <div className="hero-bottom-bar">
-        <div className="hero-dots">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              className={`hdot ${i === current ? "active" : ""}`}
-            />
-          ))}
+      <div className="hero-bottom-menu">
+        <div className="rog-menu-item active">
+          {/* Trỏ đường dẫn tới file ảnh bạn vừa lưu */}
+          <img className="rog-icon" src="/images/hero/icon-vga.png" alt="Card Đồ họa" />
+          <span>Card Đồ họa</span>
         </div>
-        <Link to="/products" className="hero-btn-explore">
-          KHÁM PHÁ NGAY
-        </Link>
+        <div className="rog-menu-item">
+          {/* Trỏ đường dẫn tới file ảnh bạn vừa lưu */}
+          <img className="rog-icon" src="/images/hero/icon-phukien.png" alt="Phụ kiện" />
+          <span>Phụ kiện</span>
+        </div>
       </div>
     </section>
   );

@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../redux/authSlice';
 import AuthModal from '../AuthModal/AuthModal';
 import './Header.css';
 
 const Header = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const dispatch = useDispatch();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
   const cartTotalQuantity = useSelector((state) => state.cart.cartTotalQuantity);
   const wishlistCount = useSelector((state) => state.wishlist.wishlistItems.length);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -78,12 +83,53 @@ const Header = () => {
             )}
           </Link>
 
-          <button className="nav-action-item" onClick={() => setIsLoginModalOpen(true)} title="Đăng nhập">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          </button>
+          {/* AUTH SECTION */}
+          {isAuthenticated ? (
+            <div className="user-menu-wrapper">
+              <button 
+                className={`nav-action-item user-btn ${isUserMenuOpen ? 'active' : ''}`}
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              >
+                <div className="user-avatar">
+                  {user?.username?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <span className="user-name">{user?.username}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{transform: isUserMenuOpen ? 'rotate(180deg)' : 'none', transition: '0.3s'}}>
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </button>
+
+              {isUserMenuOpen && (
+                <div className="user-dropdown">
+                  <div className="dropdown-header">
+                    <strong>{user?.username}</strong>
+                    <span>{user?.email || 'Thành viên'}</span>
+                  </div>
+                  <hr />
+                  <Link to="/track-order" className="dropdown-item" onClick={() => setIsUserMenuOpen(false)}>
+                    📦 Đơn hàng của tôi
+                  </Link>
+                  <Link to="/profile" className="dropdown-item" onClick={() => setIsUserMenuOpen(false)}>
+                    👤 Thông tin cá nhân
+                  </Link>
+                  <Link to="/wishlist" className="dropdown-item" onClick={() => setIsUserMenuOpen(false)}>
+                    ❤️ Yêu thích ({wishlistCount})
+                  </Link>
+                  <hr />
+                  <button className="dropdown-item logout-btn" onClick={() => { dispatch(logout()); setIsUserMenuOpen(false); }}>
+                    Log Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button className="nav-action-item" onClick={() => setIsLoginModalOpen(true)} title="Đăng nhập">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+          )}
 
           <Link to="/cart" className="cart-icon" title="Giỏ hàng">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
