@@ -11,24 +11,24 @@ const Shop = () => {
   const location = useLocation();
 
   // ===== STATE =====
-  const [allProducts, setAllProducts] = useState([]);   
+  const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE); 
+  const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
   const [loadingMore, setLoadingMore] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('default');
-  
+
   // Các state sidebar
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [priceRange, setPriceRange] = useState('all'); 
-  const [selectedLines, setSelectedLines] = useState([]);      
-  const [selectedChipsets, setSelectedChipsets] = useState([]); 
-  const [selectedVRAMs, setSelectedVRAMs] = useState([]);       
-  const [selectedMemTypes, setSelectedMemTypes] = useState([]); 
-  const [selectedPSUs, setSelectedPSUs] = useState([]);         
-  const [selectedPorts, setSelectedPorts] = useState([]);       
+  const [priceRange, setPriceRange] = useState('all');
+  const [selectedLines, setSelectedLines] = useState([]);
+  const [selectedChipsets, setSelectedChipsets] = useState([]);
+  const [selectedVRAMs, setSelectedVRAMs] = useState([]);
+  const [selectedMemTypes, setSelectedMemTypes] = useState([]);
+  const [selectedPSUs, setSelectedPSUs] = useState([]);
+  const [selectedPorts, setSelectedPorts] = useState([]);
 
   // API Data
   const [brands, setBrands] = useState([]);
@@ -56,27 +56,54 @@ const Shop = () => {
     fetchData();
   }, []);
 
-  // ===== ĐỌC PARAM TỪ URL =====
+  // ===== ĐỌC PARAM TỪ URL (Liên kết từ trang Home) =====
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const brandParam = queryParams.get('brand');
     const categoryParam = queryParams.get('cat');
-    
-    if (brandParam) setSelectedBrands([brandParam]);
-    else setSelectedBrands([]);
-    
-    if (categoryParam === 'phu-kien' || categoryParam === 'Phụ kiện') {
-      setSelectedCategories(['Phụ Kiện']); 
-    } else if (categoryParam) {
-      setSelectedCategories([categoryParam]);
+    const chipsetBrandParam = queryParams.get('chipsetBrand');
+    const chipsetParam = queryParams.get('chipset');
+    const vramParam = queryParams.get('vram');
+    const memTypeParam = queryParams.get('memType');
+    const lineParam = queryParams.get('line');
+    const psuParam = queryParams.get('psu');
+    const priceParam = queryParams.get('price');
+
+    // Tự động tick Thương Hiệu
+    if (brandParam) setSelectedBrands([brandParam]); else setSelectedBrands([]);
+
+    // 🌟 NÂNG CẤP: DÒ TÌM DANH MỤC THÔNG MINH (Không phân biệt hoa/thường)
+    if (categoryParam) {
+      const matchedCat = categories.find(
+        c => c.name.toLowerCase() === categoryParam.toLowerCase() ||
+          c.name.toLowerCase() === categoryParam.replace('-', ' ').toLowerCase()
+      );
+
+      if (matchedCat) {
+        setSelectedCategories([matchedCat.name]); // Tick chính xác tên DB trả về
+      } else {
+        setSelectedCategories([categoryParam]); // Dự phòng khi categories chưa tải xong
+      }
     } else {
       setSelectedCategories([]);
     }
-    
-    setDisplayCount(ITEMS_PER_PAGE);
-  }, [location.search]);
 
-  // ===== HANDLERS SIDEBAR =====
+    // Các param khác
+    if (chipsetBrandParam) setSelectedChipsets([chipsetBrandParam]);
+    else if (chipsetParam) setSelectedChipsets([chipsetParam]);
+    else setSelectedChipsets([]);
+
+    if (vramParam) setSelectedVRAMs([vramParam]); else setSelectedVRAMs([]);
+    if (memTypeParam) setSelectedMemTypes([memTypeParam]); else setSelectedMemTypes([]);
+    if (lineParam) setSelectedLines([lineParam]); else setSelectedLines([]);
+    if (psuParam) setSelectedPSUs([psuParam]); else setSelectedPSUs([]);
+    if (priceParam) setPriceRange(priceParam); else setPriceRange('all');
+
+    setDisplayCount(ITEMS_PER_PAGE);
+  }, [location.search, categories]); // Phải có 'categories' để tự động update khi API danh mục tải xong
+
+
+  // 👇👇👇 CÁC HÀM XỬ LÝ (HANDLERS) 👇👇👇
   const toggleArrayItem = (array, item) => {
     return array.includes(item) ? array.filter(v => v !== item) : [...array, item];
   };
@@ -97,13 +124,15 @@ const Shop = () => {
     setSelectedPSUs([]); setSelectedPorts([]); setPriceRange('all');
     setSearchTerm(''); setDisplayCount(ITEMS_PER_PAGE);
   };
+  // 👆👆👆 ========================================= 👆👆👆
+
 
   // ===== FILTER & SORT =====
   let displayProducts = allProducts.filter((product) => {
     const nameUpper = (product.name || '').toUpperCase();
     const descUpper = (product.description || '').toUpperCase();
     const fullText = nameUpper + ' ' + descUpper;
-    
+
     // Tên
     const matchName = fullText.includes(searchTerm.toUpperCase());
 
@@ -121,7 +150,7 @@ const Shop = () => {
 
     let matchLine = true;
     if (selectedLines.length > 0) { matchLine = selectedLines.some(line => nameUpper.includes(line.toUpperCase())); }
-    
+
     let matchChipset = true;
     if (selectedChipsets.length > 0) {
       matchChipset = selectedChipsets.some(chip => {
@@ -135,7 +164,7 @@ const Shop = () => {
     let matchVRAM = true;
     if (selectedVRAMs.length > 0) {
       matchVRAM = selectedVRAMs.some(vram => {
-        const v1 = vram.toUpperCase(); 
+        const v1 = vram.toUpperCase();
         const v2 = v1.replace('GB', 'G');
         return nameUpper.includes(v1) || nameUpper.includes(` ${v2}`);
       });
@@ -146,7 +175,7 @@ const Shop = () => {
       matchMem = selectedMemTypes.some(mem => fullText.includes(mem.toUpperCase()));
     }
 
-    let matchPSU = true; 
+    let matchPSU = true;
     if (selectedPSUs.length > 0) {
       matchPSU = selectedPSUs.some(psu => fullText.includes(psu.toUpperCase()));
     }
@@ -191,7 +220,6 @@ const Shop = () => {
       </div>
 
       <div className="container">
-        
         <div className="shop-layout">
           {/* SIDEBAR TỔNG HỢP CÓ ACCORDION */}
           <aside className="shop-sidebar">
@@ -328,7 +356,7 @@ const Shop = () => {
                 ))}
               </div>
             </details>
-            
+
             <details className="sidebar-section">
               <summary className="sidebar-title">I/O Ports</summary>
               <div className="sidebar-content">

@@ -5,9 +5,7 @@ import { addToCart } from "../../redux/cartSlice";
 import { toggleWishlist } from "../../redux/wishlistSlice";
 import "./ProductCard.css";
 
-
 // TỐI ƯU HIỆU NĂNG: Khởi tạo bộ format tiền tệ ở ngoài Component
-// để không bị tạo lại hàng chục lần mỗi khi render 20 cái card, chống giật web.
 const currencyFormatter = new Intl.NumberFormat("vi-VN");
 
 const ProductCard = ({ product }) => {
@@ -16,8 +14,11 @@ const ProductCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [imgError, setImgError] = useState(false);
 
+  // BẢO VỆ CHỐNG SẬP: Nếu API chưa tải xong product, không render gì cả
+  if (!product) return null;
+
   // Kiểm tra sản phẩm này có trong wishlist không
-  const wishlistItems = useSelector(state => state.wishlist.wishlistItems);
+  const wishlistItems = useSelector(state => state.wishlist?.wishlistItems || []);
   const isWishlisted = wishlistItems.some(item => item.id === product.id);
 
   const handleToggleWishlist = (e) => {
@@ -30,18 +31,21 @@ const ProductCard = ({ product }) => {
     return currencyFormatter.format(price) + "₫";
   };
 
-  const currentPrice = Number(product.price);
+  const currentPrice = Number(product.price || 0);
   const oldPrice = currentPrice * 1.1;
   const discountPercent = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
 
-  // 1. Lấy link ảnh từ Database
-  const dbImageUrl = product.imgUrl || product.img_url || product.img || product.image;
+  // 1. LẤY LINK ẢNH THÔNG MINH (Bao trọn mọi trường hợp từ API Backend của bạn)
+  const dbImageUrl =
+    product.imageUrl ||
+    product.imgUrl ||
+    product.img_url ||
+    product.image ||
+    (product.images && product.images.length > 0 && product.images[0]?.url);
 
-  // 2. CHỐT HẠ: Nếu ảnh trong DB bị lỗi (imgError) hoặc không có, tự động dùng ảnh local đã tải về máy.
-  // Bạn cần để 1 tấm ảnh tên là 'default-vga.jpg' vào thư mục public/images/ để làm ảnh phòng hờ.
-  const finalImageUrl = imgError || !dbImageUrl
-    ? '/images/default-vga.jpg'
-    : dbImageUrl;
+  // 2. CHỐT HẠ: Dùng ảnh gốc cực xịn của Asus làm phòng hờ nếu DB lỗi
+  const fallbackImage = '/images/products/gpu_original.png';
+  const finalImageUrl = (imgError || !dbImageUrl) ? fallbackImage : dbImageUrl;
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
@@ -60,7 +64,10 @@ const ProductCard = ({ product }) => {
 
   return (
     <>
+      {/* LƯU Ý: Chỗ này mình để /products/${product.id}.
+          Nếu cấu hình Route chi tiết của bạn là /product (không có s) hoặc /shop thì bạn tự sửa lại chữ s này nha */}
       <Link to={`/product/${product.id}`} className="product-card">
+
         {/* Badge động từ product.badge */}
         {product.badge && <div className="card-badge-hot">{product.badge}</div>}
 
@@ -114,7 +121,7 @@ const ProductCard = ({ product }) => {
         </div>
       </Link>
 
-      {/* POPUP GIỎ HÀNG (Giữ nguyên giao diện của bạn) */}
+      {/* POPUP GIỎ HÀNG */}
       {showPopup && (
         <div className="custom-popup-overlay" onClick={() => setShowPopup(false)}>
           <div className="custom-popup-content" onClick={(e) => e.stopPropagation()}>

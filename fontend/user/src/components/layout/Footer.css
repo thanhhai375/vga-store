@@ -1,136 +1,188 @@
 /* ============================================================
-   FOOTER — Corporate Premium Light
+   FOOTER — ASUS ROG DARK THEME
    ============================================================ */
-.footer {
-  background-color: #ffffff;
-  color: var(--text-secondary);
-  padding: 80px 0 40px;
-  border-top: 1px solid var(--border-color);
+.rog-footer {
+  background-color: #000000;
+  color: #a1a1aa;
+  padding: 40px 0 20px;
+  font-family: Arial, sans-serif;
 }
 
-/* PHẦN TRÊN: 4 CỘT */
-.footer-top {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 40px;
-  margin-bottom: 60px;
+.rog-footer-top {
+  margin-bottom: 40px;
 }
 
-.footer-heading {
-  font-size: 15px;
-  font-weight: 800;
-  margin-bottom: 24px;
-  color: var(--text-primary);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-
-.footer-links, .footer-support {
-  list-style: none;
+.rog-breadcrumb {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 0;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #fff;
 }
 
-.footer-links a, .footer-support li {
-  color: var(--text-secondary);
-  font-size: 14px;
-  text-decoration: none;
-  transition: all 0.2s;
-  font-weight: 500;
+.rog-logo-small {
+  width: 24px;
+  height: 24px;
+  fill: #fff;
 }
 
-.footer-links a:hover {
-  color: var(--accent-color);
-  transform: translateX(5px);
+.separator {
+  color: #666;
+  font-size: 12px;
 }
 
-.footer-support a {
-  color: var(--accent-color);
-  font-weight: 800;
-}
-
-.footer-support a:hover {
-  text-decoration: underline;
-}
-
-.footer-divider {
-  width: 100%;
-  height: 1px;
-  background-color: var(--border-color);
-  margin: 40px 0;
-}
-
-/* PHẦN DƯỚI CÙNG */
-.footer-bottom {
+/* Main Section: Links & Newsletter */
+.rog-footer-main {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 30px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-color);
+  align-items: flex-end;
+  border-bottom: 1px solid #333;
+  padding-bottom: 30px;
+  margin-bottom: 30px;
 }
 
-.social-connect {
+.rog-footer-links {
   display: flex;
-  align-items: center;
-  gap: 24px;
+  gap: 25px;
 }
 
-.social-text {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text-primary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.social-links {
-  display: flex;
-  gap: 12px;
-}
-
-.social-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #f8fafc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid var(--border-color);
+.rog-footer-links a {
+  color: #fff;
   text-decoration: none;
+  font-size: 14px;
+  font-weight: bold;
+  transition: color 0.3s;
 }
 
-.social-icon svg {
-  width: 18px;
-  height: 18px;
+.rog-footer-links a:hover {
+  color: #d8282e;
 }
 
-.social-icon:hover { 
-  transform: translateY(-5px); 
-  background: var(--accent-color); 
-  color: #fff; 
-  border-color: var(--accent-color);
-  box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.3);
+.rog-footer-newsletter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 15px;
 }
 
-.copyright-text {
+.newsletter-title {
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.newsletter-form {
+  display: flex;
+  width: 350px;
+}
+
+.newsletter-form input {
+  flex: 1;
+  background: transparent;
+  border: 1px solid #555;
+  border-right: none;
+  color: #fff;
+  padding: 10px 15px;
   font-size: 13px;
-  color: #94a3b8;
-  font-weight: 500;
+  outline: none;
 }
 
-@media (max-width: 992px) {
-  .footer-top { grid-template-columns: repeat(2, 1fr); }
+.newsletter-form input:focus {
+  border-color: #888;
 }
 
-@media (max-width: 576px) {
-  .footer-top { grid-template-columns: 1fr; }
-  .footer-bottom { flex-direction: column; text-align: center; }
-  .social-connect { flex-direction: column; gap: 16px; }
+.btn-subscribe {
+  background-color: #d8282e;
+  color: #fff;
+  border: none;
+  padding: 0 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-subscribe:hover {
+  background-color: #b01b20;
+}
+
+.rog-social-icons {
+  display: flex;
+  gap: 15px;
+  margin-top: 5px;
+}
+
+.rog-social-icons a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 18px;
+  width: 30px;
+  text-align: center;
+  transition: color 0.3s;
+  font-family: monospace;
+  /* Placeholder icon fallback */
+}
+
+.rog-social-icons a:hover {
+  color: #d8282e;
+}
+
+/* Legal Text */
+.rog-footer-legal p {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.dmca-badge {
+  width: 100px;
+  margin-bottom: 30px;
+}
+
+/* Bottom Row */
+.rog-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #333;
+  padding-top: 20px;
+  font-size: 12px;
+  color: #999;
+}
+
+.lang-selector {
+  color: #fff;
+  cursor: pointer;
+}
+
+.bottom-links {
+  display: flex;
+  gap: 20px;
+}
+
+.bottom-links a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.bottom-links a:hover {
+  color: #d8282e;
+}
+
+@media (max-width: 900px) {
+  .rog-footer-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 40px;
+  }
+
+  .rog-footer-newsletter {
+    align-items: flex-start;
+  }
+
+  .rog-footer-bottom {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
 }

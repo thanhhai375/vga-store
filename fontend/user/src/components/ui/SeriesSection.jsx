@@ -10,17 +10,17 @@ const seriesData = [
 
 const SeriesSection = () => {
   return (
-    <section className="series-section">
+    <section id="series-section" className="series-section">
       <div className="container">
         <div className="series-header-center">
           <h1 className="series-huge-title">CARD ĐỒ HỌA</h1>
           <h2 className="series-sub-title">CARD ĐỒ HỌA</h2>
-          <Link to="/products" className="series-link-red">XEM TẤT CẢ CARD ĐỒ HỌA ›</Link>
+          <Link to="/shop" className="series-link-red">XEM TẤT CẢ CARD ĐỒ HỌA ›</Link>
         </div>
 
         <div className="series-grid">
           {seriesData.map(s => (
-            <Link key={s.id} to={`/products?series=${s.filterParam}`} className="series-card-solid">
+            <Link key={s.id} to={`/shop?series=${s.filterParam}`} className="series-card-solid">
               <div className="series-img-wrap">
                 <img src={s.img} alt={s.name} className="series-card-img" />
               </div>
