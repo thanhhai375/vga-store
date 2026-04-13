@@ -145,13 +145,9 @@
   align-items: center;
   color: #fff;
   cursor: pointer;
-  opacity: 0.5;
-  /* Mặc định hơi mờ */
-  transition: opacity 0.3s ease;
+  opacity: 1;
 }
 
-/* Sáng bừng lên khi tab đang được chọn hoặc hover chuột */
-.rog-menu-item.active,
 .rog-menu-item:hover {
   opacity: 1;
 }

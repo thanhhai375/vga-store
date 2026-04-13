@@ -24,9 +24,13 @@ const ProductDetail = () => {
   const [guestName, setGuestName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
-  const { user, isAuthenticated } = useSelector(state => state.auth);
 
-  const wishlistItems = useSelector(state => state.wishlist.wishlistItems);
+  // SỬA LỖI 1: Bọc thép Redux Auth (Chống sập web nếu state.auth chưa tồn tại)
+  const authState = useSelector(state => state.auth) || {};
+  const { user, isAuthenticated } = authState;
+
+  // SỬA LỖI 2: Bọc thép Redux Wishlist
+  const wishlistItems = useSelector(state => state.wishlist?.wishlistItems || []);
   const isWishlisted = product ? wishlistItems.some(i => i.id === product.id) : false;
 
   useEffect(() => {
@@ -35,7 +39,8 @@ const ProductDetail = () => {
         setLoading(true);
         setError(null);
         const apiResponse = await axiosClient.get(`/products/${id}`);
-        const pData = apiResponse?.data;
+        // Xử lý an toàn dữ liệu từ axios
+        const pData = apiResponse?.data || apiResponse;
 
         if (!pData || !pData.id) {
           setError('Không tìm thấy sản phẩm này!');
@@ -54,15 +59,20 @@ const ProductDetail = () => {
             images = [pData.imagesJson];
           }
         }
-        if (images.length === 0 && pData.imgUrl) images = [pData.imgUrl];
+
+        // Quét tìm mọi trường hợp link ảnh có thể xảy ra
+        const fallbackDBImage = pData.imageUrl || pData.imgUrl || pData.img_url || pData.image;
+        if (images.length === 0 && fallbackDBImage) images = [fallbackDBImage];
 
         setGallery(images);
-        setMainImage(images[0] || '/images/default-vga.jpg');
+        // Đổi ảnh mặc định thành ảnh bạn đang có
+        setMainImage(images[0] || '/images/products/gpu_original.png');
 
-        // Load reviews
+        // Load reviews an toàn
         try {
           const rev = await axiosClient.get(`/reviews/product/${id}`);
-          setReviews(Array.isArray(rev) ? rev : []);
+          const revData = rev?.data || rev;
+          setReviews(Array.isArray(revData) ? revData : []);
         } catch {
           setReviews([]);
         }
@@ -78,13 +88,13 @@ const ProductDetail = () => {
   }, [id]);
 
   const handleAddToCart = () => {
-    dispatch(addToCart({ id: product.id, name: product.name, price: Number(product.price), thumbnail: mainImage }));
+    dispatch(addToCart({ id: product.id, name: product.name, price: Number(product.price || 0), thumbnail: mainImage }));
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
   const handleBuyNow = () => {
-    dispatch(addToCart({ id: product.id, name: product.name, price: Number(product.price), thumbnail: mainImage }));
+    dispatch(addToCart({ id: product.id, name: product.name, price: Number(product.price || 0), thumbnail: mainImage }));
     navigate('/checkout');
   };
 
@@ -97,10 +107,11 @@ const ProductDetail = () => {
         product: { id: parseInt(id) },
         comment: newComment,
         rating: newRating,
-        guestName: isAuthenticated ? user.username : (guestName || 'Khách hàng')
+        guestName: isAuthenticated && user ? user.username : (guestName || 'Khách hàng')
       };
       const saved = await axiosClient.post('/reviews', rev);
-      setReviews(prev => [saved, ...prev]);
+      const savedData = saved?.data || saved;
+      setReviews(prev => [savedData, ...prev]);
       setNewComment('');
       setGuestName('');
       setNewRating(5);
@@ -116,9 +127,13 @@ const ProductDetail = () => {
     ? (reviews.reduce((s, r) => s + (r.rating || 5), 0) / reviews.length).toFixed(1)
     : '0.0';
 
+  // SỬA LỖI 3: Chống lỗi NaN sập web khi render số lượng sao
+  const validAvgRating = isNaN(Number(avgRating)) ? 5 : Number(avgRating);
+  const starCount = Math.max(1, Math.round(validAvgRating));
+
   if (loading) {
     return (
-      <div className="detail-loading">
+      <div className="detail-loading" style={{ textAlign: 'center', padding: '100px 0' }}>
         <div className="spinner"></div>
         <p>Đang tải thông số sản phẩm...</p>
       </div>
@@ -127,7 +142,7 @@ const ProductDetail = () => {
 
   if (error || !product) {
     return (
-      <div className="detail-error">
+      <div className="detail-error" style={{ textAlign: 'center', padding: '100px 0' }}>
         <h2>⚠️ {error || 'Không tìm thấy sản phẩm!'}</h2>
         <Link to="/products" className="btn-back-link">← Quay lại cửa hàng</Link>
       </div>
@@ -140,7 +155,7 @@ const ProductDetail = () => {
       {/* ── HERO: ẢNH + GIÁ ─────────────────────────────────── */}
       <div className="detail-hero">
         <div className="container">
-          <button className="btn-back" onClick={() => navigate('/products')}>
+          <button className="btn-back" onClick={() => navigate('/products')} style={{ marginBottom: '20px', cursor: 'pointer' }}>
             ← Quay lại cửa hàng
           </button>
 
@@ -149,9 +164,9 @@ const ProductDetail = () => {
             <div className="detail-gallery">
               <div className="main-image-box">
                 <img
-                  src={mainImage || '/images/default-vga.jpg'}
+                  src={mainImage || '/images/products/gpu_original.png'}
                   alt={product.name}
-                  onError={e => { e.target.src = '/images/default-vga.jpg'; }}
+                  onError={e => { e.target.onerror = null; e.target.src = '/images/products/gpu_original.png'; }}
                 />
               </div>
               {gallery.length > 1 && (
@@ -163,7 +178,7 @@ const ProductDetail = () => {
                       alt={`${i + 1}`}
                       className={`thumb-img ${mainImage === img ? 'active' : ''}`}
                       onClick={() => setMainImage(img)}
-                      onError={e => { e.target.src = '/images/default-vga.jpg'; }}
+                      onError={e => { e.target.onerror = null; e.target.src = '/images/products/gpu_original.png'; }}
                     />
                   ))}
                 </div>
@@ -177,12 +192,12 @@ const ProductDetail = () => {
               </div>
               <h1 className="product-title">{product.name}</h1>
               <div className="rating-row">
-                <span className="stars-display">{'⭐'.repeat(Math.max(1, Math.round(Number(avgRating))))}</span>
+                <span className="stars-display">{'⭐'.repeat(starCount)}</span>
                 <span className="avg-score">{avgRating}/5</span>
                 <span className="review-cnt">({reviews.length} đánh giá)</span>
               </div>
               <div className="sku-code">
-                Mã SP: <span>{product.sku}</span> &nbsp;|&nbsp;
+                Mã SP: <span>{product.sku || 'Đang cập nhật'}</span> &nbsp;|&nbsp;
                 {product.stock > 0
                   ? <span className="in-stock">Còn {product.stock} hàng</span>
                   : <span className="out-stock">Hết hàng</span>
@@ -191,10 +206,10 @@ const ProductDetail = () => {
 
               <div className="price-box">
                 <span className="current-price">
-                  {new Intl.NumberFormat('vi-VN').format(product.price)}đ
+                  {new Intl.NumberFormat('vi-VN').format(product.price || 0)}đ
                 </span>
                 <span className="old-price">
-                  {new Intl.NumberFormat('vi-VN').format(Math.round(product.price * 1.1))}đ
+                  {new Intl.NumberFormat('vi-VN').format(Math.round((product.price || 0) * 1.1))}đ
                 </span>
                 <span className="discount-badge">-9%</span>
               </div>
@@ -259,8 +274,8 @@ const ProductDetail = () => {
                     <tr><td>PSU khuyến cáo</td><td>{product.recommendedPsu || 'Đang cập nhật'}</td></tr>
                     <tr><td>Đầu cấp nguồn</td><td>{product.powerConnectors || 'Đang cập nhật'}</td></tr>
                     <tr><td>Kích thước</td><td>{product.dimension || 'Đang cập nhật'}</td></tr>
-                    <tr><td>Thương hiệu</td><td>{product.brand?.name || 'Unknown'}</td></tr>
-                    <tr><td>Danh mục</td><td>{product.category?.name || 'Unknown'}</td></tr>
+                    <tr><td>Thương hiệu</td><td>{product.brand?.name || 'Đang cập nhật'}</td></tr>
+                    <tr><td>Danh mục</td><td>{product.category?.name || 'Đang cập nhật'}</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -280,7 +295,7 @@ const ProductDetail = () => {
                 <div className="review-summary">
                   <div className="avg-big">{avgRating}</div>
                   <div>
-                    <div className="stars-big">{'⭐'.repeat(Math.max(1, Math.round(Number(avgRating))))}</div>
+                    <div className="stars-big">{'⭐'.repeat(starCount)}</div>
                     <div className="review-total">Dựa trên {reviews.length} đánh giá</div>
                   </div>
                 </div>
@@ -293,7 +308,7 @@ const ProductDetail = () => {
                     ))}
                     <span>{newRating}/5 sao</span>
                   </div>
-                  
+
                   {!isAuthenticated && (
                     <input
                       type="text"
@@ -326,7 +341,9 @@ const ProductDetail = () => {
                       <div className="review-body">
                         <div className="review-header">
                           <strong>{r.guestName || r.user?.username || 'Khách hàng'}</strong>
-                          <span className="review-stars">{'⭐'.repeat(r.rating || 5)}</span>
+                          <span className="review-stars">
+                            {'⭐'.repeat(Math.max(1, Math.round(Number(r.rating || 5))))}
+                          </span>
                           <span className="review-date">
                             {r.createdAt ? new Date(r.createdAt).toLocaleDateString('vi-VN') : ''}
                           </span>

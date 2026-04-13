@@ -67,13 +67,17 @@ const HeroSection = () => {
       </div>
 
       <div className="hero-bottom-menu">
-        <div className="rog-menu-item active">
-          {/* Trỏ đường dẫn tới file ảnh bạn vừa lưu */}
+        <div 
+          className="rog-menu-item" 
+          onClick={() => document.getElementById('series-section')?.scrollIntoView({ behavior: 'smooth' })}
+        >
           <img className="rog-icon" src="/images/hero/icon-vga.png" alt="Card Đồ họa" />
           <span>Card Đồ họa</span>
         </div>
-        <div className="rog-menu-item">
-          {/* Trỏ đường dẫn tới file ảnh bạn vừa lưu */}
+        <div 
+          className="rog-menu-item" 
+          onClick={() => document.getElementById('accessories-section')?.scrollIntoView({ behavior: 'smooth' })}
+        >
           <img className="rog-icon" src="/images/hero/icon-phukien.png" alt="Phụ kiện" />
           <span>Phụ kiện</span>
         </div>
