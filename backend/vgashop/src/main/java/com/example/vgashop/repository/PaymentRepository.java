@@ -1,10 +1,14 @@
 package com.example.vgashop.repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.example.vgashop.entity.Order;
 import com.example.vgashop.entity.Payment;
@@ -28,4 +32,11 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     boolean existsByOrder_IdAndDeletedFalse(Long orderId);
 
     Optional<Payment> findByTransactionCodeAndDeletedFalse(String transactionCode);
+
+    // phần admin dashboard
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.deleted = false")
+    BigDecimal findTotalRevenue();
+
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.deleted = false AND p.paidAt >= :startOfDay")
+    BigDecimal findTodayRevenue(@Param("startOfDay") LocalDateTime startOfDay);
 }

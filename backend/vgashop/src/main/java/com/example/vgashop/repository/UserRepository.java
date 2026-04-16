@@ -24,4 +24,7 @@ public interface  UserRepository extends JpaRepository<User, Long>  {
 
     // Tìm kiếm theo username hoặc email
     Page<User> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(String username, String email, Pageable pageable);
+
+    // phần admin dashboard
+    Long countByDeletedFalse();
 }

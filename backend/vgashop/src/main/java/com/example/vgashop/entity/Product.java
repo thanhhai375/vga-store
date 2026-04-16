@@ -40,6 +40,8 @@ public class Product extends BaseEntity {
 
     @Column(name= "img_url", length= 500)
     private String imgUrl;
+    @Column(nullable = false)
+    private Boolean status = true;
 
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name= "brand_id", nullable= false)
@@ -144,5 +146,13 @@ public class Product extends BaseEntity {
      public void setSku(String sku) {
          this.sku = sku;
      }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(Boolean status) {
+        this.status = status;
+    }
 
 }

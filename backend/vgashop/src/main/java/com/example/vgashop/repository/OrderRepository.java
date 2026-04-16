@@ -1,10 +1,13 @@
 package com.example.vgashop.repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.example.vgashop.entity.Order;
 import com.example.vgashop.entity.OrderStatus;
@@ -34,5 +37,14 @@ public interface  OrderRepository extends JpaRepository<Order, Long> {
 
     // kiểm tra đơn hàng có tồn tại và ch bị xóa
     boolean existsByIdAndDeletedFalse(Long id);
+
+    // phần admin dashboard
+    long countByDeletedFalse();
+
+    long countByCreatedAtAfterAndDeletedFalse(LocalDateTime dateTime, boolean deleted);
+
+    // Đếm số đơn hàng hôm nay (từ 00:00:00 đến hiện tại)
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt >= :startOfDay")
+    long countTodayOrders(@Param("startOfDay") LocalDateTime startOfDay);
 
 }
