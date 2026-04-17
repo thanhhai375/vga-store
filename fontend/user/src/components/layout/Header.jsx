@@ -6,7 +6,6 @@ import AuthModal from '../AuthModal/AuthModal';
 import './Header.css';
 
 const Header = () => {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   // State điều khiển Dropdown Menu của User
@@ -16,14 +15,37 @@ const Header = () => {
   const cartTotalQuantity = useSelector((state) => state.cart.cartTotalQuantity);
   const wishlistCount = useSelector((state) => state.wishlist.wishlistItems.length);
 
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  // Thêm lấy isAuthModalOpen từ redux
+  const { isAuthenticated, user, isAuthModalOpen } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+
+  // Thêm function đóng auth modal
+  const handleCloseAuthModal = () => {
+    import('../../redux/authSlice').then(({ closeAuthModal }) => {
+      dispatch(closeAuthModal());
+    });
+  };
+
+  const handleOpenAuthModal = () => {
+    import('../../redux/authSlice').then(({ openAuthModal }) => {
+      dispatch(openAuthModal());
+    });
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Thêm: Tự động tải giỏ hàng từ cơ sở dữ liệu nếu đã đăng nhập
+  useEffect(() => {
+    if (isAuthenticated) {
+      import('../../redux/cartSlice').then(({ fetchCart }) => {
+        dispatch(fetchCart());
+      });
+    }
+  }, [isAuthenticated, dispatch]);
 
   // Đóng menu khi click ra ngoài
   useEffect(() => {
@@ -130,7 +152,7 @@ const Header = () => {
               )}
             </div>
           ) : (
-            <button className="nav-action-item" onClick={() => setIsLoginModalOpen(true)} title="Đăng nhập">
+            <button className="nav-action-item" onClick={handleOpenAuthModal} title="Đăng nhập">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
@@ -151,7 +173,7 @@ const Header = () => {
         </div>
       </div>
 
-      <AuthModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      <AuthModal isOpen={isAuthModalOpen} onClose={handleCloseAuthModal} />
     </header>
   );
 };

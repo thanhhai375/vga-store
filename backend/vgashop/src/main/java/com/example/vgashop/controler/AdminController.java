@@ -1,10 +1,14 @@
 package com.example.vgashop.controler;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,11 +22,16 @@ import com.example.vgashop.dto.OrderResponse;
 import com.example.vgashop.dto.OrderStatusUpdateRequest;
 import com.example.vgashop.dto.OrderSummaryResponse;
 import com.example.vgashop.dto.ProductAdminResponse;
+import com.example.vgashop.dto.ProductImageDTO;
 import com.example.vgashop.dto.UserAdminResponse;
 import com.example.vgashop.entity.Brand;
 import com.example.vgashop.entity.Category;
+import com.example.vgashop.entity.Product;
+import com.example.vgashop.entity.Review;
 import com.example.vgashop.repository.ApiResponse;
+import com.example.vgashop.repository.ReviewRepository;
 import com.example.vgashop.service.AdminService;
+import com.example.vgashop.service.ProductService;
 
 import jakarta.validation.Valid;
 
@@ -34,9 +43,13 @@ import jakarta.validation.Valid;
 public class AdminController {
 
     private final AdminService adminService;
+    private final ProductService productService;
+    private final ReviewRepository reviewRepository;
 
-    public AdminController(AdminService adminService) {
+    public AdminController(AdminService adminService, ProductService productService, ReviewRepository reviewRepository) {
         this.adminService = adminService;
+        this.productService = productService;
+        this.reviewRepository = reviewRepository;
     }
 
     // Dashboard, lấy dữ liệu tổng quan cho admin
@@ -117,6 +130,27 @@ public class AdminController {
         return ApiResponse.success("Đã xóa mềm sản phẩm thành công", "OK");
     }
 
+    // Admin lấy thông tin chi tiết 1 sản phẩm
+    @GetMapping("/products/{productId}")
+    public ApiResponse<Product> getProductById(@PathVariable Long productId) {
+        Product product = productService.getProductById(productId);
+        return ApiResponse.success("Lấy sản phẩm thành công", product);
+    }
+
+    // Admin tạo sản phẩm mới (kèm upload ảnh)
+    @PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<Product> createProduct(@Valid @ModelAttribute ProductImageDTO dto) {
+        Product saved = productService.createProductWithImage(dto);
+        return ApiResponse.success("Tạo sản phẩm thành công", saved);
+    }
+
+    // Admin sửa sản phẩm (ảnh tuỳ chọn)
+    @PutMapping(value = "/products/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<Product> updateProduct(@PathVariable Long productId, @ModelAttribute ProductImageDTO dto) {
+        Product updated = productService.updateProductWithImage(productId, dto);
+        return ApiResponse.success("Cập nhật sản phẩm thành công", updated);
+    }
+
     // QUẢN LÝ CATEGORY
     @GetMapping("/categories")
     public ApiResponse<Page<Category>> getAllCategoriesForAdmin(
@@ -149,5 +183,17 @@ public class AdminController {
     public ApiResponse<Brand> addBrand(@Valid @RequestBody Brand brand) {
         Brand savedBrand = adminService.addBrand(brand);
         return ApiResponse.success("Thêm thương hiệu thành công", savedBrand);
+    }
+
+    // QUẢN LÝ ĐÁNH GIÁ
+    @GetMapping("/reviews")
+    public ApiResponse<List<Review>> getAllReviews() {
+        return ApiResponse.success("Lấy danh sách đánh giá thành công", reviewRepository.findAll());
+    }
+
+    @DeleteMapping("/reviews/{reviewId}")
+    public ApiResponse<String> deleteReview(@PathVariable Long reviewId) {
+        reviewRepository.deleteById(reviewId);
+        return ApiResponse.success("Đã xóa đánh giá", "OK");
     }
 }

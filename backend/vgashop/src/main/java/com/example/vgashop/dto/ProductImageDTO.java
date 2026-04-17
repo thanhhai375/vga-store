@@ -18,7 +18,7 @@ public class ProductImageDTO {
 
     private String description;
 
-    @NotNull(message = "Ảnh sản phẩm là bắt buộc")
+    // Ảnh có thể null khi update
     private MultipartFile imageFile;
 
     @NotNull(message = "Giá sản phẩm là bắt buộc")

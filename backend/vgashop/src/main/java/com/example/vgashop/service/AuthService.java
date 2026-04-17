@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.vgashop.dto.AuthResponse;
 import com.example.vgashop.dto.UserDTO;
+import com.example.vgashop.dto.GoogleLoginRequest;
 import com.example.vgashop.dto.RegisterRequest;
 import com.example.vgashop.entity.Role;
 import com.example.vgashop.entity.User;
@@ -109,5 +110,43 @@ public class AuthService {
         System.out.println("Login successful - Token generated");
 
         return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getRole().name(), user.getId(), "Đăng nhập thành công");
+    }
+
+    public AuthResponse googleLogin(GoogleLoginRequest req) {
+        System.out.println("=== GOOGLE LOGIN ATTEMPT ===");
+        System.out.println("Email input: [" + req.getEmail() + "]");
+
+        // Check if user exists by email
+        User user = userRepository.findByEmail(req.getEmail()).orElse(null);
+
+        if (user == null) {
+            System.out.println("Google User not found -> Registering new User");
+            // Register new user automatically
+            user = new User();
+            // Google names can contain spaces, use email prefix as username
+            String usernamePrefix = req.getEmail().split("@")[0];
+            String username = usernamePrefix;
+            int counter = 1;
+            while(userRepository.existsByUsername(username)) {
+                username = usernamePrefix + counter++;
+            }
+
+            user.setUsername(username);
+            user.setEmail(req.getEmail());
+            // Random password for google users
+            user.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            user.setFullName(req.getName());
+            user.setRole(Role.USER);
+            user.setStatus(true);
+            user = userRepository.save(user);
+        } else {
+            System.out.println("Google User found - ID: " + user.getId() + ", Status: " + user.getStatus());
+            if (Boolean.FALSE.equals(user.getStatus())) {
+                throw new RuntimeException("Tài khoản đã bị khóa");
+            }
+        }
+
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
+        return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getRole().name(), user.getId(), "Đăng nhập Google thành công");
     }
 }

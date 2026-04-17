@@ -1,6 +1,7 @@
 package com.example.vgashop.controler;
 
 import com.example.vgashop.dto.AuthResponse;
+import com.example.vgashop.dto.GoogleLoginRequest;
 import com.example.vgashop.dto.LoginRequest;
 import com.example.vgashop.dto.RegisterRequest;
 import com.example.vgashop.dto.UserDTO;
@@ -46,6 +47,16 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req) {
         try {
             AuthResponse resp = authService.login(req.getUsername(), req.getPassword());
+            return ResponseEntity.ok(resp);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleLoginRequest req) {
+        try {
+            AuthResponse resp = authService.googleLogin(req);
             return ResponseEntity.ok(resp);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));

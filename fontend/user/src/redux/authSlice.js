@@ -6,6 +6,7 @@ const initialState = {
   isAuthenticated: !!localStorage.getItem('token'),
   loading: false,
   error: null,
+  isAuthModalOpen: false, // Quản lý popup Đăng nhập toàn cục
 };
 
 const authSlice = createSlice({
@@ -54,13 +55,20 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    openAuthModal: (state) => {
+      state.isAuthModalOpen = true;
+    },
+    closeAuthModal: (state) => {
+      state.isAuthModalOpen = false;
+    },
   },
 });
 
 export const {
   loginStart, loginSuccess, loginFailure,
   logout, updateUser,
-  registerStart, registerSuccess, registerFailure
+  registerStart, registerSuccess, registerFailure,
+  openAuthModal, closeAuthModal
 } = authSlice.actions;
 
 export default authSlice.reducer;

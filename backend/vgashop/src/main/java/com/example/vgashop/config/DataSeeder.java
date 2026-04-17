@@ -19,13 +19,21 @@ public class DataSeeder {
             BrandRepository brandRepository,
             BlogRepository blogRepository,
             ReviewRepository reviewRepository,
-            ServicePolicyRepository servicePolicyRepository) {
+            ServicePolicyRepository servicePolicyRepository,
+            SystemSettingRepository systemSettingRepository) {
 
         return args -> {
 
             // Xóa dữ liệu rác cũ
             reviewRepository.deleteAll();
             blogRepository.deleteAll();
+
+            // Seed Settings
+            if (systemSettingRepository.count() == 0) {
+                systemSettingRepository.save(SystemSetting.builder().settingKey("BANK_ID").settingValue("970436").description("Mã BIN Ngân hàng (Vietcombank)").build());
+                systemSettingRepository.save(SystemSetting.builder().settingKey("BANK_ACC_NO").settingValue("1234567890").description("Số tài khoản").build());
+                systemSettingRepository.save(SystemSetting.builder().settingKey("BANK_ACC_NAME").settingValue("CONG TY VGA STORE").description("Tên chủ tài khoản").build());
+            }
 
             // ── CHỈ SEED nếu bảng TRỐNG ─────────────────────────────────────
             if (blogRepository.count() == 0) {

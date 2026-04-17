@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { servicePages } from '../../data/serviceData';
+import servicePolicyService from '../../services/servicePolicyService';
+import { servicePages as localData } from '../../data/serviceData';
 import './Service.css';
 
 // ── SVG Icon Mapper ─────────────────────────
@@ -28,124 +29,56 @@ const renderServiceIcon = (emoji) => {
   }
 };
 
-// ── Content Block Renderer ──────────────────────────────────────────────────
+// ── Content Block Renderer ──
 function ContentRenderer({ blocks }) {
   if (!blocks) return null;
   return blocks.map((block, idx) => {
     switch (block.type) {
       case 'heading':
         return <h3 key={idx} className="sv-heading">{block.body}</h3>;
-
       case 'text':
         return <p key={idx} className="sv-text">{block.body}</p>;
-
       case 'list':
         return (
           <ul key={idx} className="sv-list">
-            {block.items.map((item, i) => (
-              <li key={i}>{item}</li>
-            ))}
+            {block.items.map((item, i) => <li key={i}>{item}</li>)}
           </ul>
         );
-
-      case 'note':
+      case 'warning':
         return (
-          <div key={idx} className="sv-note">
-            <span className="sv-note-icon">{renderServiceIcon('⚠️')}</span>
-            <p>{block.body}</p>
+          <div key={idx} className="sv-alert sv-alert-warning">
+            <span className="sv-alert-icon">⚠️</span>
+            <div className="sv-alert-content">{block.body}</div>
           </div>
         );
-
-      case 'table':
+      case 'info':
         return (
-          <div key={idx} className="sv-table-wrap">
-            <table className="sv-table">
-              <thead>
-                <tr>
-                  {block.headers.map((h, i) => <th key={i}>{h}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {block.rows.map((row, ri) => (
-                  <tr key={ri}>
-                    {row.map((cell, ci) => <td key={ci}>{cell}</td>)}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div key={idx} className="sv-alert sv-alert-info">
+            <span className="sv-alert-icon">ℹ️</span>
+            <div className="sv-alert-content">{block.body}</div>
           </div>
         );
-
-      case 'features':
+      case 'component':
+        if (block.name === 'WarrantyCheck') {
+          return <WarrantyCheck key={idx} />;
+        }
+        return null;
+      case 'contact':
         return (
-          <div key={idx} className="sv-features-grid">
-            {block.items.map((item, i) => (
-              <div key={i} className="sv-feature-card">
-                <span className="sv-feature-icon">{renderServiceIcon(item.icon)}</span>
-                <div>
-                  <h4>{item.title}</h4>
-                  <p>{item.desc}</p>
-                </div>
-              </div>
-            ))}
+          <div key={idx} className="sv-contact-box">
+            <h4>{block.contact.title}</h4>
+            <div className="sv-contact-row"><span>📞 Hotline:</span><strong>{block.contact.phone}</strong></div>
+            <div className="sv-contact-row"><span>📧 Email:</span><strong>{block.contact.email}</strong></div>
+            <div className="sv-contact-row"><span>⏰ Giờ l.việc:</span><strong>{block.contact.hours}</strong></div>
           </div>
         );
-
-      case 'stores':
-        return (
-          <div key={idx} className="sv-stores-grid">
-            {block.items.map((store, i) => (
-              <div key={i} className="sv-store-card">
-                <div className="sv-store-pin">{renderServiceIcon('📍')}</div>
-                <h4>{store.name}</h4>
-                <div className="sv-store-info">
-                  <p><strong>Địa chỉ:</strong> {store.address}</p>
-                  <p><strong>Hotline:</strong> {store.phone}</p>
-                  <p><strong>Giờ mở cửa:</strong> {store.hours}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-
-      case 'steps':
-        return (
-          <div key={idx} className="sv-steps">
-            {block.items.map((item) => (
-              <div key={item.step} className="sv-step">
-                <div className="sv-step-number">{item.step}</div>
-                <div className="sv-step-info">
-                  <h4>{item.title}</h4>
-                  <p>{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-
-      case 'priceBox':
-        return (
-          <div key={idx} className="sv-price-box">
-            <div className="sv-price-box-header">{block.title}</div>
-            <p className="sv-price-box-sub">{block.subtitle}</p>
-            <ul className="sv-list">
-              {block.items.map((item, i) => <li key={i}>{item}</li>)}
-            </ul>
-            {block.note && <p className="sv-price-box-note">{block.note}</p>}
-          </div>
-        );
-
-      case 'warrantyForm':
-        return <WarrantyForm key={idx} />;
-
       default:
-        return <p key={idx}>{block.body}</p>;
+        return null;
     }
   });
 }
 
-// ── Warranty Lookup Form ────────────────────────────────────────────────────
-function WarrantyForm() {
+function WarrantyCheck() {
   const [query, setQuery] = useState('');
   const [searched, setSearched] = useState(false);
 
@@ -177,24 +110,66 @@ function WarrantyForm() {
   );
 }
 
-// ── Main Service Page ───────────────────────────────────────────────────────
+// ── Main Service Page ──
 const Service = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
 
-  const [activeId, setActiveId] = useState(() => {
-    const found = servicePages.find((s) => s.id === tabFromUrl || s.label === tabFromUrl);
-    return found ? found.id : servicePages[0].id;
-  });
+  const [policies, setPolicies] = useState([]);
+  const [activeId, setActiveId] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (tabFromUrl) {
-      const found = servicePages.find((s) => s.id === tabFromUrl || s.label === tabFromUrl);
-      if (found) setActiveId(found.id);
-    }
+    const fetchPolicies = async () => {
+      try {
+        const data = await servicePolicyService.getAll();
+        
+        let mappedData = [];
+        if (data && data.length > 0) {
+          mappedData = data.map(item => {
+            let parsedContent = [];
+            try {
+              parsedContent = typeof item.content === 'string' ? JSON.parse(item.content) : item.content;
+            } catch (e) {
+              console.warn("Parse content JSON failed for", item.id);
+            }
+            return {
+              ...item,
+              content: parsedContent
+            };
+          });
+        } else {
+          // Fallback to localData
+          mappedData = localData; 
+        }
+
+        setPolicies(mappedData);
+
+        // Set active tab based on URL or first item
+        const defaultId = mappedData[0]?.id || '';
+        if (tabFromUrl) {
+          const found = mappedData.find((s) => s.id === tabFromUrl || s.label === tabFromUrl);
+          if (found) {
+            setActiveId(found.id);
+          } else {
+            setActiveId(defaultId);
+          }
+        } else {
+          setActiveId(defaultId);
+        }
+
+      } catch (err) {
+        console.error("Error loading policies", err);
+        setPolicies(localData);
+        if(!tabFromUrl) setActiveId(localData[0].id);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPolicies();
   }, [tabFromUrl]);
 
-  const activePage = servicePages.find((s) => s.id === activeId) || servicePages[0];
+  const activePage = policies.find((s) => s.id === activeId) || policies[0];
 
   const handleTabClick = (page) => {
     setActiveId(page.id);
@@ -202,9 +177,18 @@ const Service = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (loading) {
+    return (
+      <div className="service-page" style={{ textAlign: 'center', padding: '100px 0' }}>
+         Đang tải chính sách dịch vụ...
+      </div>
+    );
+  }
+
+  if (!activePage) return null;
+
   return (
     <div className="service-page">
-      {/* ── Giao diện Hero trắng sáng y hệt mẫu ──────────────────────────── */}
       <div className="sv-hero-clean">
         <div className="container" style={{ textAlign: 'center' }}>
           <h1 className="sv-hero-title-clean">{activePage.title}</h1>
@@ -214,15 +198,12 @@ const Service = () => {
         </div>
       </div>
 
-      {/* ── Body ──────────────────────────────────────────────── */}
       <div className="sv-body container">
         <div className="sv-layout">
-
-          {/* ── Sidebar (Menu trái xám nhạt) ────────────────────── */}
           <aside className="sv-sidebar">
             <div className="sv-sidebar-title">DỊCH VỤ & CHÍNH SÁCH</div>
             <nav className="sv-sidebar-nav">
-              {servicePages.map((page) => (
+              {policies.map((page) => (
                 <button
                   key={page.id}
                   className={`sv-nav-item ${activeId === page.id ? 'active' : ''}`}
@@ -234,7 +215,6 @@ const Service = () => {
               ))}
             </nav>
 
-            {/* Khối CTA Đen bóng giống hệt mẫu */}
             <div className="sv-sidebar-cta">
               <div className="sv-sidebar-cta-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -242,18 +222,16 @@ const Service = () => {
                 </svg>
               </div>
               <h4>Cần hỗ trợ?</h4>
-              <p>Tự ái đi từ 033... gọi ngay</p>
+              <p>Tổng đài miễn phí</p>
               <a href="tel:19005301" className="sv-sidebar-cta-phone">1900.5301</a>
             </div>
           </aside>
 
-          {/* ── Content (Khối trắng nền nã bên phải) ─────────────── */}
           <main className="sv-content">
             <div className="sv-content-body">
               <ContentRenderer blocks={activePage.content} />
             </div>
           </main>
-
         </div>
       </div>
     </div>

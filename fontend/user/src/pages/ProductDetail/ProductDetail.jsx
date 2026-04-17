@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
 import './ProductDetail.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart } from '../../redux/cartSlice';
+import { addToCartDb } from '../../redux/cartSlice';
 import { toggleWishlist } from '../../redux/wishlistSlice';
 import RelatedProducts from './RelatedProducts';
 
@@ -24,6 +24,7 @@ const ProductDetail = () => {
   const [guestName, setGuestName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   // SỬA LỖI 1: Bọc thép Redux Auth (Chống sập web nếu state.auth chưa tồn tại)
   const authState = useSelector(state => state.auth) || {};
@@ -87,15 +88,45 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   const handleAddToCart = () => {
-    dispatch(addToCart({ id: product.id, name: product.name, price: Number(product.price || 0), thumbnail: mainImage }));
+    if (!isAuthenticated) {
+      import('../../redux/authSlice').then(({ openAuthModal }) => dispatch(openAuthModal()));
+      return;
+    }
+    dispatch(addToCartDb({ product: { id: product.id, name: product.name, price: Number(product.price || 0), thumbnail: mainImage, cartQuantity: 1 }, quantity: 1 }));
     setAddedToCart(true);
+    setShowPopup(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
   const handleBuyNow = () => {
-    dispatch(addToCart({ id: product.id, name: product.name, price: Number(product.price || 0), thumbnail: mainImage }));
-    navigate('/checkout');
+    if (!isAuthenticated) {
+      import('../../redux/authSlice').then(({ openAuthModal }) => dispatch(openAuthModal()));
+      return;
+    }
+    navigate('/checkout', { 
+      state: { 
+        buyNowItem: { 
+          id: product.id, 
+          name: product.name, 
+          price: Number(product.price || 0), 
+          thumbnail: mainImage, 
+          cartQuantity: 1 
+        } 
+      } 
+    });
+  };
+
+  const handleToggleWishlistDetail = () => {
+    if (!isAuthenticated) {
+      import('../../redux/authSlice').then(({ openAuthModal }) => dispatch(openAuthModal()));
+      return;
+    }
+    dispatch(toggleWishlist(product));
   };
 
   const handlePostReview = async (e) => {
@@ -107,8 +138,13 @@ const ProductDetail = () => {
         product: { id: parseInt(id) },
         comment: newComment,
         rating: newRating,
-        guestName: isAuthenticated && user ? user.username : (guestName || 'Khách hàng')
+        guestName: isAuthenticated && user ? (user.fullName || user.username) : (guestName || 'Khách hàng')
       };
+      
+      if (isAuthenticated && user && user.id) {
+        rev.user = { id: user.id };
+      }
+
       const saved = await axiosClient.post('/reviews', rev);
       const savedData = saved?.data || saved;
       setReviews(prev => [savedData, ...prev]);
@@ -117,6 +153,7 @@ const ProductDetail = () => {
       setNewRating(5);
     } catch (err) {
       console.error('Lỗi đăng review:', err);
+      // Hiển thị toast hoặc alert
       alert('Có lỗi khi gửi đánh giá. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
@@ -236,7 +273,7 @@ const ProductDetail = () => {
                   </button>
                   <button
                     className={`btn-wishlist-detail ${isWishlisted ? 'wishlisted' : ''}`}
-                    onClick={() => dispatch(toggleWishlist(product))}
+                    onClick={handleToggleWishlistDetail}
                   >
                     {isWishlisted ? '❤️ Đã yêu thích' : '🤍 Yêu Thích'}
                   </button>
@@ -359,13 +396,33 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* ── SẢN PHẨM TƯƠNG TỰ ────────────────────────────────── */}
+      {/* ── SẢN PHẨM KHÁC ────────────────────────────────── */}
       <div className="related-section">
         <div className="container">
           <h2 className="related-title">Sản Phẩm Tương Tự</h2>
           <RelatedProducts categoryId={product.category?.id} currentId={product.id} />
         </div>
       </div>
+
+      {/* POPUP THÊM VÀO GIỎ */}
+      {showPopup && (
+        <div className="custom-popup-overlay" onClick={() => setShowPopup(false)}>
+          <div className="custom-popup-content" onClick={(e) => e.stopPropagation()}>
+            <button className="popup-corner-close" onClick={() => setShowPopup(false)}>✕</button>
+            <div className="popup-icon-success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <h3 className="popup-title">Đã thêm sản phẩm vào giỏ hàng!</h3>
+            <div className="popup-actions">
+              <button className="popup-btn-continue" onClick={() => setShowPopup(false)} style={{ background: '#f1f5f9', color: '#475569', padding: '12px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Tiếp tục mua sắm</button>
+              <button className="popup-btn-close" onClick={() => navigate('/cart')} style={{ background: '#d8282e', color: '#fff', padding: '12px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Đi đến giỏ hàng</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

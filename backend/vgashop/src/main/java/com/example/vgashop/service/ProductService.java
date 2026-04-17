@@ -231,6 +231,34 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    // cập nhật sản phẩm (tùy chọn có ảnh mới)
+    public Product updateProductWithImage(Long id, ProductImageDTO dto) {
+        return productRepository.findByIdAndDeleted(id, false)
+                .map(product -> {
+                    product.setName(dto.getName());
+                    product.setPrice(dto.getPrice());
+                    product.setStock(dto.getStock());
+                    product.setDescription(dto.getDescription());
+                    if (dto.getSku() != null) product.setSku(dto.getSku());
+
+                    // Chỉ cập nhật ảnh nếu có file mới
+                    if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
+                        String imgUrl = uploadImageFile(dto.getImageFile());
+                        product.setImgUrl(imgUrl);
+                    }
+
+                    if (dto.getBrandId() != null) {
+                        product.setBrand(brandService.getBrandId(dto.getBrandId()));
+                    }
+                    if (dto.getCategoryId() != null) {
+                        product.setCategory(categoryService.getCategoryById(dto.getCategoryId()));
+                    }
+
+                    return productRepository.save(product);
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm ID: " + id));
+    }
+
     // method hỗ trọ upload ảnh
     private String uploadImageFile(MultipartFile file) {
         // logic lưu file vào thư mục uploads và trả về URL truy cập
