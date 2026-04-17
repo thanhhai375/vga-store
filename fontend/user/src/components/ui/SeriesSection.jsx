@@ -3,24 +3,44 @@ import { Link } from 'react-router-dom';
 import './SeriesSection.css';
 
 const seriesData = [
-  { id: 1, name: "ROG MATRIX", tagline: "Infinity Loop Cooling", img: "https://dlcdnwebimgs.asus.com/gain/DC190BF7-5FB1-4C95-9E01-1E7B7B2206FF/w750/h470/fwebp", filterParam: "ROG Matrix" },
-  { id: 2, name: "ROG ASTRAL", tagline: "The Next Frontier", img: "https://dlcdnwebimgs.asus.com/gain/91DFD65E-42E7-45E1-91A5-2376F4E6889E/w750/h470/fwebp", filterParam: "ROG Astral" },
-  { id: 3, name: "ROG STRIX", tagline: "Take Flight", img: "https://dlcdnwebimgs.asus.com/gain/5DEF33D2-B9E4-4983-BE85-F93C4E4AD5FC/w750/h470/fwebp", filterParam: "ROG Strix" },
+  {
+    id: 1,
+    name: "ROG MATRIX",
+    tagline: "Tản Nhiệt Vô Cực", // Đã dịch từ "Infinity Loop Cooling"
+    img: "https://dlcdnwebimgs.asus.com/gain/DC190BF7-5FB1-4C95-9E01-1E7B7B2206FF/w750/h470/fwebp",
+    filterParam: "ROG Matrix"
+  },
+  {
+    id: 2,
+    name: "ROG ASTRAL",
+    tagline: "Tiên Phong Công Nghệ", // Đã dịch từ "The Next Frontier"
+    img: "https://dlcdnwebimgs.asus.com/gain/91DFD65E-42E7-45E1-91A5-2376F4E6889E/w750/h470/fwebp",
+    filterParam: "ROG Astral"
+  },
+  {
+    id: 3,
+    name: "ROG STRIX",
+    tagline: "Thống Lĩnh Cuộc Chơi", // Đã dịch từ "Take Flight"
+    img: "https://dlcdnwebimgs.asus.com/gain/5DEF33D2-B9E4-4983-BE85-F93C4E4AD5FC/w750/h470/fwebp",
+    filterParam: "ROG Strix"
+  },
 ];
 
 const SeriesSection = () => {
   return (
-    <section id="series-section" className="series-section">
+    <section className="series-section">
       <div className="container">
         <div className="series-header-center">
           <h1 className="series-huge-title">CARD ĐỒ HỌA</h1>
-          <h2 className="series-sub-title">CARD ĐỒ HỌA</h2>
-          <Link to="/shop" className="series-link-red">XEM TẤT CẢ CARD ĐỒ HỌA ›</Link>
+
+          {/* ĐÃ XÓA THẺ <h2> CHỨA CHỮ "CARD ĐỒ HỌA" BỊ LẶP LẠI Ở ĐÂY */}
+
+          <Link to="/products" className="series-link-red">XEM TẤT CẢ CARD ĐỒ HỌA ›</Link>
         </div>
 
         <div className="series-grid">
           {seriesData.map(s => (
-            <Link key={s.id} to={`/shop?series=${s.filterParam}`} className="series-card-solid">
+            <Link key={s.id} to={`/products?line=${s.filterParam}`} className="series-card-solid">
               <div className="series-img-wrap">
                 <img src={s.img} alt={s.name} className="series-card-img" />
               </div>

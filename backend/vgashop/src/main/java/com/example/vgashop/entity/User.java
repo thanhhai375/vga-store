@@ -40,6 +40,18 @@ public class User {
     @OneToOne(mappedBy= "user", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private Cart cart;
 
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Column(name = "gender", length = 20)
+    private String gender;
+
+    @Column(name = "dob")
+    private java.time.LocalDate dob;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<UserAddress> addresses;
+
     // getter và setter
     public Long getId() {
         return id;
@@ -97,6 +109,16 @@ public class User {
         this.cart = cart;
     }
 
-    
-}
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public java.time.LocalDate getDob() { return dob; }
+    public void setDob(java.time.LocalDate dob) { this.dob = dob; }
+
+    public List<UserAddress> getAddresses() { return addresses; }
+    public void setAddresses(List<UserAddress> addresses) { this.addresses = addresses; }
+
+}

@@ -7,11 +7,17 @@ import './index.css'
 import { store } from './redux/store'
 import { Provider } from 'react-redux'
 
+// 2. Import thư viện Google
+import { GoogleOAuthProvider } from '@react-oauth/google'
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* 2. Bọc Provider bên ngoài App */}
+    {/* Bọc Provider của Redux */}
     <Provider store={store}>
-      <App />
+      {/* 3. Bọc GoogleOAuthProvider và cắm mã Client ID của bạn vào */}
+      <GoogleOAuthProvider clientId="820517470618-3fscnq649d1edm023fo31em406en7jjr.apps.googleusercontent.com">
+        <App />
+      </GoogleOAuthProvider>
     </Provider>
   </React.StrictMode>,
 )

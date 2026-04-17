@@ -64,12 +64,31 @@
   text-transform: uppercase;
 }
 
-.logo-line2 {
-  font-size: 10px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 5px;
-  text-transform: uppercase;
+/* ===== LOGO ===== */
+.logo-brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.header-logo-img {
+  height: 130px;
+  /* Chỉnh độ to nhỏ của logo ở đây */
+  margin-left: -60px;
+  margin-top: 10px;
+  width: auto;
+  object-fit: contain;
+  transition: filter 0.3s, transform 0.3s;
+  /* Phủ một lớp sáng nhẹ xung quanh để logo nổi bật trên nền đen */
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.15));
+}
+
+.logo-brand:hover .header-logo-img {
+  transform: scale(1.05);
+  /* Phóng to nhẹ khi di chuột */
+  /* Đổi sang phát sáng xanh - đỏ giống màu logo của bạn */
+  filter: drop-shadow(0 0 10px rgba(0, 162, 255, 0.5));
 }
 
 /* ===== NAV ===== */
@@ -177,116 +196,172 @@
   box-shadow: 0 0 6px var(--accent-color);
 }
 
-/* ===== USER MENU DROPDOWN ===== */
-.user-menu-wrapper {
+/* ================================================================
+   NÂNG CẤP MENU NGƯỜI DÙNG (DROPDOWN) CHUẨN DOANH NGHIỆP
+   ================================================================ */
+
+.user-logged-in-wrapper {
   position: relative;
+  display: inline-block;
+  margin-left: 8px;
 }
 
-.user-btn {
-  display: flex !important;
-  align-items: center;
-  gap: 10px;
-  width: auto !important;
-  padding: 0 12px !important;
-  border-radius: 24px !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  transition: all 0.3s;
-}
-
-.user-btn:hover, .user-btn.active {
-  background: rgba(255, 255, 255, 0.15) !important;
-  color: #fff;
-}
-
-.user-avatar {
-  width: 28px;
-  height: 28px;
-  background: var(--accent-color);
-  color: #fff;
+.user-avatar-trigger {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  font-size: 12px;
 }
 
-.user-name {
-  font-size: 13px;
-  font-weight: 700;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.user-avatar-trigger:hover {
+  border-color: #d8282e;
+  transform: scale(1.05);
 }
 
-.user-dropdown {
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Khung Menu Dropdown */
+.user-dropdown-menu {
   position: absolute;
-  top: calc(100% + 10px);
+  top: 140%;
   right: 0;
-  width: 220px;
+  width: 240px;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  padding: 8px;
-  z-index: 10000;
-  animation: slideDownHeader 0.3s ease-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid #eaeaea;
+  padding: 8px 0;
+  z-index: 1000;
+  animation: dropdownSlideUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-origin: top right;
 }
 
-.dropdown-header {
-  padding: 12px 16px;
+/* Tạo cái mũi tên nhỏ trỏ lên Avatar */
+.user-dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 12px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  transform: rotate(45deg);
+  border-left: 1px solid #eaeaea;
+  border-top: 1px solid #eaeaea;
+}
+
+/* Phần thông tin người dùng */
+.dropdown-user-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+}
+
+.dropdown-user-header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dropdown-user-info {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-.dropdown-header strong {
+.dropdown-user-info .user-name {
   font-size: 14px;
-  color: #1e293b;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.dropdown-header span {
+.dropdown-user-info .user-email {
   font-size: 12px;
   color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.user-dropdown hr {
-  border: none;
-  border-top: 1px solid #f1f5f9;
-  margin: 4px 0;
+/* Đường kẻ phân cách */
+.dropdown-divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 8px 0;
 }
 
+/* Các link bên trong Menu */
 .dropdown-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 16px;
+  padding: 10px 20px;
   color: #475569;
+  font-size: 14px;
+  font-weight: 500;
   text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 6px;
   transition: all 0.2s;
-  width: 100%;
-  text-align: left;
-  border: none;
   background: none;
+  width: 100%;
+  border: none;
   cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.dropdown-item svg {
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+  transition: color 0.2s;
 }
 
 .dropdown-item:hover {
-  background: #f8fafc;
-  color: var(--accent-color);
+  background-color: #f8fafc;
+  color: #111;
 }
 
+.dropdown-item:hover svg {
+  color: #d8282e;
+}
+
+/* Nút Đăng xuất */
 .logout-btn {
   color: #ef4444;
 }
 
 .logout-btn:hover {
-  background: #fef2f2;
+  background-color: #fef2f2;
+  color: #dc2626;
 }
 
-@keyframes slideDownHeader {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.logout-btn:hover svg {
+  color: #dc2626;
+}
+
+@keyframes dropdownSlideUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  // Dữ liệu mẫu (Có thêm thông tin chi tiết để test)
+  // Dữ liệu mẫu
   orders: [
     {
       id: 'VGA-180288', date: '18/02/2026', total: '12.490.000đ', status: 'Đang giao hàng', statusColor: '#3b82f6',
@@ -23,15 +23,18 @@ const orderSlice = createSlice({
     addOrder: (state, action) => {
       state.orders.unshift(action.payload);
     },
+    // 🌟 ĐÃ NÂNG CẤP LOGIC HỦY ĐƠN: Đổi thành "Yêu cầu hủy"
     cancelOrder: (state, action) => {
-      const orderId = action.payload;
+      // Nhận vào một Object chứa ID và Lý do
+      const { orderId, reason } = action.payload;
       const orderIndex = state.orders.findIndex(o => o.id === orderId);
+
       if (orderIndex >= 0) {
-        state.orders[orderIndex].status = 'Đã hủy';
-        state.orders[orderIndex].statusColor = '#ef4444';
+        state.orders[orderIndex].status = 'Yêu cầu hủy';
+        state.orders[orderIndex].statusColor = '#c2410c'; // Màu cam đất cảnh báo
+        state.orders[orderIndex].cancelReason = reason; // Lưu lý do cho Admin xem
       }
     },
-    // THÊM MỚI: Cập nhật địa chỉ giao hàng
     updateOrderAddress: (state, action) => {
       const { orderId, newAddress } = action.payload;
       const orderIndex = state.orders.findIndex(o => o.id === orderId);

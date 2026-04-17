@@ -1,11 +1,24 @@
 /* ============================================================
-   WISHLIST PAGE — Premium Minimalist Aesthetic
+   WISHLIST PAGE — Clean & Light Theme (Sạch sẽ, Tươi sáng)
    ============================================================ */
 
 .wishlist-page {
-  margin-top: 120px;
-  margin-bottom: 80px;
-  min-height: 60vh;
+  padding-top: 100px !important;
+  padding-bottom: 100px;
+  background-color: #f5f7fa;
+  /* Nền xám nhạt bao phủ 100% màn hình */
+  min-height: 100vh;
+  /* Đẩy footer xuống tít dưới đáy */
+  width: 100%;
+  font-family: 'Inter', Arial, sans-serif;
+}
+
+.wishlist-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .wishlist-header {
@@ -13,14 +26,15 @@
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: 40px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #eaeaea;
+  /* Viền sáng */
   padding-bottom: 20px;
 }
 
 .wishlist-title {
   font-size: 28px;
   font-weight: 900;
-  color: var(--text-primary);
+  color: #111;
   margin: 0;
   display: flex;
   align-items: center;
@@ -30,16 +44,16 @@
 .wishlist-count {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-secondary);
-  background: #f1f5f9;
+  color: #666;
+  background: #e2e8f0;
   padding: 4px 12px;
   border-radius: 20px;
 }
 
 .btn-clear-wishlist {
   background: none;
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
+  border: 1px solid #d1d5db;
+  color: #666;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 13px;
@@ -49,101 +63,117 @@
 }
 
 .btn-clear-wishlist:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
+  border-color: #d8282e;
+  color: #d8282e;
+  background: #fff5f5;
 }
 
 /* ──── Empty State ─────────────────────────────────────────── */
 .wishlist-empty {
   text-align: center;
-  padding: 100px 40px;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 1px dashed var(--border-color);
+  padding: 80px 40px;
+  background: #ffffff;
+  /* Box trắng */
+  border-radius: 14px;
+  border: 1px dashed #d1d5db;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
 }
 
 .empty-heart-icon {
   font-size: 64px;
   margin-bottom: 24px;
-  opacity: 0.5;
+  opacity: 0.8;
 }
 
 .wishlist-empty h3 {
   font-size: 22px;
   font-weight: 800;
   margin-bottom: 12px;
+  color: #111;
 }
 
 .wishlist-empty p {
-  color: var(--text-secondary);
+  color: #666;
   margin-bottom: 30px;
 }
 
 .btn-go-shop {
   display: inline-block;
-  background: var(--accent-color);
+  background: #d8282e;
   color: #fff;
   padding: 14px 32px;
   border-radius: 8px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.btn-go-shop:hover {
+  background: #c72424;
 }
 
 /* ──── Wishlist Grid ───────────────────────────────────────── */
 .wishlist-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
 }
 
 .wishlist-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: #ffffff;
+  /* Card trắng tinh khôi */
+  border: 1px solid #eaeaea;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
 .wishlist-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
-  border-color: var(--accent-color);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  border-color: #d8282e;
 }
 
 .btn-remove-wish {
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 30px;
-  height: 30px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid var(--border-color);
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #eaeaea;
   border-radius: 50%;
   z-index: 10;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: #999;
+  font-size: 14px;
   transition: all 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .btn-remove-wish:hover {
-  background: var(--accent-color);
-  color: #fff;
-  border-color: var(--accent-color);
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
 }
 
 .wish-img-wrapper {
   display: block;
   aspect-ratio: 1.2;
-  background: #f8fafc;
+  background: #f8f9fa;
+  /* Nền ảnh xám siêu nhạt */
   padding: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .wish-img {
@@ -164,7 +194,7 @@
 .wish-brand {
   font-size: 11px;
   font-weight: 800;
-  color: var(--text-secondary);
+  color: #888;
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 6px;
@@ -172,22 +202,28 @@
 
 .wish-name {
   display: block;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #111;
   line-height: 1.4;
   margin-bottom: 12px;
-  height: 44px;
+  height: 42px;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.wish-name:hover {
+  color: #d8282e;
 }
 
 .wish-price {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 900;
-  color: var(--accent-color);
+  color: #d8282e;
   margin-bottom: 20px;
 }
 
@@ -198,12 +234,13 @@
 }
 
 .btn-add-to-cart-wish {
-  background: var(--text-primary);
+  background: #111;
   color: #fff;
   border: none;
   padding: 12px;
   border-radius: 6px;
-  font-weight: 800;
+  font-weight: 700;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
@@ -213,19 +250,19 @@
 }
 
 .btn-add-to-cart-wish:hover {
-  background: var(--accent-color);
+  background: #d8282e;
 }
 
 .btn-view-detail-wish {
   text-align: center;
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: #555;
   text-decoration: none;
-  padding: 8px;
+  padding: 6px;
 }
 
 .btn-view-detail-wish:hover {
-  color: var(--accent-color);
+  color: #d8282e;
   text-decoration: underline;
 }

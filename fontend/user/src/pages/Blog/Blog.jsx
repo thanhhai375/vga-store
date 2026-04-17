@@ -15,9 +15,14 @@ const Blog = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       setLoading(true);
-      const data = await blogService.getAll();
-      setBlogs(data);
-      setLoading(false);
+      try {
+        const data = await blogService.getAll();
+        setBlogs(data || []);
+      } catch (error) {
+        console.error("Lỗi lấy danh sách blog:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchBlogs();
   }, []);
@@ -45,14 +50,17 @@ const Blog = () => {
   // ── Hero post (featured & most views)
   const heroPost = [...blogs]
     .filter((p) => p.featured)
-    .sort((a, b) => b.views - a.views)[0];
+    .sort((a, b) => (b.views || 0) - (a.views || 0))[0];
 
   // ── Sidebar trending (top 5 by views)
-  const trending = [...blogs].sort((a, b) => b.views - a.views).slice(0, 5);
+  const trending = [...blogs].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
 
   if (loading) {
-    return <div className="blog-page" style={{paddingTop: '120px', textAlign: 'center'}}>Đang tải bài viết...</div>;
+    return <div className="blog-page" style={{ paddingTop: '120px', textAlign: 'center', color: '#555' }}>Đang tải bài viết...</div>;
   }
+
+  // Dò ảnh cho Bài nổi bật
+  const heroBgImage = heroPost ? (heroPost.thumbnail || heroPost.imgUrl || heroPost.image || '/images/products/gpu_original.png') : '';
 
   return (
     <div className="blog-page">
@@ -61,19 +69,21 @@ const Blog = () => {
         <Link to={`/blog/${heroPost.id}`} className="blog-hero-banner">
           <div
             className="blog-hero-bg"
-            style={{ backgroundImage: `url(${heroPost.thumbnail})` }}
+            style={{ backgroundImage: `url("${heroBgImage}")` }}
           />
           <div className="blog-hero-overlay" />
           <div className="blog-hero-content container">
-            <span className="blog-hero-badge">{heroPost.category}</span>
-            <h1 className="blog-hero-title">{heroPost.title}</h1>
-            <p className="blog-hero-excerpt">{heroPost.excerpt}</p>
-            <div className="blog-hero-meta">
-              <span className="blog-hero-author">
-                <span className="blog-hero-avatar">✍️</span>
-                {heroPost.author}
-              </span>
-              <span>👁 {heroPost.views?.toLocaleString()} lượt xem</span>
+            <div className="blog-hero-text">
+              <span className="blog-hero-badge">{heroPost.category}</span>
+              <h1 className="blog-hero-title">{heroPost.title}</h1>
+              <p className="blog-hero-excerpt">{heroPost.excerpt}</p>
+              <div className="blog-hero-meta">
+                <span className="blog-hero-author">
+                  <span className="blog-hero-avatar">✍️</span>
+                  {heroPost.author || 'Admin'}
+                </span>
+                <span>👁 {heroPost.views?.toLocaleString() || 0} lượt xem</span>
+              </div>
             </div>
           </div>
         </Link>
@@ -147,7 +157,7 @@ const Blog = () => {
                   <div className="blog-load-more">
                     <button
                       className="blog-load-more-btn"
-                      onClick={() => setVisibleCount((c) => c + 3)}
+                      onClick={() => setVisibleCount((c) => c + 4)}
                     >
                       Xem thêm bài viết
                       <span className="blog-load-more-count">
@@ -160,7 +170,7 @@ const Blog = () => {
             )}
           </div>
 
-          {/* ── RIGHT: Sidebar ──────────────────────────────── */}
+          {/* ── RIGHT: Sidebar (ĐÃ XÓA KHỐI TƯ VẤN) ──────────────────────────────── */}
           <aside className="blog-sidebar">
             {/* Trending */}
             <div className="blog-sidebar-widget">
@@ -174,7 +184,7 @@ const Blog = () => {
                     <div className="blog-trending-info">
                       <span className="blog-trending-cat">{post.category}</span>
                       <h4 className="blog-trending-title">{post.title}</h4>
-                      <span className="blog-trending-views">👁 {post.views?.toLocaleString()}</span>
+                      <span className="blog-trending-views">👁 {post.views?.toLocaleString() || 0}</span>
                     </div>
                   </Link>
                 ))}
@@ -193,7 +203,7 @@ const Blog = () => {
                     <button
                       key={cat}
                       className={`blog-cat-list-item ${activeCategory === cat ? 'active' : ''}`}
-                      onClick={() => { setActiveCategory(cat); setVisibleCount(6); window.scrollTo({top: 0, behavior: 'smooth'}); }}
+                      onClick={() => { setActiveCategory(cat); setVisibleCount(6); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     >
                       <span>{cat}</span>
                       <span className="blog-cat-count">{count}</span>
@@ -213,21 +223,12 @@ const Blog = () => {
                   <button
                     key={tag}
                     className="blog-tag-btn"
-                    onClick={() => { setSearchQuery(tag); window.scrollTo({top: 0, behavior: 'smooth'}); }}
+                    onClick={() => { setSearchQuery(tag); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   >
                     {tag}
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* CTA */}
-            <div className="blog-sidebar-cta">
-              <div className="blog-sidebar-cta-glow" />
-              <div className="blog-sidebar-cta-icon">🎮</div>
-              <h3>Cần tư vấn VGA?</h3>
-              <p>Chuyên gia VGA STORE sẵn sàng tư vấn miễn phí cho bạn</p>
-              <Link to="/products" className="blog-sidebar-cta-btn">Xem Sản Phẩm</Link>
             </div>
           </aside>
         </div>
@@ -238,27 +239,30 @@ const Blog = () => {
 
 // ── BlogCard Component ─────────────────────────────────────────────────────
 function BlogCard({ post }) {
+  // Dò ảnh thông minh cho card bài viết
+  const cardImage = post.thumbnail || post.imgUrl || post.image || '/images/products/gpu_original.png';
+
   return (
     <article className="blog-card">
       <Link to={`/blog/${post.id}`} className="blog-card-img-wrap">
-        <img src={post.thumbnail} alt={post.title} className="blog-card-img" loading="lazy" />
+        <img src={cardImage} alt={post.title} className="blog-card-img" loading="lazy" />
         <span className="blog-card-category">{post.category}</span>
         {post.featured && <span className="blog-card-featured">⭐ NỔI BẬT</span>}
       </Link>
       <div className="blog-card-body">
         <div className="blog-card-meta">
           <span className="blog-card-author">
-            <span className="blog-card-avatar">✍️</span>
-            {post.author}
+            <span className="blog-card-avatar">👤</span>
+            {post.author || 'Admin'}
           </span>
         </div>
-        <Link to={`/blog/${post.id}`}>
+        <Link to={`/blog/${post.id}`} style={{ textDecoration: 'none' }}>
           <h2 className="blog-card-title">{post.title}</h2>
         </Link>
         <p className="blog-card-excerpt">{post.excerpt}</p>
         <div className="blog-card-footer">
           <div className="blog-card-stats">
-            <span>👁 {post.views?.toLocaleString()}</span>
+            <span>👁 {post.views?.toLocaleString() || 0}</span>
           </div>
           <Link to={`/blog/${post.id}`} className="blog-card-readmore">
             Đọc tiếp →
