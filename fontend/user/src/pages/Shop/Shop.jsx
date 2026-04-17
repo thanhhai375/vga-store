@@ -10,7 +10,6 @@ const ITEMS_PER_PAGE = 12;
 const Shop = () => {
   const location = useLocation();
 
-  // ===== STATE =====
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
@@ -19,7 +18,6 @@ const Shop = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('default');
 
-  // Các state sidebar
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [priceRange, setPriceRange] = useState('all');
@@ -30,11 +28,9 @@ const Shop = () => {
   const [selectedPSUs, setSelectedPSUs] = useState([]);
   const [selectedPorts, setSelectedPorts] = useState([]);
 
-  // API Data
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
 
-  // ===== FETCH DỮ LIỆU =====
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -56,7 +52,7 @@ const Shop = () => {
     fetchData();
   }, []);
 
-  // ===== ĐỌC PARAM TỪ URL (Liên kết từ trang Home) =====
+  // ===== ĐỌC PARAM TỪ URL =====
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const brandParam = queryParams.get('brand');
@@ -65,30 +61,24 @@ const Shop = () => {
     const chipsetParam = queryParams.get('chipset');
     const vramParam = queryParams.get('vram');
     const memTypeParam = queryParams.get('memType');
-    const lineParam = queryParams.get('line');
+    // Đọc cả line và series đề phòng trùng lặp
+    const lineParam = queryParams.get('line') || queryParams.get('series');
     const psuParam = queryParams.get('psu');
     const priceParam = queryParams.get('price');
 
-    // Tự động tick Thương Hiệu
     if (brandParam) setSelectedBrands([brandParam]); else setSelectedBrands([]);
 
-    // 🌟 NÂNG CẤP: DÒ TÌM DANH MỤC THÔNG MINH (Không phân biệt hoa/thường)
     if (categoryParam) {
       const matchedCat = categories.find(
         c => c.name.toLowerCase() === categoryParam.toLowerCase() ||
           c.name.toLowerCase() === categoryParam.replace('-', ' ').toLowerCase()
       );
-
-      if (matchedCat) {
-        setSelectedCategories([matchedCat.name]); // Tick chính xác tên DB trả về
-      } else {
-        setSelectedCategories([categoryParam]); // Dự phòng khi categories chưa tải xong
-      }
+      if (matchedCat) setSelectedCategories([matchedCat.name]);
+      else setSelectedCategories([categoryParam]);
     } else {
       setSelectedCategories([]);
     }
 
-    // Các param khác
     if (chipsetBrandParam) setSelectedChipsets([chipsetBrandParam]);
     else if (chipsetParam) setSelectedChipsets([chipsetParam]);
     else setSelectedChipsets([]);
@@ -100,13 +90,9 @@ const Shop = () => {
     if (priceParam) setPriceRange(priceParam); else setPriceRange('all');
 
     setDisplayCount(ITEMS_PER_PAGE);
-  }, [location.search, categories]); // Phải có 'categories' để tự động update khi API danh mục tải xong
+  }, [location.search, categories]);
 
-
-  // 👇👇👇 CÁC HÀM XỬ LÝ (HANDLERS) 👇👇👇
-  const toggleArrayItem = (array, item) => {
-    return array.includes(item) ? array.filter(v => v !== item) : [...array, item];
-  };
+  const toggleArrayItem = (array, item) => array.includes(item) ? array.filter(v => v !== item) : [...array, item];
 
   const handleBrandChange = (val) => { setSelectedBrands(prev => toggleArrayItem(prev, val)); setDisplayCount(ITEMS_PER_PAGE); };
   const handleCategoryChange = (val) => { setSelectedCategories(prev => toggleArrayItem(prev, val)); setDisplayCount(ITEMS_PER_PAGE); };
@@ -124,23 +110,16 @@ const Shop = () => {
     setSelectedPSUs([]); setSelectedPorts([]); setPriceRange('all');
     setSearchTerm(''); setDisplayCount(ITEMS_PER_PAGE);
   };
-  // 👆👆👆 ========================================= 👆👆👆
 
-
-  // ===== FILTER & SORT =====
   let displayProducts = allProducts.filter((product) => {
     const nameUpper = (product.name || '').toUpperCase();
     const descUpper = (product.description || '').toUpperCase();
     const fullText = nameUpper + ' ' + descUpper;
 
-    // Tên
     const matchName = fullText.includes(searchTerm.toUpperCase());
-
-    // DB: Thương Hiệu & Danh Mục
     const matchBrand = selectedBrands.length === 0 || selectedBrands.includes(product.brand?.name);
     const matchCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category?.name);
 
-    // Mức giá rẽ nhánh logic
     let matchPrice = true;
     const p = Number(product.price);
     if (priceRange === 'under10') matchPrice = p < 10_000_000;
@@ -221,14 +200,12 @@ const Shop = () => {
 
       <div className="container">
         <div className="shop-layout">
-          {/* SIDEBAR TỔNG HỢP CÓ ACCORDION */}
           <aside className="shop-sidebar">
             <div className="sidebar-header">
               <h3 className="sidebar-main-title">BỘ LỌC TÌM KIẾM</h3>
               <button className="sidebar-reset-btn" onClick={handleResetSidebar}>Xóa tất cả</button>
             </div>
 
-            {/* DANH MỤC */}
             {categories.length > 0 && (
               <details className="sidebar-section" open>
                 <summary className="sidebar-title">Danh Mục</summary>
@@ -276,7 +253,8 @@ const Shop = () => {
             <details className="sidebar-section" open>
               <summary className="sidebar-title">Theo Dòng Sản Phẩm</summary>
               <div className="sidebar-content">
-                {['ROG', 'TUF', 'ProArt', 'Dual', 'Gaming X', 'Ventus', 'AERO', 'iGame'].map(line => (
+                {/* ĐÃ BỔ SUNG CÁC DÒNG CHI TIẾT ĐỂ NÓ TICK ĐÚNG */}
+                {['ROG', 'ROG Strix', 'ROG Matrix', 'ROG Astral', 'TUF', 'ProArt', 'Dual', 'Gaming X', 'Ventus', 'AERO', 'iGame'].map(line => (
                   <label key={line} className="filter-checkbox">
                     <input type="checkbox" checked={selectedLines.includes(line)} onChange={() => handleLineChange(line)} />
                     <span>{line}</span>
@@ -345,33 +323,8 @@ const Shop = () => {
               </div>
             </details>
 
-            <details className="sidebar-section">
-              <summary className="sidebar-title">Độ dày (Slots)</summary>
-              <div className="sidebar-content">
-                {['3.5-slot', '3-slot', '2.5-slot', '2-slot'].map(p => (
-                  <label key={p} className="filter-checkbox">
-                    <input type="checkbox" checked={selectedPSUs.includes(p)} onChange={() => handlePSUChange(p)} />
-                    <span>{p}</span>
-                  </label>
-                ))}
-              </div>
-            </details>
-
-            <details className="sidebar-section">
-              <summary className="sidebar-title">I/O Ports</summary>
-              <div className="sidebar-content">
-                {['HDMI', 'DisplayPort', 'USB Type-C', 'DVI'].map(p => (
-                  <label key={p} className="filter-checkbox">
-                    <input type="checkbox" checked={selectedPorts.includes(p)} onChange={() => handlePortChange(p)} />
-                    <span>{p}</span>
-                  </label>
-                ))}
-              </div>
-            </details>
-
           </aside>
 
-          {/* MAIN NỘI DUNG */}
           <main className="shop-main">
             <div className="shop-toolbar" style={{ marginTop: '0', marginBottom: '30px' }}>
               <div className="toolbar-left">

@@ -1,33 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { orderService } from '../../services/orderService';
-import { logout } from '../../redux/authSlice';
+import { userService } from '../../services/userService';
+import { logout, updateUser } from '../../redux/authSlice';
 import './Profile.css';
 
 const Profile = () => {
   const { user, isAuthenticated } = useSelector(state => state.auth);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders' or 'info'
-  
+  const [activeTab, setActiveTab] = useState('info');
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/');
-      return;
     }
-
-    const fetchOrders = async () => {
-      setLoading(true);
-      const data = await orderService.getMyOrders();
-      setOrders(data);
-      setLoading(false);
-    };
-
-    fetchOrders();
   }, [isAuthenticated, navigate]);
 
   const handleLogout = () => {
@@ -35,134 +22,343 @@ const Profile = () => {
     navigate('/');
   };
 
-  const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + '₫';
-
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case 'Chờ duyệt': return { bg: '#fff7ed', color: '#c2410c' };
-      case 'Đang xử lý': return { bg: '#eff6ff', color: '#1d4ed8' };
-      case 'Đã giao thành công': return { bg: '#f0fdf4', color: '#15803d' };
-      case 'Đã hủy': return { bg: '#fef2f2', color: '#b91c1c' };
-      default: return { bg: '#f8fafc', color: '#475569' };
-    }
-  };
-
   if (!user) return null;
 
   return (
-    <div className="profile-page container">
+    <div className="profile-page">
       <div className="profile-layout">
-        
-        {/* SIDEBAR */}
+
+        {/* ================= SIDEBAR ================= */}
         <aside className="profile-sidebar">
           <div className="sidebar-user-card">
-            <div className="user-avatar-large">
-              {user.username?.charAt(0).toUpperCase()}
+            <img
+              src={user?.picture || user?.avatar || '/default-avatar.png'}
+              alt="User Avatar"
+              className="user-avatar-img-large"
+              onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + (user?.name || user?.username || 'U') + '&background=random' }}
+            />
+            <div className="user-short-info">
+              <h3 className="user-display-name">{user?.name || user?.username}</h3>
+              <p className="user-display-role">{user?.email}</p>
             </div>
-            <h3 className="user-display-name">{user.username}</h3>
-            <p className="user-display-role">{user.role || 'Thành viên'} của VGA Store</p>
           </div>
-          
+
+          <div className="sidebar-divider"></div>
+
           <nav className="profile-nav">
-            <button 
-              className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`}
-              onClick={() => setActiveTab('orders')}
-            >
-              📦 Lịch sử đơn hàng
+            <button className={`nav-btn ${activeTab === 'info' ? 'active' : ''}`} onClick={() => setActiveTab('info')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              Hồ sơ cá nhân
             </button>
-            <button 
-              className={`nav-btn ${activeTab === 'info' ? 'active' : ''}`}
-              onClick={() => setActiveTab('info')}
-            >
-              👤 Thông tin cá nhân
+            <button className={`nav-btn ${activeTab === 'address' ? 'active' : ''}`} onClick={() => setActiveTab('address')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              Sổ địa chỉ
             </button>
+            <button className={`nav-btn ${activeTab === 'password' ? 'active' : ''}`} onClick={() => setActiveTab('password')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              Đổi mật khẩu
+            </button>
+
+            <div className="sidebar-divider"></div>
+
             <button className="nav-btn logout-nav-btn" onClick={handleLogout}>
-              🚪 Đăng xuất
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              Đăng xuất
             </button>
           </nav>
         </aside>
 
-        {/* MAIN CONTENT */}
-        <main className="profile-content">
-          {activeTab === 'orders' ? (
-            <div className="orders-section">
-              <h2 className="section-title">Lịch sử đơn hàng ({orders.length})</h2>
-              
-              {loading ? (
-                <div className="profile-loading">Đang tải danh sách đơn hàng...</div>
-              ) : orders.length === 0 ? (
-                <div className="empty-orders">
-                  <p>Bạn chưa có đơn hàng nào.</p>
-                  <button className="btn-shop-now" onClick={() => navigate('/products')}>SẮM VGA NGAY</button>
-                </div>
-              ) : (
-                <div className="orders-list">
-                  {orders.map(order => {
-                    const style = getStatusStyle(order.status);
-                    return (
-                      <div key={order.id} className="order-card-item">
-                        <div className="order-item-header">
-                          <div className="order-id-group">
-                            <span className="order-label">Mã đơn hàng</span>
-                            <span className="order-id">#{order.id}</span>
-                          </div>
-                          <span 
-                            className="order-status-badge"
-                            style={{ backgroundColor: style.bg, color: style.color }}
-                          >
-                            {order.status}
-                          </span>
-                        </div>
-                        <div className="order-item-body">
-                          <div className="order-info-col">
-                            <span className="order-label">Ngày đặt</span>
-                            <span className="order-val">{order.createdAt || order.date || '---'}</span>
-                          </div>
-                          <div className="order-info-col">
-                            <span className="order-label">Tổng thanh toán</span>
-                            <span className="order-val price-val">{formatPrice(order.totalAmount || order.total)}</span>
-                          </div>
-                        </div>
-                        <div className="order-item-footer">
-                          <button 
-                            className="btn-view-order-detail"
-                            onClick={() => navigate(`/track-order`)} // Hoặc mở popup chi tiết
-                          >
-                            Chi tiết đơn hàng →
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="info-section">
-              <h2 className="section-title">Thông tin tài khoản</h2>
-              <div className="info-grid">
-                <div className="info-group">
-                  <label>Tên người dùng</label>
-                  <input type="text" value={user.username} disabled />
-                </div>
-                <div className="info-group">
-                  <label>Email</label>
-                  <input type="email" value={user.email || 'N/A'} disabled />
-                </div>
-                <div className="info-group">
-                  <label>Số điện thoại</label>
-                  <input type="text" placeholder="Chưa cập nhật" />
-                </div>
-                <div className="info-group">
-                  <label>Địa chỉ mặc định</label>
-                  <textarea placeholder="Chưa cập nhật địa chỉ giao hàng"></textarea>
-                </div>
-              </div>
-              <button className="btn-save-profile">Cập nhật thông tin</button>
-            </div>
-          )}
+        {/* ================= MAIN CONTENT ================= */}
+        <main className="profile-content-area">
+          {activeTab === 'info' && <ProfileInfo user={user} dispatch={dispatch} />}
+          {activeTab === 'address' && <ProfileAddress />}
+          {activeTab === 'password' && <ProfilePassword />}
         </main>
+
       </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 1. THÔNG TIN CÁ NHÂN (INFO)
+// ==========================================
+const ProfileInfo = ({ user, dispatch }) => {
+  const [formData, setFormData] = useState({
+    username: user?.username || user?.name || '',
+    phone: user?.phone || '',
+    gender: user?.gender || 'Nam',
+    dob: user?.dob || ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState({ type: '', text: '' });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await userService.getProfile();
+        if (res?.success) {
+          const profile = res.data;
+          setFormData({
+            username: profile.username || profile.name || '',
+            phone: profile.phone || '',
+            gender: profile.gender || 'Nam',
+            dob: profile.dob || ''
+          });
+          dispatch(updateUser(profile));
+        }
+      } catch (error) {
+        console.error("Lỗi khi fetch profile", error);
+      }
+    };
+    fetchProfile();
+  }, [dispatch]);
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMsg({ type: '', text: '' });
+    try {
+      const res = await userService.updateProfile(formData);
+      if (res?.success) {
+        setMsg({ type: 'success', text: 'Cập nhật thông tin thành công!' });
+        dispatch(updateUser(res.data));
+      }
+    } catch (err) {
+      setMsg({ type: 'error', text: err.response?.data?.message || 'Có lỗi xảy ra khi cập nhật!' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="tab-pane fade-in">
+      <div className="tab-header">
+        <h2 className="tab-title">Hồ sơ cá nhân</h2>
+        <p className="tab-desc">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+      </div>
+
+      {msg.text && <div className={`alert-message ${msg.type}`}>{msg.text}</div>}
+
+      <form className="profile-form-grid" onSubmit={handleUpdate}>
+        <div className="form-col-left">
+          <div className="form-group">
+            <label>Họ và Tên</label>
+            <input type="text" name="username" value={formData.username} onChange={handleChange} required />
+          </div>
+
+          <div className="form-group">
+            <label>Email liên kết</label>
+            <div className="readonly-field">
+              <span className="text-val">{user?.email || 'Chưa liên kết email'}</span>
+              <span className="verify-badge">Đã xác minh</span>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Số điện thoại</label>
+            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Nhập số điện thoại..." />
+          </div>
+        </div>
+
+        <div className="form-col-right">
+          <div className="form-group">
+            <label>Giới tính</label>
+            <div className="radio-group-inline">
+              <label className="radio-label">
+                <input type="radio" name="gender" value="Nam" checked={formData.gender === 'Nam'} onChange={handleChange} />
+                <span className="radio-text">Nam</span>
+              </label>
+              <label className="radio-label">
+                <input type="radio" name="gender" value="Nữ" checked={formData.gender === 'Nữ'} onChange={handleChange} />
+                <span className="radio-text">Nữ</span>
+              </label>
+              <label className="radio-label">
+                <input type="radio" name="gender" value="Khác" checked={formData.gender === 'Khác'} onChange={handleChange} />
+                <span className="radio-text">Khác</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Ngày sinh</label>
+            <input type="date" name="dob" value={formData.dob} onChange={handleChange} />
+          </div>
+        </div>
+
+        <div className="form-full-width">
+          <button type="submit" className="btn-submit-profile" disabled={loading}>
+            {loading ? 'ĐANG LƯU...' : 'LƯU THAY ĐỔI'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+// ==========================================
+// 2. SỔ ĐỊA CHỈ (ADDRESS)
+// ==========================================
+const ProfileAddress = () => {
+  const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ recipientName: '', phone: '', detailedAddress: '', isDefault: false });
+
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      setLoading(true);
+      try {
+        const res = await userService.getProfile();
+        if (res?.success && res.data.addresses) setAddresses(res.data.addresses);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAddresses();
+  }, []);
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await userService.addAddress(formData);
+      if (res?.success) {
+        setAddresses(res.data.addresses);
+        setShowForm(false);
+        setFormData({ recipientName: '', phone: '', detailedAddress: '', isDefault: false });
+      }
+    } catch (err) {
+      alert("Lỗi khi thêm địa chỉ!");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) return;
+    try {
+      const res = await userService.deleteAddress(id);
+      if (res?.success) setAddresses(res.data.addresses);
+    } catch (err) {
+      alert("Xóa thất bại!");
+    }
+  };
+
+  return (
+    <div className="tab-pane fade-in">
+      <div className="tab-header flex-between">
+        <div>
+          <h2 className="tab-title">Sổ địa chỉ</h2>
+          <p className="tab-desc">Quản lý danh sách địa chỉ nhận hàng của bạn</p>
+        </div>
+        <button className="btn-add-new" onClick={() => setShowForm(!showForm)}>
+          {showForm ? 'Hủy thêm mới' : '+ Thêm địa chỉ'}
+        </button>
+      </div>
+
+      {showForm && (
+        <form className="address-form-panel" onSubmit={handleAdd}>
+          <div className="form-row-2">
+            <div className="form-group">
+              <label>Họ và Tên người nhận</label>
+              <input type="text" value={formData.recipientName} onChange={e => setFormData({ ...formData, recipientName: e.target.value })} required />
+            </div>
+            <div className="form-group">
+              <label>Số điện thoại</label>
+              <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} required />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Địa chỉ chi tiết (Số nhà, Phường/Xã, Quận/Huyện, Tỉnh/TP)</label>
+            <textarea rows="3" value={formData.detailedAddress} onChange={e => setFormData({ ...formData, detailedAddress: e.target.value })} required></textarea>
+          </div>
+          <label className="checkbox-wrap">
+            <input type="checkbox" checked={formData.isDefault} onChange={e => setFormData({ ...formData, isDefault: e.target.checked })} />
+            <span>Đặt làm địa chỉ mặc định</span>
+          </label>
+          <div className="form-actions-right">
+            <button type="submit" className="btn-submit-profile sm">LƯU ĐỊA CHỈ</button>
+          </div>
+        </form>
+      )}
+
+      <div className="address-card-list">
+        {loading ? <p className="text-muted">Đang tải dữ liệu...</p> : addresses.length === 0 ? <div className="empty-state">Bạn chưa lưu địa chỉ nào.</div> : (
+          addresses.map(addr => (
+            <div key={addr.id} className={`address-card-item ${addr.isDefault ? 'is-default' : ''}`}>
+              <div className="addr-content">
+                <div className="addr-head">
+                  <span className="addr-name">{addr.recipientName}</span>
+                  <span className="addr-separator">|</span>
+                  <span className="addr-phone">{addr.phone}</span>
+                </div>
+                <p className="addr-detail-text">{addr.detailedAddress}</p>
+                {addr.isDefault && <span className="default-tag">Mặc định</span>}
+              </div>
+              <div className="addr-actions">
+                <button className="btn-text-danger" onClick={() => handleDelete(addr.id)}>Xóa</button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 3. ĐỔI MẬT KHẨU (PASSWORD)
+// ==========================================
+const ProfilePassword = () => {
+  const [formData, setFormData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [msg, setMsg] = useState({ type: '', text: '' });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.newPassword !== formData.confirmPassword) {
+      return setMsg({ type: 'error', text: 'Mật khẩu xác nhận không khớp!' });
+    }
+    setLoading(true);
+    try {
+      const res = await userService.changePassword({ oldPassword: formData.oldPassword, newPassword: formData.newPassword });
+      if (res?.success) {
+        setMsg({ type: 'success', text: 'Đổi mật khẩu thành công!' });
+        setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      }
+    } catch (err) {
+      setMsg({ type: 'error', text: err.response?.data?.message || err.message || 'Mật khẩu cũ không chính xác!' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="tab-pane fade-in">
+      <div className="tab-header">
+        <h2 className="tab-title">Đổi mật khẩu</h2>
+        <p className="tab-desc">Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu cho người khác</p>
+      </div>
+
+      {msg.text && <div className={`alert-message ${msg.type}`}>{msg.text}</div>}
+
+      <form className="password-form-box" onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>Mật khẩu cũ</label>
+          <input type="password" value={formData.oldPassword} onChange={e => setFormData({ ...formData, oldPassword: e.target.value })} required />
+        </div>
+        <div className="form-group">
+          <label>Mật khẩu mới</label>
+          <input type="password" value={formData.newPassword} onChange={e => setFormData({ ...formData, newPassword: e.target.value })} required minLength={6} />
+        </div>
+        <div className="form-group">
+          <label>Xác nhận mật khẩu mới</label>
+          <input type="password" value={formData.confirmPassword} onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })} required />
+        </div>
+        <button type="submit" className="btn-submit-profile mt-3" disabled={loading}>
+          {loading ? 'ĐANG XỬ LÝ...' : 'XÁC NHẬN ĐỔI'}
+        </button>
+      </form>
     </div>
   );
 };
