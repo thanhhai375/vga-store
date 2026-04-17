@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.example.vgashop.entity.Product;
 
@@ -52,13 +54,20 @@ public interface  ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByDeletedFalse(Pageable pageable);
 
     // Lấy theo ID và chưa bị xóa
-   Optional<Product> findByIdAndDeletedFalse(Long id);
+    Optional<Product> findByIdAndDeleted(Long id, boolean deleted);
 
     // Kiểm tra tồn tại và chưa bị xóa
-    boolean existsByIdAndDeletedFalse(Long id);
+    boolean existsByIdAndDeleted(Long id, boolean deleted);
 
     // Nếu sau này cần lọc theo brand/category chưa xóa
     long countByBrand_IdAndDeletedFalse(Long brandId);
     long countByCategory_IdAndDeletedFalse(Long categoryId);
 
+    // phần admin dashboard
+    Long countByDeletedFalse();
+
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.deleted = false AND p.stock <= :threshold")
+    Long countLowStock(@Param("threshold") int threshold);
+
+    Optional<Product> findByIdAndDeletedFalse(Long id);
 }

@@ -28,8 +28,8 @@ public interface  BrandRepository extends JpaRepository<Brand, Long> {
 
     // Lấy theo ID và chưa bị xóa
     // (dùng trong getById và update)
-    Optional<Brand>findByIdAndDeletedFalse(Long id);
+    Optional<Brand> findByIdAndDeleted(Long id, boolean deleted);
 
     // Kiểm tra tồn tại và chưa bị xóa
-    boolean existsByIdAndDeletedFalse(Long id);
+    boolean existsByIdAndDeleted(Long id, boolean deleted);
 }

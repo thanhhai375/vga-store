@@ -38,8 +38,10 @@ public class Product extends BaseEntity {
     @Column(name= "description", columnDefinition= "TEXT")
     private String description;
 
-    @Column(name= "img_url")
+    @Column(name= "img_url", length= 500)
     private String imgUrl;
+    @Column(nullable = false)
+    private Boolean status = true;
 
     @Column(name= "images_json", columnDefinition= "TEXT")
     private String imagesJson; // Mảng URL ảnh [url1, url2...] format JSON
@@ -192,5 +194,13 @@ public class Product extends BaseEntity {
      public void setSku(String sku) {
          this.sku = sku;
      }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(Boolean status) {
+        this.status = status;
+    }
 
 }

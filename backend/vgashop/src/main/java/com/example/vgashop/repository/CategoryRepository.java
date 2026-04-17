@@ -29,8 +29,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Page<Category> findByDeletedFalse(Pageable pageable);
 
     // lấy theo ID và ch bị xóa
-    Optional<Category> findByIdAndDeletedFalse(Long id);
+    Optional<Category> findByIdAndDeleted(Long id, boolean deleted);
 
     // kiểm tra tồn tại và ch bị xóa
-    boolean existsByIdAndDeletedFalse(Long id);
+    boolean existsByIdAndDeleted(Long id, boolean deleted);
 }

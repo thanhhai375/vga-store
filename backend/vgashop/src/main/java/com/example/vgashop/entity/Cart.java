@@ -1,5 +1,7 @@
 package com.example.vgashop.entity;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -16,29 +18,26 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name= "carts")
-public class Cart {
-
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name= "id")
-    private Long id;
+public class Cart extends BaseEntity {
 
     @OneToOne
     @JoinColumn(name= "user_id", nullable= false, unique= true)
     private  User user;
 
-    @OneToMany(mappedBy= "cart", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
-    private List<CartItem> cartItems;
+    @OneToMany(mappedBy= "cart", cascade= CascadeType.ALL, orphanRemoval= true, fetch= FetchType.LAZY)
+    private List<CartItem> cartItems = new ArrayList<>();
 
+    @Column(precision= 12, scale= 2) // tổng tiền của giỏ hàng, có thể tính lại mỗi khi thêm/xóa/sửa cart item. cột này giúp tránh phải tính toán lại mỗi lần truy vấn giỏ hàng, cải thiện hiệu suất
+    private BigDecimal totalAmount = BigDecimal.ZERO; // tạo mặc định là 0 để tránh null
+
+    // method tính tổng tiền của giỏ hàng, có thể gọi sau mỗi lần thêm/xóa/sửa cart item
+    public void recalculateTotal() {
+        this.totalAmount = cartItems.stream()
+            .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 
     // getter setter
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public User getUser() {
         return user;
@@ -54,6 +53,14 @@ public class Cart {
 
     public void setCartItems(List<CartItem> cartItems) {
         this.cartItems = cartItems;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
 }
