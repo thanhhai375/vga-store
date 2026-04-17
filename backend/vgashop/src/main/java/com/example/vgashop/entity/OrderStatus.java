@@ -1,5 +1,10 @@
 package com.example.vgashop.entity;
 
 public enum OrderStatus {
-    PENDING, CONFIRMED, SHIPPING, DELIVERED, CANCELLED
+    PENDING,
+    CONFIRMED,
+    SHIPPING,
+    DELIVERED,
+    CANCELLED,
+    CANCEL_REQUESTED // 🌟 THÊM TRẠNG THÁI NÀY
 }

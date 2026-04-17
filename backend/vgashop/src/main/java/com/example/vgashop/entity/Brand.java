@@ -1,8 +1,7 @@
 package com.example.vgashop.entity;
 
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore; // 1. ĐÃ THÊM IMPORT NÀY
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,43 +13,38 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name= "brands")
+@Table(name = "brands")
 public class Brand extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name= "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column(name= "name", nullable= false, unique= true, length= 100)
+    @Column(name = "name", nullable = false, unique = true, length = 100)
     private String name;
 
     private String logo;
 
-    @Column(name= "description", columnDefinition= "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    // chuỗi ký tự hỗ trợ URL
     @Column(name = "slug", unique = true, length = 150)
     private String slug;
 
     @Column(name = "status")
     private Boolean status = true;
 
-    // mối quan hệ
-    @JsonIgnore // 2. ĐÃ THÊM CHỐT CHẶN VÒNG LẶP VÀO ĐÂY
-    @OneToMany(mappedBy= "brand", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products;
 
-    //constructor
-
-    public Brand(){}
+    public Brand() {
+    }
 
     public Brand(String name) {
         this.name = name;
     }
-
-        // getter setter
 
     public Long getId() {
         return id;
@@ -68,6 +62,8 @@ public class Brand extends BaseEntity {
         this.name = name;
     }
 
+    // 🌟 QUAN TRỌNG NHẤT LÀ CHỖ NÀY: PHẢI CHẶN Ở GETTER
+    @JsonIgnore
     public List<Product> getProducts() {
         return products;
     }
@@ -107,5 +103,4 @@ public class Brand extends BaseEntity {
     public void setSlug(String slug) {
         this.slug = slug;
     }
-
 }

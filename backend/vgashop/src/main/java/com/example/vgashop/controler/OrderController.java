@@ -67,11 +67,10 @@ public class OrderController {
     // USER: Lấy ds đơn hàng (phân trang cho hệ thống cũ/mobile)
     @GetMapping
     public ApiResponse<Page<OrderSummaryResponse>> getMyOrdersPage(
-        @RequestParam(defaultValue= "0") int page,
-        @RequestParam(defaultValue= "10") int size,
-        @RequestParam(defaultValue= "createdAt") String sortBy,
-        @RequestParam(defaultValue= "desc") String direction
-    ) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
         Page<OrderSummaryResponse> orders = orderService.getMyOrders(page, size, sortBy, direction);
         return ApiResponse.success("Lấy danh sách đơn hàng thành công", orders);
     }
@@ -83,28 +82,27 @@ public class OrderController {
         return ApiResponse.success("Lấy chi tiết đơn hàng thành công", order);
     }
 
-    // USER: Hủy đơn hàng
-    @PutMapping("/{orderId}/cancel")
-    public ApiResponse<OrderResponse> cancelOrder(@PathVariable Long orderId) {
-        OrderResponse order = orderService.cancelOrder(orderId);
-        return ApiResponse.success("Hủy đơn hàng thành công", order);
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelOrder(@PathVariable Long id, @RequestParam(required = false) String reason) {
+        // Truyền reason xuống Service
+        return ResponseEntity.ok(orderService.cancelOrder(id, reason));
     }
 
     // Adim: lấy tất cả đơn hàng
     @GetMapping("/admin/all")
     public ApiResponse<Page<OrderSummaryResponse>> getAllOrders(
-        @RequestParam(defaultValue= "0") int page,
-        @RequestParam(defaultValue= "10") int size,
-        @RequestParam(defaultValue= "createdAt") String sortBy,
-        @RequestParam(defaultValue= "desc") String direction
-    ) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
         Page<OrderSummaryResponse> orders = orderService.getAllOrders(page, size, sortBy, direction);
         return ApiResponse.success("Lấy tất cả đơn hàng thành công", orders);
     }
 
     // ADmin: cập nhật trạng thái đơn hàng
-    @PutMapping("/admin/{orderId}/status") 
-    public ApiResponse<OrderResponse> updateOrderStatus(@PathVariable Long orderId, @Valid @RequestBody OrderStatusUpdateRequest request) {
+    @PutMapping("/admin/{orderId}/status")
+    public ApiResponse<OrderResponse> updateOrderStatus(@PathVariable Long orderId,
+            @Valid @RequestBody OrderStatusUpdateRequest request) {
         OrderResponse order = orderService.updateOrderStatus(orderId, request);
         return ApiResponse.success("Cập nhật trạng thái đơn hàng thành công", order);
     }

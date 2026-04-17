@@ -2,16 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { orderService } from '../../services/orderService';
+import axiosClient from '../../api/axiosClient';
 import './TrackOrder.css';
 
-// Map trạng thái từ BE enum sang tiếng Việt
+// 🌟 FIX: Map chuẩn trạng thái với Backend
 const STATUS_MAP = {
   PENDING: 'Chờ duyệt',
   CONFIRMED: 'Đang xử lý',
   SHIPPING: 'Đang giao hàng',
   DELIVERED: 'Đã giao thành công',
+  CANCEL_REQUESTED: 'Yêu cầu hủy (Chờ duyệt)',
   CANCELLED: 'Đã hủy',
-  CANCEL_REQUESTED: 'Yêu cầu hủy',
 };
 
 const STATUS_CLASS_MAP = {
@@ -19,11 +20,11 @@ const STATUS_CLASS_MAP = {
   CONFIRMED: 'status-processing',
   SHIPPING: 'status-delivering',
   DELIVERED: 'status-success',
-  CANCELLED: 'status-cancelled',
   CANCEL_REQUESTED: 'status-cancel-request',
+  CANCELLED: 'status-cancelled',
 };
 
-const TABS = ['Tất cả', 'Chờ duyệt', 'Đang xử lý', 'Đang giao hàng', 'Đã giao thành công', 'Yêu cầu hủy', 'Đã hủy'];
+const TABS = ['Tất cả', 'Chờ duyệt', 'Đang xử lý', 'Đang giao hàng', 'Đã giao thành công', 'Yêu cầu hủy (Chờ duyệt)', 'Đã hủy'];
 
 const formatPrice = (num) => {
   if (!num) return '0₫';
@@ -33,7 +34,7 @@ const formatPrice = (num) => {
 const formatDate = (dateStr) => {
   if (!dateStr) return '-';
   const d = new Date(dateStr);
-  return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+  return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
 };
 
 const TrackOrder = () => {
@@ -59,13 +60,14 @@ const TrackOrder = () => {
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
   };
 
-  // Load đơn hàng từ API
   const loadOrders = useCallback(async () => {
     if (!isAuthenticated) return;
     setLoading(true);
     try {
-      const data = await orderService.getMyOrders();
-      setOrders(Array.isArray(data) ? data : []);
+      const res = await orderService.getMyOrders();
+      const data = res?.data?.data || res?.data || res;
+      const items = data?.content || data || [];
+      setOrders(Array.isArray(items) ? items : []);
     } catch {
       setOrders([]);
     } finally {
@@ -75,7 +77,6 @@ const TrackOrder = () => {
 
   useEffect(() => { loadOrders(); }, [loadOrders]);
 
-  // Lọc theo tab
   const tabFilteredOrders = activeTab === 'Tất cả'
     ? orders
     : orders.filter(o => STATUS_MAP[o.status] === activeTab || o.status === activeTab);
@@ -107,12 +108,15 @@ const TrackOrder = () => {
     if (cancelReason === 'Khác' && !finalReason.trim()) {
       showToast('Vui lòng nhập lý do cụ thể!', 'error'); return;
     }
+
     setCancelLoading(true);
     try {
-      await orderService.cancelOrder(cancelModalData.orderId);
+      // 🌟 GỌI TRỰC TIẾP API ĐỂ ĐẨY LÝ DO XUỐNG BACKEND
+      await axiosClient.put(`/orders/${cancelModalData.orderId}/cancel?reason=${encodeURIComponent(finalReason)}`);
+
       showToast('Đã gửi yêu cầu hủy đơn hàng thành công!', 'success');
       setCancelModalData({ isOpen: false, orderId: null });
-      loadOrders(); // Reload để cập nhật status
+      loadOrders(); // Tải lại danh sách đơn
     } catch (err) {
       showToast(err?.response?.data?.message || 'Không thể hủy đơn. Vui lòng thử lại.', 'error');
     } finally {
@@ -120,7 +124,21 @@ const TrackOrder = () => {
     }
   };
 
-  const openOrderDetail = (order) => { setSelectedOrder(order); };
+  // 🌟 FIX: Gọi API để lấy đầy đủ chi tiết (Địa chỉ, Mảng sản phẩm)
+  const openOrderDetail = async (orderSummary) => {
+    // Hiện popup ngay với trạng thái loading
+    setSelectedOrder({ ...orderSummary, loadingDetails: true });
+    try {
+      const orderId = orderSummary.orderId || orderSummary.id;
+      const res = await orderService.getOrderById(orderId);
+      const fullData = res?.data?.data || res?.data || res;
+      setSelectedOrder(fullData);
+    } catch (err) {
+      console.error("Lỗi lấy chi tiết:", err);
+      showToast('Không tải được chi tiết sản phẩm.', 'error');
+      setSelectedOrder(orderSummary); // Fallback
+    }
+  };
 
   const getStatusLabel = (status) => STATUS_MAP[status] || status;
   const getStatusClass = (status) => STATUS_CLASS_MAP[status] || 'status-default';
@@ -138,11 +156,7 @@ const TrackOrder = () => {
       <div className="track-order-page">
         <div className="track-order-layout">
           <div className="track-login-prompt">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#d8282e" strokeWidth="1.5" style={{ width: 60, marginBottom: 16 }}>
-              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-            </svg>
             <h2>Vui lòng đăng nhập</h2>
-            <p>Bạn cần đăng nhập để xem lịch sử đơn hàng.</p>
             <Link to="/" className="btn-login-prompt">Đăng nhập ngay</Link>
           </div>
         </div>
@@ -164,11 +178,10 @@ const TrackOrder = () => {
 
           <div className="track-search-section">
             <h2 className="track-title">Tra cứu trạng thái đơn hàng</h2>
-            <p className="track-desc">Nhập Mã đơn hàng để kiểm tra tiến độ giao hàng.</p>
             <div className="track-search-box">
               <input
                 type="text"
-                placeholder="Nhập mã đơn hàng (VD: ORD-00001)..."
+                placeholder="Nhập mã đơn hàng..."
                 className="track-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -180,9 +193,7 @@ const TrackOrder = () => {
 
           <div className="track-history-section">
             <div className="history-header-flex">
-              <h3 className="history-title">
-                {hasSearched ? `Kết quả cho: "${searchQuery}"` : 'Lịch sử đơn hàng'}
-              </h3>
+              <h3 className="history-title">{hasSearched ? `Kết quả cho: "${searchQuery}"` : 'Lịch sử đơn hàng'}</h3>
               {hasSearched && <button className="clear-search-btn" onClick={clearSearch}>Quay lại</button>}
             </div>
             <hr className="history-divider" />
@@ -234,9 +245,7 @@ const TrackOrder = () => {
                   </tbody>
                 </table>
               ) : (
-                <div className="empty-orders">
-                  {hasSearched ? 'Không tìm thấy đơn hàng khớp.' : 'Bạn chưa có đơn hàng nào.'}
-                </div>
+                <div className="empty-orders">Bạn chưa có đơn hàng nào.</div>
               )}
             </div>
           </div>
@@ -251,10 +260,6 @@ const TrackOrder = () => {
                 <button className="close-modal" onClick={() => setCancelModalData({ isOpen: false, orderId: null })}>✕</button>
               </div>
               <div className="cancel-modal-body">
-                <p className="cancel-warning">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                  Vui lòng chọn lý do hủy để chúng tôi hỗ trợ bạn tốt hơn.
-                </p>
                 <div className="cancel-reasons-list">
                   {cancelReasonsList.map((reason, idx) => (
                     <label key={idx} className={`reason-radio-card ${cancelReason === reason ? 'active' : ''}`}>
@@ -292,29 +297,38 @@ const TrackOrder = () => {
                     {getStatusLabel(selectedOrder.status)}
                   </span>
                 </div>
-                <div className="detail-customer-box">
-                  <h4>Thông tin giao hàng</h4>
-                  <p><strong>Địa chỉ:</strong> {selectedOrder.shippingAddress || 'N/A'}</p>
-                  <p><strong>Điện thoại:</strong> {selectedOrder.phone || 'N/A'}</p>
-                  {selectedOrder.note && <p><strong>Ghi chú:</strong> {selectedOrder.note}</p>}
-                </div>
-                <div className="detail-items-box">
-                  <h4>Sản phẩm đã đặt</h4>
-                  {selectedOrder.items && selectedOrder.items.length > 0 ? (
-                    <ul className="detail-item-list">
-                      {selectedOrder.items.map((item, idx) => (
-                        <li key={idx}>
-                          <div className="item-name">{item.productName || item.name} <b>x{item.quantity || item.cartQuantity}</b></div>
-                          <div className="item-price">{formatPrice((item.price || 0) * (item.quantity || item.cartQuantity || 1))}</div>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : <p>Không có thông tin sản phẩm.</p>}
-                  <div className="detail-total-row">
-                    <span>Tổng thanh toán:</span>
-                    <span className="total-red">{formatPrice(selectedOrder.totalAmount)}</span>
-                  </div>
-                </div>
+
+                {selectedOrder.loadingDetails ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>Đang tải chi tiết...</div>
+                ) : (
+                  <>
+                    <div className="detail-customer-box">
+                      <h4>Thông tin giao hàng</h4>
+                      <p><strong>Khách hàng:</strong> {selectedOrder.fullName || 'N/A'}</p>
+                      <p><strong>Điện thoại:</strong> {selectedOrder.phone || 'N/A'}</p>
+                      <p><strong>Địa chỉ:</strong> {selectedOrder.shippingAddress || 'N/A'}</p>
+                      {selectedOrder.note && <p><strong>Ghi chú:</strong> {selectedOrder.note}</p>}
+                    </div>
+                    <div className="detail-items-box">
+                      <h4>Sản phẩm đã đặt</h4>
+                      {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                        <ul className="detail-item-list">
+                          {selectedOrder.items.map((item, idx) => (
+                            <li key={idx}>
+                              <div className="item-name">{item.productName || item.name} <b>x{item.quantity || item.cartQuantity}</b></div>
+                              <div className="item-price">{formatPrice((item.price || 0) * (item.quantity || item.cartQuantity || 1))}</div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : <p>Không có thông tin sản phẩm.</p>}
+                      <div className="detail-total-row">
+                        <span>Tổng thanh toán:</span>
+                        <span className="total-red">{formatPrice(selectedOrder.totalAmount)}</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 {selectedOrder.status === 'PENDING' && (
                   <button className="btn-cancel-lg" onClick={(e) => openCancelModal(selectedOrder.orderId || selectedOrder.id, e)}>
                     Yêu cầu hủy đơn hàng

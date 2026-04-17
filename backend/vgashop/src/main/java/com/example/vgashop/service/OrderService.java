@@ -49,7 +49,7 @@ public class OrderService {
     private final UserService userService;
 
     public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
-            CartRepository cartRepository, ProductRepository productRepository, 
+            CartRepository cartRepository, ProductRepository productRepository,
             UserRepository userRepository, UserService userService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
@@ -60,7 +60,7 @@ public class OrderService {
     }
 
     // ===================================
-    // TỪ NHÁNH HEAD: TẠO ĐƠN TRỰC TIẾP TỪ FE (KHÔNG QUA CART DB)
+    // TỪ NHÁNH HEAD: TẠO ĐƠN TRỰC TIẾP TỪ FE
     // ===================================
     @Transactional
     public Map<String, Object> placeOrder(OrderRequest req, String username) {
@@ -75,7 +75,8 @@ public class OrderService {
         order.setPhone(req.getPhone());
         order.setShippingAddress(req.getAddress());
         order.setNote(req.getNote());
-        order.setOrderCode("VGA-" + LocalDateTime.now().toLocalDate() + "_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        order.setOrderCode("VGA-" + LocalDateTime.now().toLocalDate() + "_"
+                + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
         List<OrderItem> items = new ArrayList<>();
         double total = 0;
@@ -95,8 +96,7 @@ public class OrderService {
             item.calculateSubtotal();
             items.add(item);
             total += unitPrice * item.getQuantity();
-            
-            // Deduct stock (Optional: You can add stock check here as in BE)
+
             product.setStock(product.getStock() - itemReq.getQuantity());
             productRepository.save(product);
         }
@@ -107,6 +107,7 @@ public class OrderService {
 
         Map<String, Object> resp = new LinkedHashMap<>();
         resp.put("orderId", saved.getId());
+        resp.put("orderCode", saved.getOrderCode()); // 🌟 FIX LỖI #UNDEFINED Ở ĐÂY
         resp.put("status", saved.getStatus().name());
         resp.put("totalPrice", saved.getTotalAmount());
         resp.put("fullName", saved.getFullName());
@@ -115,7 +116,6 @@ public class OrderService {
         return resp;
     }
 
-    // LIST ĐƠN DÀNH CHO TRANG QUẢN LÝ PROFILE CỦA HEAD
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getUserOrders(String username) {
         User user = userRepository.findByUsername(username)
@@ -125,6 +125,7 @@ public class OrderService {
         for (Order order : orderRepository.findByUserIdOrderByIdDesc(user.getId())) {
             Map<String, Object> o = new LinkedHashMap<>();
             o.put("id", order.getId());
+            o.put("orderCode", order.getOrderCode()); // Thêm cho chắc
             o.put("status", order.getStatus().name());
             o.put("totalPrice", order.getTotalAmount());
             o.put("itemCount", order.getItems() != null ? order.getItems().size() : 0);
@@ -134,26 +135,22 @@ public class OrderService {
         return result;
     }
 
-
     // ===================================
-    // TỪ NHÁNH BE: CÁC NGHIỆP VỤ LIÊN QUAN ADMIN, CART VA VN PAY
+    // TẠO ĐƠN HÀNG TỪ GIỎ HÀNG (CART)
     // ===================================
-
-    // tạo đơn hàng từ giỏ hàng (Checkout)
     @Transactional
     public OrderResponse createOrderFromCart(CreateOrderRequest request) {
-        User currentUser = userService.getCurrentUser(); // lấy User từ JWT
+        User currentUser = userService.getCurrentUser();
 
-        // lấy giỏ hàng của user
         Cart cart = cartRepository.findByUser_IdAndDeletedFalse(currentUser.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng không tồn  tải hoặc trống"));
+                .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng không tồn tại hoặc trống"));
 
         if (cart.getCartItems().isEmpty()) {
             throw new IllegalArgumentException("Giỏ hàng đang trống, không thể tạo đơn hàng");
         }
 
-        // tạo mã đơn hàng 
-        String orderCode = "VGA-" + LocalDateTime.now().toLocalDate() + "_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        String orderCode = "VGA-" + LocalDateTime.now().toLocalDate() + "_"
+                + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
         Order order = new Order();
         order.setUser(currentUser);
@@ -161,14 +158,18 @@ public class OrderService {
         order.setShippingAddress(request.getShippingAddress());
         order.setPhone(request.getPhone());
         order.setNote(request.getNote() != null ? request.getNote() : "");
+
+        // 🌟 BỔ SUNG GÁN FULL NAME ĐỂ TRANG ADMIN KHÔNG BỊ TRỐNG
+        String fullName = currentUser.getFullName() != null && !currentUser.getFullName().isEmpty()
+                ? currentUser.getFullName()
+                : currentUser.getUsername();
+        order.setFullName(fullName);
+
         order.setStatus(OrderStatus.PENDING);
         order.setPaymentStatus(PaymentStatus.UNPAID);
 
-        // chuyển cartItem sang OrderItem và kiểm tra stock
         for (CartItem cartItem : cart.getCartItems()) {
             Product product = cartItem.getProduct();
-
-            // kiểm tra stock
             if (product.getStock() < cartItem.getQuantity()) {
                 throw new IllegalArgumentException("Sản phẩm '" + product.getName() + "' không đủ số lượng trong kho");
             }
@@ -177,11 +178,10 @@ public class OrderService {
             orderItem.setOrder(order);
             orderItem.setProduct(product);
             orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(product.getPrice()); // lưu giá tại thời điểm mua
+            orderItem.setPrice(product.getPrice());
             orderItem.calculateSubtotal();
 
             order.getItems().add(orderItem);
-            // trừ stock
             product.setStock(product.getStock() - cartItem.getQuantity());
             productRepository.save(product);
         }
@@ -189,83 +189,73 @@ public class OrderService {
         order.calculateTotal();
         Order savedOrder = orderRepository.save(order);
 
-        // xóa giỏ hàng sau khi tạo đơn (soft delete item và reset cart)
         cart.getCartItems().forEach(item -> item.setDeleted(true));
         cart.getCartItems().clear();
         cart.setTotalAmount(BigDecimal.ZERO);
         cartRepository.save(cart);
 
         return convertTOrderResponse(savedOrder);
-    } 
+    }
 
-    // Lấy danh sách đơn hàng của user
-    @Transactional(readOnly= true)
+    @Transactional(readOnly = true)
     public Page<OrderSummaryResponse> getMyOrders(int page, int size, String sortBy, String direction) {
         User user = userService.getCurrentUser();
-
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-
         Page<Order> ordersPage = orderRepository.findByUser_IdAndDeletedFalse(user.getId(), pageable);
-
         return ordersPage.map(this::convOrderSummaryResponse);
     }
 
-    // xem chi tiết đơn hàng 
-    @Transactional(readOnly= true)
+    @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long orderId) {
         User currentUser = userService.getCurrentUser();
-
         Order order = orderRepository.findByIdAndUser_IdAndDeletedFalse(orderId, currentUser.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng hoặc bạn không có quyền xem"));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
         return convertTOrderResponse(order);
     }
 
-    // Hủy đơn hàng 
+    // Hủy đơn hàng (Khách hàng yêu cầu)
     @Transactional
-    public OrderResponse cancelOrder(Long orderId) {
+    public OrderResponse cancelOrder(Long orderId, String reason) {
         User currentUser = userService.getCurrentUser();
 
         Order order = orderRepository.findByIdAndUser_IdAndDeletedFalse(orderId, currentUser.getId())
-               .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
 
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new IllegalArgumentException("Chỉ có thể hủy đơn hàng ở trạng thái PENDING");
         }
 
-        order.setStatus(OrderStatus.CANCELLED);
+        // 🌟 Chuyển trạng thái sang Yêu cầu hủy
+        order.setStatus(OrderStatus.CANCEL_REQUESTED);
 
-        // hoàn lại stock cho sp
-        for (OrderItem orderItem : order.getItems()) {
-            Product product = orderItem.getProduct();
-            product.setStock(product.getStock() + orderItem.getQuantity());
-            productRepository.save(product);
+        // 🌟 Nhét lý do hủy vào Ghi chú để Admin đọc
+        if (reason != null && !reason.trim().isEmpty()) {
+            String currentNote = order.getNote() != null ? order.getNote() : "";
+            String separator = currentNote.isEmpty() ? "" : " | ";
+            order.setNote(currentNote + separator + "[LÝ DO HỦY]: " + reason);
         }
 
         return convertTOrderResponse(orderRepository.save(order));
     }
 
-    // Adimin: Cập nhật trạng thái đơn hàng 
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, OrderStatusUpdateRequest request) {
         Order order = orderRepository.findByIdAndDeletedFalse(orderId)
-               .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
 
         OrderStatus oldStatus = order.getStatus();
         order.setStatus(request.getStatus());
 
-        // cập nhật thời gian theo trạng thái
         switch (request.getStatus()) {
             case CONFIRMED -> order.setConfirmedAt(LocalDateTime.now());
             case SHIPPING -> order.setShippedAt(LocalDateTime.now());
             case DELIVERED -> order.setDeliveredAt(LocalDateTime.now());
             case CANCELLED -> {
                 if (oldStatus != OrderStatus.CANCELLED) {
-                    // hoàn lại stock nếu hủy đơn
                     for (OrderItem item : order.getItems()) {
                         Product product = item.getProduct();
-                        product.setStock( product.getStock() + item.getQuantity());
+                        product.setStock(product.getStock() + item.getQuantity());
                         productRepository.save(product);
                     }
                 }
@@ -274,62 +264,46 @@ public class OrderService {
         return convertTOrderResponse(orderRepository.save(order));
     }
 
-    //Admin: Lấy tất cả đơn hàng 
-    @Transactional(readOnly= true)
+    @Transactional(readOnly = true)
     public Page<OrderSummaryResponse> getAllOrders(int page, int size, String sortBy, String direction) {
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-
         Pageable pageable = PageRequest.of(page, size, sort);
-
         Page<Order> ordersPage = orderRepository.findByDeletedFalse(pageable);
-
         return ordersPage.map(this::convOrderSummaryResponse);
     }
 
-    // convert method
     private OrderResponse convertTOrderResponse(Order order) {
         List<OrderItemResponse> itemResponses = order.getItems().stream()
                 .filter(item -> !item.isDeleted())
                 .map(item -> new OrderItemResponse(
-                    item.getProduct().getId(),
-                    item.getProduct().getName(),
-                    item.getProduct().getImgUrl(),
-                    item.getPrice(),
-                    item.getQuantity(),
-                    item.getSubtotal()
-                ))
+                        item.getProduct().getId(),
+                        item.getProduct().getName(),
+                        item.getProduct().getImgUrl(),
+                        item.getPrice(),
+                        item.getQuantity(),
+                        item.getSubtotal()))
                 .collect(Collectors.toList());
         return new OrderResponse(
-            order.getId(),
-            order.getOrderCode(),
-            order.getTotalAmount(),
-            order.getDiscountAmount(),
-            order.getStatus(),
-            order.getPaymentStatus(),
-            order.getShippingAddress(),
-            order.getPhone(),
-            order.getNote(),
-            order.getCreatedAt(),
-            order.getConfirmedAt(),
-            order.getShippedAt(),
-            order.getDeliveredAt(),
-            itemResponses
-        );
+                order.getId(), order.getOrderCode(), order.getTotalAmount(), order.getDiscountAmount(),
+                order.getStatus(), order.getPaymentStatus(), order.getShippingAddress(), order.getPhone(),
+                order.getNote(), order.getCreatedAt(), order.getConfirmedAt(), order.getShippedAt(),
+                order.getDeliveredAt(), itemResponses);
     }
 
     private OrderSummaryResponse convOrderSummaryResponse(Order order) {
         int totalItems = order.getItems().stream()
-               .filter(item -> !item.isDeleted())
-               .mapToInt(OrderItem::getQuantity)
-               .sum();
+                .filter(item -> !item.isDeleted())
+                .mapToInt(OrderItem::getQuantity)
+                .sum();
         return new OrderSummaryResponse(
-            order.getId(),
-            order.getOrderCode(),
-            order.getTotalAmount(),
-            order.getStatus(),
-            order.getPaymentStatus(),
-            order.getCreatedAt(),
-            totalItems
-        );
+                order.getId(),
+                order.getOrderCode(),
+                order.getFullName(), // 🌟 Bổ sung truyền Tên
+                order.getPhone(), // 🌟 Bổ sung truyền SĐT
+                order.getTotalAmount(),
+                order.getStatus(),
+                order.getPaymentStatus(),
+                order.getCreatedAt(), // 🌟 Đã sửa lỗi chính tả
+                totalItems);
     }
 }

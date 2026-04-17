@@ -2,6 +2,8 @@ package com.example.vgashop.entity;
 
 import java.math.BigDecimal;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // 🌟 Thêm thư viện này
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,65 +22,71 @@ public class Product extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name= "id")
+    @Column(name = "id")
     private Long id;
 
-    @Column(name= "name", nullable= false, length= 255)
+    @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(name= "price", nullable= false)
+    @Column(name = "price", nullable = false)
     private BigDecimal price;
 
-    @Column(name="stock", nullable=false)
+    @Column(name = "stock", nullable = false)
     private Integer stock;
 
     @Column(unique = true, length = 50)
-    private String sku;        // Mã sản phẩm duy nhất
+    private String sku;
 
-    @Column(name= "description", columnDefinition= "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name= "img_url", length= 500)
+    @Column(name = "img_url", length = 500)
     private String imgUrl;
+
     @Column(name = "status")
     private Boolean status = true;
 
-    @Column(name= "images_json", columnDefinition= "TEXT")
-    private String imagesJson; // Mảng URL ảnh [url1, url2...] format JSON
+    @Column(name = "images_json", columnDefinition = "TEXT")
+    private String imagesJson;
 
-    @Column(name= "gpu_model", length= 100)
+    @Column(name = "gpu_model", length = 100)
     private String gpuModel;
 
-    @Column(name= "vram", length= 50)
+    @Column(name = "vram", length = 50)
     private String vram;
 
-    @Column(name= "memory_type", length= 50)
+    @Column(name = "memory_type", length = 50)
     private String memoryType;
 
-    @Column(name= "cooling_type", length= 100)
+    @Column(name = "cooling_type", length = 100)
     private String coolingType;
 
-    @Column(name= "power_connectors", length= 100)
+    @Column(name = "power_connectors", length = 100)
     private String powerConnectors;
 
-    @Column(name= "recommended_psu", length= 50)
+    @Column(name = "recommended_psu", length = 50)
     private String recommendedPsu;
 
-    @Column(name= "dimension", length= 150)
+    @Column(name = "dimension", length = 150)
     private String dimension;
 
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name= "brand_id", nullable= false)
+    // 🌟 KHÓA CHẶT 2 LỚP TỪ PRODUCT VỀ BRAND/CATEGORY
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "brand_id", nullable = false)
+    @JsonIgnoreProperties("products")
     private Brand brand;
 
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name= "category_id", nullable= false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id", nullable = false)
+    @JsonIgnoreProperties("products")
     private Category category;
 
-    @OneToMany(mappedBy= "product", fetch= FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<CartItem> cartItems;
-    
-    @OneToMany(mappedBy= "product", fetch= FetchType.LAZY)
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
 
     // Getter setter
@@ -138,62 +146,85 @@ public class Product extends BaseEntity {
         this.brand = brand;
     }
 
-    public String getImagesJson() { return imagesJson; }
-    public void setImagesJson(String imagesJson) { this.imagesJson = imagesJson; }
-
-    public String getGpuModel() { return gpuModel; }
-    public void setGpuModel(String gpuModel) { this.gpuModel = gpuModel; }
-
-    public String getVram() { return vram; }
-    public void setVram(String vram) { this.vram = vram; }
-
-    public String getMemoryType() { return memoryType; }
-    public void setMemoryType(String memoryType) { this.memoryType = memoryType; }
-
-    public String getCoolingType() { return coolingType; }
-    public void setCoolingType(String coolingType) { this.coolingType = coolingType; }
-
-    public String getPowerConnectors() { return powerConnectors; }
-    public void setPowerConnectors(String powerConnectors) { this.powerConnectors = powerConnectors; }
-
-    public String getRecommendedPsu() { return recommendedPsu; }
-    public void setRecommendedPsu(String recommendedPsu) { this.recommendedPsu = recommendedPsu; }
-
-    public String getDimension() { return dimension; }
-    public void setDimension(String dimension) { this.dimension = dimension; }
-
-    public List<CartItem> getCartItems() {
-        return cartItems;
+    public String getImagesJson() {
+        return imagesJson;
     }
 
-    public void setCartItems(List<CartItem> cartItems) {
-        this.cartItems = cartItems;
+    public void setImagesJson(String imagesJson) {
+        this.imagesJson = imagesJson;
     }
 
-    public List<OrderItem> getOrderItems() {
-        return orderItems;
+    public String getGpuModel() {
+        return gpuModel;
     }
 
-    public void setOrderItems(List<OrderItem> orderItems) {
-        this.orderItems = orderItems;
+    public void setGpuModel(String gpuModel) {
+        this.gpuModel = gpuModel;
     }
 
+    public String getVram() {
+        return vram;
+    }
+
+    public void setVram(String vram) {
+        this.vram = vram;
+    }
+
+    public String getMemoryType() {
+        return memoryType;
+    }
+
+    public void setMemoryType(String memoryType) {
+        this.memoryType = memoryType;
+    }
+
+    public String getCoolingType() {
+        return coolingType;
+    }
+
+    public void setCoolingType(String coolingType) {
+        this.coolingType = coolingType;
+    }
+
+    public String getPowerConnectors() {
+        return powerConnectors;
+    }
+
+    public void setPowerConnectors(String powerConnectors) {
+        this.powerConnectors = powerConnectors;
+    }
+
+    public String getRecommendedPsu() {
+        return recommendedPsu;
+    }
+
+    public void setRecommendedPsu(String recommendedPsu) {
+        this.recommendedPsu = recommendedPsu;
+    }
+
+    public String getDimension() {
+        return dimension;
+    }
+
+    public void setDimension(String dimension) {
+        this.dimension = dimension;
+    }
 
     public Category getCategory() {
         return category;
     }
-    
-     public void setCategory(Category category) {
+
+    public void setCategory(Category category) {
         this.category = category;
     }
 
-     public String getSku() {
-         return sku;
-     }
+    public String getSku() {
+        return sku;
+    }
 
-     public void setSku(String sku) {
-         this.sku = sku;
-     }
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
 
     public Boolean getStatus() {
         return status;
@@ -203,4 +234,22 @@ public class Product extends BaseEntity {
         this.status = status;
     }
 
+    // 🌟 KHÓA CHẶT Ở GETTER CỦA CART VÀ ORDER
+    @JsonIgnore
+    public List<CartItem> getCartItems() {
+        return cartItems;
+    }
+
+    public void setCartItems(List<CartItem> cartItems) {
+        this.cartItems = cartItems;
+    }
+
+    @JsonIgnore
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
+    }
 }
