@@ -6,7 +6,6 @@
   padding-top: 100px !important;
   padding-bottom: 100px;
   background-color: #f4f6f8;
-  /* Nền xám nhạt */
   min-height: 100vh;
   width: 100%;
   font-family: 'Inter', Arial, sans-serif;
@@ -103,7 +102,8 @@
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
   width: 100%;
   padding: 13px 16px;
   background: #f8fafc;
@@ -124,7 +124,7 @@
   box-shadow: 0 0 0 3px rgba(216, 40, 46, 0.1);
 }
 
-/* ── SHIPPING METHODS (Phương thức vận chuyển) ── */
+/* ── SHIPPING METHODS ── */
 .shipping-methods {
   display: flex;
   flex-direction: column;
@@ -177,7 +177,7 @@
   background: #fff5f5;
 }
 
-/* ── PAYMENT METHODS (Phương thức thanh toán) ── */
+/* ── PAYMENT METHODS ── */
 .payment-methods {
   display: flex;
   flex-direction: column;
@@ -247,51 +247,115 @@
   color: #fff;
 }
 
-/* ── QR CODE BANK TRANSFER ── */
+/* ── VNPay Badge ── */
+.payment-badge-vnpay {
+  margin-left: auto;
+  background: #006EB5;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.payment-method-card.active .vnpay-icon {
+  background: #006EB5;
+  color: #fff;
+}
+
+/* 🌟 KHUNG MÃ QR CHUYỂN KHOẢN (THIẾT KẾ MỚI) 🌟 */
 .bank-transfer-box {
   background: #eff6ff;
-  /* Nền xanh dương siêu nhạt */
+  /* Nền xanh dương nhạt */
   border: 1px dashed #bfdbfe;
-  /* Viền xanh đồng bộ */
   border-radius: 10px;
   padding: 24px;
   margin-bottom: 24px;
-  text-align: center;
   animation: fadeIn 0.3s ease-out;
 }
 
 .bank-transfer-info {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
+  gap: 24px;
+}
+
+.bank-text-details {
+  flex: 1;
+  text-align: left;
+}
+
+.bank-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #dbeafe;
+  padding-bottom: 12px;
 }
 
 .bank-shield-icon {
-  width: 32px;
-  height: 32px;
-  margin-bottom: 12px;
+  width: 24px;
+  height: 24px;
 }
 
 .bank-transfer-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
-  color: #1e293b;
-  margin: 0 0 8px 0;
+  color: #1e3a8a;
+  margin: 0;
   text-transform: uppercase;
 }
 
-.bank-transfer-info p {
-  margin: 0;
-  color: #475569;
-  font-size: 13.5px;
-  line-height: 1.6;
+.bank-text-details p {
+  margin: 0 0 8px 0;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-.bank-transfer-info strong {
+.bank-text-details strong {
   color: #0f172a;
 }
 
-/* ── SUBMIT BUTTON ── */
+.qr-instruction {
+  margin-top: 16px !important;
+  color: #d8282e !important;
+  font-style: italic;
+}
+
+/* Thẻ chứa ảnh QR */
+.bank-qr-box {
+  background: #ffffff;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.qr-code-img {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── ERROR MESSAGE & SUBMIT BUTTON ── */
+.checkout-error-msg {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
 .btn-place-order {
   width: 100%;
   padding: 16px;
@@ -312,6 +376,13 @@
   background: #c72424;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(216, 40, 46, 0.25);
+}
+
+.btn-place-order:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ── Right Column (Summary) ─────────────────────────────────────── */
@@ -570,6 +641,17 @@
   color: #1e293b;
 }
 
+.popup-order-code {
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.popup-order-code strong {
+  color: #d8282e;
+  font-size: 16px;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -608,12 +690,6 @@
     width: 100%;
     box-sizing: border-box;
   }
-
-  .bank-transfer-inner {
-    flex-direction: column;
-    text-align: center;
-    gap: 16px;
-  }
 }
 
 @media (max-width: 600px) {
@@ -631,84 +707,31 @@
     align-items: flex-start;
     gap: 4px;
   }
+
+  .bank-transfer-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .bank-text-details {
+    text-align: center;
+  }
+
+  .bank-title-wrapper {
+    justify-content: center;
+  }
 }
 
-/* ── VNPay Badge ── */
-.payment-badge-vnpay {
-  margin-left: auto;
-  background: #006EB5;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 3px 10px;
-  border-radius: 20px;
-  letter-spacing: 0.5px;
-  flex-shrink: 0;
-}
-.payment-method-card.active .vnpay-icon {
-  background: #006EB5;
-  color: #fff;
-}
-
-/* ── Error message ── */
-.checkout-error-msg {
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  color: #dc2626;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 13.5px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-/* ── Disabled button ── */
-.btn-place-order:disabled {
-  background: #94a3b8;
+/* Giao diện khi bị khóa nút Hỏa tốc */
+.method-card.disabled {
+  opacity: 0.5;
+  background: #f8fafc;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+  border-color: #e2e8f0;
 }
 
-/* ── Bank transfer info layout ── */
-.bank-transfer-info {
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 16px;
-  text-align: left;
-}
-.bank-transfer-info .bank-shield-icon {
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-/* ── QR Payment box (trong Popup) ── */
-.popup-order-code {
-  font-size: 14px;
-  color: #475569;
-  margin-bottom: 10px;
-}
-.popup-order-code strong {
-  color: #d8282e;
-  font-size: 16px;
-}
-.qr-payment-box {
-  margin: 16px auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-.qr-payment-img {
-  width: 180px;
-  height: 180px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 8px;
-  background: #fff;
-}
-.qr-note {
-  font-size: 12px;
-  color: #64748b;
-  margin: 0;
+.method-card.disabled:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
 }

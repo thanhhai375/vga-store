@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,7 +36,6 @@ import com.example.vgashop.service.ProductService;
 
 import jakarta.validation.Valid;
 
-
 @RestController
 @RequestMapping("/api/admin")
 @CrossOrigin
@@ -46,7 +46,8 @@ public class AdminController {
     private final ProductService productService;
     private final ReviewRepository reviewRepository;
 
-    public AdminController(AdminService adminService, ProductService productService, ReviewRepository reviewRepository) {
+    public AdminController(AdminService adminService, ProductService productService,
+            ReviewRepository reviewRepository) {
         this.adminService = adminService;
         this.productService = productService;
         this.reviewRepository = reviewRepository;
@@ -62,11 +63,10 @@ public class AdminController {
     // Quản lấy User, lấy tất cả ng dùng
     @GetMapping("/users")
     public ApiResponse<Page<UserAdminResponse>> getAllUsers(
-        @RequestParam(defaultValue= "0") int page,
-        @RequestParam(defaultValue="12") int size,
-        @RequestParam(defaultValue="createdAt") String sortBy,
-        @RequestParam(defaultValue="desc") String direction
-    ) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
         Page<UserAdminResponse> users = adminService.getAllUsers(page, size, sortBy, direction);
         return ApiResponse.success("Lấy danh sách người dùng thành công", users);
     }
@@ -85,21 +85,21 @@ public class AdminController {
     }
 
     // ===== QUản lý Order
-    // Admin xem tất cả đơn hàng 
+    // Admin xem tất cả đơn hàng
     @GetMapping("/orders")
     public ApiResponse<Page<OrderSummaryResponse>> getAllOrders(
-        @RequestParam(defaultValue= "0") int page,
-        @RequestParam(defaultValue="12") int size,
-        @RequestParam(defaultValue="createdAt") String sortBy,
-        @RequestParam(defaultValue="desc") String direction
-    ) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
         Page<OrderSummaryResponse> orders = adminService.getAllOrders(page, size, sortBy, direction);
         return ApiResponse.success("Lấy tất cả đơn hàng thành công", orders);
     }
 
     // Admin cập nhật trạng thái đơn hàng
     @PutMapping("/orders/{orderId}/status")
-    public ApiResponse<OrderResponse> updateOrderStatus(@PathVariable Long orderId, @Valid @RequestBody OrderStatusUpdateRequest request) {
+    public ApiResponse<OrderResponse> updateOrderStatus(@PathVariable Long orderId,
+            @Valid @RequestBody OrderStatusUpdateRequest request) {
         OrderResponse order = adminService.updateOrderStatus(orderId, request);
         return ApiResponse.success("Cập nhật trạng thái đơn hàng thành công", order);
     }
@@ -109,9 +109,8 @@ public class AdminController {
 
     @GetMapping("/products")
     public ApiResponse<Page<ProductAdminResponse>> getAllProductsForAdmin(
-        @RequestParam(defaultValue= "0") int page,
-        @RequestParam(defaultValue="12") int size
-    ) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
         Page<ProductAdminResponse> products = adminService.getAllProductForAdmin(page, size);
         return ApiResponse.success("Lấy danh sách sản phẩm thành công", products);
     }
@@ -154,9 +153,8 @@ public class AdminController {
     // QUẢN LÝ CATEGORY
     @GetMapping("/categories")
     public ApiResponse<Page<Category>> getAllCategoriesForAdmin(
-        @RequestParam(defaultValue= "0") int page,
-        @RequestParam(defaultValue="12") int size
-    ) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
         Page<Category> categorys = adminService.getAllCategoriesForAdmin(page, size);
         return ApiResponse.success("Lấy danh sách danh mục thành công", categorys);
     }
@@ -171,9 +169,8 @@ public class AdminController {
     // QUẢN LÝ BRAND
     @GetMapping("/brands")
     public ApiResponse<Page<Brand>> getAllBrandsForAdmin(
-        @RequestParam(defaultValue= "0") int page,
-        @RequestParam(defaultValue="12") int size
-    ) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
         Page<Brand> brands = adminService.getAllBrandsForAdmin(page, size);
         return ApiResponse.success("Lấy danh sách thương hiệu thành công", brands);
     }
@@ -195,5 +192,19 @@ public class AdminController {
     public ApiResponse<String> deleteReview(@PathVariable Long reviewId) {
         reviewRepository.deleteById(reviewId);
         return ApiResponse.success("Đã xóa đánh giá", "OK");
+    }
+
+    @GetMapping("/orders/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<?> getOrderDetailsForAdmin(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.getOrderDetailsForAdmin(id));
+    }
+
+    // Lấy dữ liệu động cho Biểu đồ
+    @GetMapping("/dashboard/charts")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<?> getDashboardCharts(
+            @RequestParam(required = false, defaultValue = "6months") String period) {
+        return ResponseEntity.ok(adminService.getDashboardCharts(period));
     }
 }

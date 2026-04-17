@@ -1,102 +1,224 @@
 import React, { useEffect, useState } from 'react';
-import { Package, Monitor, Users, Banknote } from 'lucide-react';
-import './Dashboard.css';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, ComposedChart
+} from 'recharts';
+import { Package, ShoppingBag, DollarSign, Activity } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
+import './Dashboard.css';
 
-const StatCard = ({ label, value, icon, color, sub }) => (
-  <div className={`stat-card stat-card--${color}`}>
-    <div className="stat-icon">{icon}</div>
-    <div className="stat-body">
-      <div className="stat-value">{value ?? '...'}</div>
-      <div className="stat-label">{label}</div>
-      {sub && <div className="stat-sub">{sub}</div>}
+const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + '₫';
+
+// 🌟 Component Thẻ Thống kê (Đã dọn sạch dữ liệu giả)
+const StatCard = ({ title, value, icon, colorClass }) => (
+  <div className="dash-stat-card">
+    <div className="dash-stat-header">
+      <h3 className="dash-stat-title">{title}</h3>
+      <div className={`dash-stat-icon ${colorClass}`}>{icon}</div>
     </div>
+    <div className="dash-stat-value">{value ?? '...'}</div>
   </div>
 );
+
+const STATUS_MAP = {
+  PENDING: { label: 'Chờ xử lý', cls: 'badge-warning' },
+  CONFIRMED: { label: 'Đã xác nhận', cls: 'badge-info' },
+  SHIPPING: { label: 'Đang giao', cls: 'badge-primary' },
+  DELIVERED: { label: 'Hoàn thành', cls: 'badge-success' },
+  CANCEL_REQUESTED: { label: 'Yêu cầu Hủy', cls: 'badge-danger' },
+  CANCELLED: { label: 'Đã hủy', cls: 'badge-dark' },
+};
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
 
+  const [period, setPeriod] = useState('6months');
+  const [chartsData, setChartsData] = useState({ chartData: [], brandData: [] });
+
+  const [loadingTop, setLoadingTop] = useState(true);
+  const [loadingChart, setLoadingChart] = useState(true);
+
+  // 1. Tải Dữ liệu Tổng quan (Dùng Data Thật 100%)
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTopData = async () => {
       try {
         const [statsRes, ordersRes] = await Promise.all([
           axiosClient.get('/admin/dashboard/stats'),
           axiosClient.get('/admin/orders?page=0&size=5'),
         ]);
-        setStats(statsRes.data || statsRes);
-        const orders = ordersRes.data || ordersRes;
-        setRecentOrders(Array.isArray(orders) ? orders.slice(0, 5) : orders.content?.slice(0, 5) || []);
-      } catch {
-        // Dùng dữ liệu mẫu nếu API chưa có
-        setStats({ totalProducts: '--', totalOrders: '--', totalUsers: '--', totalRevenue: '--' });
-        setRecentOrders([]);
-      } finally {
-        setLoading(false);
-      }
+        setStats(statsRes.data?.data || statsRes.data || statsRes);
+        const ordersData = ordersRes.data?.data || ordersRes.data || ordersRes;
+        setRecentOrders(Array.isArray(ordersData) ? ordersData.slice(0, 5) : ordersData.content?.slice(0, 5) || []);
+      } catch (err) { console.error(err); }
+      finally { setLoadingTop(false); }
     };
-    fetchData();
+    fetchTopData();
   }, []);
 
-  const statusBadge = (status) => {
-    const map = {
-      PENDING: ['badge-warning','Chờ xử lý'],
-      PROCESSING: ['badge-info','Đang xử lý'],
-      SHIPPED: ['badge-secondary','Đã gửi'],
-      DELIVERED: ['badge-success','Hoàn thành'],
-      CANCELLED: ['badge-danger','Đã hủy'],
+  // 2. Tải Dữ liệu Biểu đồ (Dùng Data Thật 100%)
+  useEffect(() => {
+    const fetchCharts = async () => {
+      setLoadingChart(true);
+      try {
+        const res = await axiosClient.get(`/admin/dashboard/charts?period=${period}`);
+        setChartsData(res.data?.data || res.data || res);
+      } catch (err) { console.error(err); }
+      finally { setLoadingChart(false); }
     };
-    const [cls, label] = map[status] || ['badge-secondary', status];
-    return <span className={`badge ${cls}`}>{label}</span>;
-  };
+    fetchCharts();
+  }, [period]);
 
   return (
-    <div className="dashboard">
-      {/* Stats */}
-      <div className="stats-grid">
-        <StatCard label="Tổng sản phẩm" value={stats?.totalProducts} icon={<Monitor size={24} />} color="purple" sub="Sản phẩm đang bán" />
-        <StatCard label="Đơn hàng" value={stats?.totalOrders} icon={<Package size={24} />} color="blue" sub="Tổng đơn hàng" />
-        <StatCard label="Người dùng" value={stats?.totalUsers} icon={<Users size={24} />} color="green" sub="Tài khoản đăng ký" />
-        <StatCard label="Doanh thu" value={stats?.totalRevenue ? `${Number(stats.totalRevenue).toLocaleString('vi-VN')}đ` : '--'} icon={<Banknote size={24} />} color="yellow" sub="Tổng doanh thu" />
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <div>
+          <h1>VGA Store Performance Dashboard</h1>
+          <p>Tổng quan tình hình kinh doanh (Dữ liệu Thực tế)</p>
+        </div>
       </div>
 
-      {/* Recent Orders */}
-      <div className="card dashboard-orders">
-        <div className="card-header">
-          <div>
-            <h2 className="card-title">Đơn hàng gần đây</h2>
-            <p className="card-sub">5 đơn hàng mới nhất</p>
-          </div>
-          <a href="/orders" className="btn btn-ghost btn-sm">Xem tất cả →</a>
+      {/* 🌟 4 THẺ THỐNG KÊ (KHÔNG CÒN DATA GIẢ) */}
+      <div className="dash-stats-grid">
+        <StatCard
+          title="Tổng đơn hàng"
+          value={stats?.totalOrders || 0}
+          colorClass="icon-purple"
+          icon={<ShoppingBag size={22} />}
+        />
+        <StatCard
+          title="Đơn mới hôm nay"
+          value={stats?.todayOrders || 0}
+          colorClass="icon-yellow"
+          icon={<Package size={22} />}
+        />
+        <StatCard
+          title="Tổng doanh thu"
+          value={stats?.totalRevenue ? formatPrice(stats.totalRevenue) : '0₫'}
+          colorClass="icon-green"
+          icon={<DollarSign size={22} />}
+        />
+        <StatCard
+          title="Doanh thu hôm nay"
+          value={stats?.todayRevenue ? formatPrice(stats.todayRevenue) : '0₫'}
+          colorClass="icon-blue"
+          icon={<Activity size={22} />}
+        />
+      </div>
+
+      <div className="dash-charts-grid">
+        {loadingChart ? (
+          <div className="spinner" style={{ gridColumn: '1 / -1', margin: '100px auto' }}></div>
+        ) : (
+          <>
+            <div className="dash-chart-card lg-col">
+              <div className="chart-header-flex">
+                <h3 className="chart-title">Tiến độ doanh thu</h3>
+                <select className="dash-filter-select" value={period} onChange={e => setPeriod(e.target.value)}>
+                  <option value="today">Hôm nay (24h)</option>
+                  <option value="7days">7 ngày qua</option>
+                  <option value="1month">30 ngày qua</option>
+                  <option value="6months">6 tháng qua</option>
+                  <option value="1year">1 năm qua</option>
+                </select>
+              </div>
+
+              <div className="chart-wrapper">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartsData.chartData} margin={{ top: 10, right: 10, left: 20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(val) => val > 0 ? `${(val / 1000000).toFixed(1)}M` : '0'} />
+                    <Tooltip formatter={(value) => formatPrice(value)} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                    <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" name="Doanh thu" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="dash-chart-card">
+              <div className="chart-header-flex">
+                <h3 className="chart-title">Hoàn thành & Hủy đơn</h3>
+              </div>
+              <div className="chart-wrapper">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={chartsData.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} allowDecimals={false} />
+                    <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                    <Bar dataKey="cancelled" barSize={12} fill="#cbd5e1" radius={[4, 4, 0, 0]} name="Hủy đơn" />
+                    <Bar dataKey="delivered" barSize={12} fill="#10b981" radius={[4, 4, 0, 0]} name="Hoàn thành" />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="dash-chart-card">
+              <div className="chart-header-flex">
+                <h3 className="chart-title">Lượng bán theo Hãng</h3>
+              </div>
+              <div className="chart-wrapper">
+                <ResponsiveContainer width="100%" height="100%">
+                  {chartsData.brandData && chartsData.brandData.length > 0 ? (
+                    <BarChart data={chartsData.brandData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} allowDecimals={false} />
+                      <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                      <Bar dataKey="sold" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={24} name="Đã bán (cái)" />
+                    </BarChart>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', fontSize: '13px' }}>Chưa có dữ liệu</div>
+                  )}
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="dash-recent-orders">
+        <div className="recent-header">
+          <h3>Đơn hàng mới nhất (Cần xử lý)</h3>
+          <a href="/orders" className="view-all-link">Xem tất cả ›</a>
         </div>
-        {loading ? (
-          <div className="spinner"></div>
+
+        {loadingTop ? (
+          <div className="spinner" style={{ margin: '40px auto' }}></div>
         ) : recentOrders.length === 0 ? (
           <p className="no-data">Chưa có dữ liệu đơn hàng</p>
         ) : (
-          <div className="table-wrapper">
-            <table>
+          <div className="table-responsive">
+            <table className="recent-table">
               <thead>
                 <tr>
-                  <th>#ID</th>
-                  <th>Khách hàng</th>
-                  <th>Tổng tiền</th>
-                  <th>Trạng thái</th>
-                  <th>Ngày đặt</th>
+                  <th>MÃ ĐƠN HÀNG</th>
+                  <th>KHÁCH HÀNG</th>
+                  <th>NGÀY ĐẶT</th>
+                  <th>TRẠNG THÁI</th>
+                  <th style={{ textAlign: 'right' }}>TỔNG TIỀN</th>
                 </tr>
               </thead>
               <tbody>
-                {recentOrders.map(o => (
-                  <tr key={o.id}>
-                    <td>#{o.id}</td>
-                    <td>{o.user?.username || o.customerName || '--'}</td>
-                    <td>{o.totalAmount ? `${Number(o.totalAmount).toLocaleString('vi-VN')}đ` : '--'}</td>
-                    <td>{statusBadge(o.status)}</td>
-                    <td>{o.createdAt ? new Date(o.createdAt).toLocaleDateString('vi-VN') : '--'}</td>
-                  </tr>
-                ))}
+                {recentOrders.map(o => {
+                  const st = STATUS_MAP[o.status] || { label: o.status, cls: 'badge-secondary' };
+                  return (
+                    <tr key={o.orderId || o.id}>
+                      <td className="fw-500">{o.orderCode || `#${o.orderId || o.id}`}</td>
+                      <td>{o.fullName || o.user?.username || '--'}</td>
+                      <td className="text-muted">{o.createdAt ? new Date(o.createdAt).toLocaleDateString('vi-VN') : '--'}</td>
+                      <td><span className={`status-dot ${st.cls}`}>{st.label}</span></td>
+                      <td className="text-right fw-600">{o.totalAmount ? formatPrice(o.totalAmount) : '--'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

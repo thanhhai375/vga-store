@@ -6,38 +6,36 @@ import java.time.LocalDateTime;
 import com.example.vgashop.entity.OrderStatus;
 import com.example.vgashop.entity.PaymentStatus;
 
-
-// dùng cho danh sách đơn hàng 
-/**
- * DTO dùng để hiển thị danh sách đơn hàng (ngắn gọn, không cần liệt kê chi tiết từng sản phẩm).
- * Thường dùng trong trang "Đơn hàng của tôi".
- */
 public class OrderSummaryResponse {
 
     private Long orderId;
-    private String orderCode; // mã đơn hàng
-    private BigDecimal totalAmount; // tổng tiền
-    private OrderStatus status; // trạng thái đơn hàng
-    private PaymentStatus paymentStatus; // trạng thái thanh toán
-    private LocalDateTime creratedAt; // ngày tạo đơn
-    private Integer totalItems; // tổng số lượng sản phẩm trong đơn
+    private String orderCode;
+    private String fullName; // 🌟 Thêm Tên Khách Hàng
+    private String phone; // 🌟 Thêm SĐT
+    private BigDecimal totalAmount;
+    private OrderStatus status;
+    private PaymentStatus paymentStatus;
+    private LocalDateTime createdAt; // 🌟 Sửa lỗi chính tả (trước đây là creratedAt)
+    private Integer totalItems;
 
-    // Constructor
-    public OrderSummaryResponse() {}
+    public OrderSummaryResponse() {
+    }
 
-    public OrderSummaryResponse(Long orderId, String orderCode, BigDecimal totalAmount, OrderStatus status,
-            PaymentStatus paymentStatus, LocalDateTime creratedAt, Integer totalItems) {
+    public OrderSummaryResponse(Long orderId, String orderCode, String fullName, String phone,
+            BigDecimal totalAmount, OrderStatus status, PaymentStatus paymentStatus,
+            LocalDateTime createdAt, Integer totalItems) {
         this.orderId = orderId;
         this.orderCode = orderCode;
+        this.fullName = fullName;
+        this.phone = phone;
         this.totalAmount = totalAmount;
         this.status = status;
         this.paymentStatus = paymentStatus;
-        this.creratedAt = creratedAt;
+        this.createdAt = createdAt;
         this.totalItems = totalItems;
     }
 
-    // getter setter
-
+    // Getter và Setter
     public Long getOrderId() {
         return orderId;
     }
@@ -52,6 +50,22 @@ public class OrderSummaryResponse {
 
     public void setOrderCode(String orderCode) {
         this.orderCode = orderCode;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public BigDecimal getTotalAmount() {
@@ -78,12 +92,12 @@ public class OrderSummaryResponse {
         this.paymentStatus = paymentStatus;
     }
 
-    public LocalDateTime getCreratedAt() {
-        return creratedAt;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreratedAt(LocalDateTime creratedAt) {
-        this.creratedAt = creratedAt;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Integer getTotalItems() {
@@ -93,5 +107,4 @@ public class OrderSummaryResponse {
     public void setTotalItems(Integer totalItems) {
         this.totalItems = totalItems;
     }
-    
 }

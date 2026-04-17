@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import axiosClient from '../../api/axiosClient';
 import { clearCart } from '../../redux/cartSlice';
 import { orderService } from '../../services/orderService';
 import cartService from '../../services/cartService';
@@ -19,8 +20,19 @@ const Checkout = () => {
   const [customerInfo, setCustomerInfo] = useState({
     fullName: '',
     phone: '',
-    address: '',
     note: ''
+  });
+
+  // 🌟 KHỐI STATE XỬ LÝ ĐỊA CHỈ API VIỆT NAM
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
+  const [addressData, setAddressData] = useState({
+    province: '',
+    district: '',
+    ward: '',
+    street: ''
   });
 
   const [shippingMethod, setShippingMethod] = useState('standard');
@@ -28,10 +40,9 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Popup thành công
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [createdOrderCode, setCreatedOrderCode] = useState('');
-  const [paymentUrl, setPaymentUrl] = useState(''); // URL VNPay redirect
+  const [paymentUrl, setPaymentUrl] = useState('');
 
   const [bankInfo, setBankInfo] = useState({
     bankName: 'Đang tải...',
@@ -40,86 +51,162 @@ const Checkout = () => {
     bankId: ''
   });
 
+  // 🌟 GỌI API LẤY DANH SÁCH 63 TỈNH THÀNH (Open API)
   useEffect(() => {
-    // Gọi API settings để lấy cấu hình
-    axios.get('http://localhost:8080/api/settings/public')
-      .then(res => {
-        const data = res.data || {};
-        setBankInfo({
-          bankId: data.BANK_ID || '970436', // Vietcombank default
-          accountNumber: data.BANK_ACC_NO || '0000000',
-          accountName: data.BANK_ACC_NAME || 'VGA STORE',
-          bankName: data.BANK_ID || 'Vietcombank' // VietQR có thể tự map nếu dùng img.vietqr.io
-        });
-      })
-      .catch(err => console.log('Không tải được settings', err));
+    axios.get('https://provinces.open-api.vn/api/p/')
+      .then(res => setProvinces(res.data))
+      .catch(err => console.error("Lỗi lấy Tỉnh/Thành:", err));
   }, []);
+
+  const handleProvinceChange = (e) => {
+    const code = e.target.value;
+    const name = e.target.options[e.target.selectedIndex].text;
+    setAddressData({ ...addressData, province: name, district: '', ward: '' });
+    setDistricts([]);
+    setWards([]);
+    if (code) {
+      axios.get(`https://provinces.open-api.vn/api/p/${code}?depth=2`)
+        .then(res => setDistricts(res.data.districts));
+    }
+  };
+
+  const handleDistrictChange = (e) => {
+    const code = e.target.value;
+    const name = e.target.options[e.target.selectedIndex].text;
+    setAddressData({ ...addressData, district: name, ward: '' });
+    setWards([]);
+    if (code) {
+      axios.get(`https://provinces.open-api.vn/api/d/${code}?depth=2`)
+        .then(res => setWards(res.data.wards));
+    }
+  };
+
+  const handleWardChange = (e) => {
+    const name = e.target.options[e.target.selectedIndex].text;
+    setAddressData({ ...addressData, ward: name });
+  };
+
+  // 🌟 LOGIC KHÓA HỎA TỐC: Chỉ mở khi khách chọn Tỉnh là Hồ Chí Minh
+  const canExpress = addressData.province.toLowerCase().includes('hồ chí minh') || addressData.province.toLowerCase().includes('ho chi minh');
+
+  useEffect(() => {
+    if (!canExpress && shippingMethod === 'express') {
+      setShippingMethod('standard');
+    }
+  }, [canExpress, shippingMethod]);
+
+
   const totalAmount = checkoutItems.reduce((total, item) => total + (item.price * (item.cartQuantity || 1)), 0);
   const shippingFee = shippingMethod === 'express' ? 50000 : 0;
   const finalTotal = totalAmount + shippingFee;
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + '₫';
 
+  useEffect(() => {
+    axiosClient.get('/settings/public')
+      .then(res => {
+        const data = res.data || res || {};
+        // 🌟 Tự động tìm kiếm key bất kể viết hoa hay viết thường
+        const getVal = (key) => data[key] || data[key.toLowerCase()] || data[key.toUpperCase()] || '';
+
+        setBankInfo({
+          bankId: getVal('BANK_ID'),
+          accountNumber: getVal('BANK_ACC_NO'),
+          accountName: getVal('BANK_ACC_NAME'),
+          bankName: getVal('BANK_ID')
+        });
+      })
+      .catch(err => {
+        console.error('Lỗi API Settings:', err);
+      });
+  }, []);
+
   const handleChange = (e) => {
     setCustomerInfo({ ...customerInfo, [e.target.name]: e.target.value });
   };
 
+  // 🌟 LOGIC ĐẶT HÀNG ĐÃ ĐƯỢC FIX LỖI BÓC VỎ DỮ LIỆU ĐỂ LẤY ORDER CODE & VNPAY
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (checkoutItems.length === 0) return;
+
+    // Gộp địa chỉ chuẩn trước khi gửi xuống Backend
+    const fullShippingAddress = `${addressData.street ? addressData.street + ', ' : ''}${addressData.ward ? addressData.ward + ', ' : ''}${addressData.district ? addressData.district + ', ' : ''}${addressData.province}`.replace(/,\s*$/, "");
+
+    if (!addressData.province || !addressData.district || !addressData.ward || !addressData.street) {
+      setError('Vui lòng chọn đầy đủ Tỉnh, Huyện, Xã và nhập số nhà!');
+      return;
+    }
 
     setLoading(true);
     setError('');
 
     try {
-      // 1. Tạo đơn hàng
       const orderPayload = {
         fullName: customerInfo.fullName,
         phone: customerInfo.phone,
-        address: customerInfo.address,
+        address: fullShippingAddress,
+        shippingAddress: fullShippingAddress, // Thêm biến này để chắc chắn Backend nhận được địa chỉ
         note: customerInfo.note || '',
+        totalPrice: finalTotal,
+        totalAmount: finalTotal,
         items: checkoutItems.map(item => ({
           productId: item.id,
-          quantity: item.cartQuantity,
+          quantity: item.cartQuantity || 1,
           price: Number(item.price)
         }))
       };
 
-      const orderResult = await orderService.createOrder(orderPayload);
-      const orderId = orderResult?.orderId || orderResult?.id;
-      const orderCode = orderResult?.orderCode || orderResult?.id || 'N/A';
+      // Gọi API tạo đơn hàng
+      const orderRes = await orderService.createOrder(orderPayload);
+
+      // 🌟 Giải mã dữ liệu an toàn (tránh lỗi undefined)
+      const orderData = orderRes?.data?.data || orderRes?.data || orderRes || {};
+      const orderId = orderData.orderId || orderData.id;
+      const orderCode = orderData.orderCode || orderData.id || 'N/A';
+
       setCreatedOrderCode(orderCode);
 
-      // 2. Tạo payment (gắn phương thức thanh toán vào đơn)
-      let paymentResult = null;
+      // Gọi API lấy link thanh toán
+      let fetchedPaymentUrl = null;
       if (orderId) {
         try {
-          paymentResult = await orderService.createPayment(orderId, paymentMethod);
+          const payRes = await orderService.createPayment(orderId, paymentMethod);
+          const payData = payRes?.data?.data || payRes?.data || payRes || {};
+          fetchedPaymentUrl = payData.paymentUrl;
         } catch (payErr) {
-          console.warn('Tạo payment error (non-fatal):', payErr);
+          console.error('Tạo payment error:', payErr);
         }
       }
 
-      // 3. Xóa giỏ hàng local/DB (CHỈ áp dụng khi checkout từ giỏ hàng, KHÔNG áp dụng cho Mua Ngay)
+      // Xóa Giỏ hàng
       if (!buyNowItem) {
         dispatch(clearCart());
         if (isAuthenticated) {
-          await cartService.clearCart();
+          try {
+            await cartService.clearCart();
+          } catch (err) { }
         }
       }
 
-      // 4. Nếu VNPay → redirect sang cổng thanh toán
-      if (paymentMethod === 'VNPAY' && paymentResult?.paymentUrl) {
-        window.location.href = paymentResult.paymentUrl;
-        return;
+      // 🌟 Xử lý chuyển hướng VNPay lập tức
+      if (paymentMethod === 'VNPAY') {
+        if (fetchedPaymentUrl) {
+          window.location.href = fetchedPaymentUrl;
+          return; // Đã chuyển hướng thì không hiện popup nữa
+        } else {
+          setError('Lỗi lấy Link VNPay, vui lòng thử lại hoặc chọn thanh toán khác.');
+          setLoading(false);
+          return;
+        }
       }
 
-      // 5. Hiển thị popup thành công (COD / Bank Transfer)
-      setPaymentUrl(paymentResult?.paymentUrl || '');
+      setPaymentUrl(fetchedPaymentUrl || '');
       setShowSuccessPopup(true);
+
     } catch (err) {
       console.error('Lỗi đặt hàng:', err);
-      setError(err?.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.');
+      setError(err?.response?.data?.message || err?.response?.data || 'Đã xảy ra lỗi hệ thống khi kết nối Backend!');
     } finally {
       setLoading(false);
     }
@@ -129,7 +216,7 @@ const Checkout = () => {
     navigate(path);
   };
 
-  if (checkoutItems.length === 0 && !showSuccessPopup) {
+  if (checkoutItems.length === 0 && !showSuccessPopup && !createdOrderCode) {
     return (
       <div className="checkout-empty">
         <svg viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '80px', marginBottom: '20px' }}>
@@ -158,10 +245,8 @@ const Checkout = () => {
           </h2>
 
           <div className="checkout-content">
-            {/* CỘT TRÁI: FORM */}
             <form className="checkout-form-column" onSubmit={handlePlaceOrder}>
 
-              {/* KHỐI 1: THÔNG TIN GIAO HÀNG */}
               <div className="checkout-section-block">
                 <div className="section-header">
                   <span className="step-number">1</span>
@@ -177,17 +262,45 @@ const Checkout = () => {
                     <input type="tel" name="phone" required placeholder="Nhập số điện thoại" onChange={handleChange} />
                   </div>
                 </div>
-                <div className="form-group">
-                  <label>Địa chỉ nhận hàng *</label>
-                  <input type="text" name="address" required placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." onChange={handleChange} />
+
+                {/* 🌟 NÂNG CẤP CHỌN ĐỊA CHỈ CHUẨN SHOPEE */}
+                <div className="address-selectors form-grid">
+                  <div className="form-group">
+                    <label>Tỉnh/Thành phố *</label>
+                    <select required onChange={handleProvinceChange} defaultValue="">
+                      <option value="" disabled>Chọn Tỉnh/Thành</option>
+                      {provinces.map(p => <option key={p.code} value={p.code}>{p.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Quận/Huyện *</label>
+                    <select required onChange={handleDistrictChange} disabled={!addressData.province} defaultValue="">
+                      <option value="" disabled>Chọn Quận/Huyện</option>
+                      {districts.map(d => <option key={d.code} value={d.code}>{d.name}</option>)}
+                    </select>
+                  </div>
                 </div>
+
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Phường/Xã *</label>
+                    <select required onChange={handleWardChange} disabled={!addressData.district} defaultValue="">
+                      <option value="" disabled>Chọn Phường/Xã</option>
+                      {wards.map(w => <option key={w.code} value={w.code}>{w.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Số nhà, Tên đường *</label>
+                    <input type="text" required placeholder="Số nhà, tên đường, tòa nhà..." onChange={e => setAddressData({ ...addressData, street: e.target.value })} />
+                  </div>
+                </div>
+
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label>Ghi chú (Tùy chọn)</label>
                   <textarea name="note" rows="2" placeholder="Ghi chú thời gian nhận hàng, chỉ dẫn cho shipper..." onChange={handleChange}></textarea>
                 </div>
               </div>
 
-              {/* KHỐI 2: PHƯƠNG THỨC VẬN CHUYỂN */}
               <div className="checkout-section-block">
                 <div className="section-header">
                   <span className="step-number">2</span>
@@ -201,17 +314,20 @@ const Checkout = () => {
                       <span className="method-price text-green">Miễn phí</span>
                     </div>
                   </label>
-                  <label className={`method-card ${shippingMethod === 'express' ? 'active' : ''}`}>
-                    <input type="radio" value="express" checked={shippingMethod === 'express'} onChange={() => setShippingMethod('express')} />
+
+                  <label className={`method-card ${!canExpress ? 'disabled' : ''} ${shippingMethod === 'express' ? 'active' : ''}`} title={!canExpress ? 'Chỉ áp dụng tại TP. HCM' : ''}>
+                    <input type="radio" value="express" disabled={!canExpress} checked={shippingMethod === 'express'} onChange={() => setShippingMethod('express')} />
                     <div className="method-info">
-                      <span className="method-name">Giao hàng hỏa tốc (Nhận trong 24h)</span>
+                      <span className="method-name">
+                        Giao hàng hỏa tốc (Nhận trong 2-4h)
+                        {!canExpress && <span style={{ display: 'block', fontSize: '12.5px', color: '#ef4444', marginTop: '4px' }}>* Tính năng Tự động kích hoạt cho khu vực TP. HCM</span>}
+                      </span>
                       <span className="method-price text-red">50.000₫</span>
                     </div>
                   </label>
                 </div>
               </div>
 
-              {/* KHỐI 3: PHƯƠNG THỨC THANH TOÁN */}
               <div className="checkout-section-block">
                 <div className="section-header">
                   <span className="step-number">3</span>
@@ -219,7 +335,6 @@ const Checkout = () => {
                 </div>
 
                 <div className="payment-methods">
-                  {/* COD */}
                   <label className={`payment-method-card ${paymentMethod === 'COD' ? 'active' : ''}`}>
                     <input type="radio" name="payment" value="COD" checked={paymentMethod === 'COD'} onChange={() => setPaymentMethod('COD')} />
                     <div className="payment-icon">
@@ -231,7 +346,6 @@ const Checkout = () => {
                     </div>
                   </label>
 
-                  {/* BANK TRANSFER / QR */}
                   <label className={`payment-method-card ${paymentMethod === 'BANK_TRANSFER' ? 'active' : ''}`}>
                     <input type="radio" name="payment" value="BANK_TRANSFER" checked={paymentMethod === 'BANK_TRANSFER'} onChange={() => setPaymentMethod('BANK_TRANSFER')} />
                     <div className="payment-icon">
@@ -239,41 +353,51 @@ const Checkout = () => {
                     </div>
                     <div className="payment-info">
                       <strong>Chuyển khoản ngân hàng (Quét mã QR)</strong>
-                      <span>Mã QR sẽ hiển thị sau khi xác nhận đơn hàng.</span>
+                      <span>Mã QR hiển thị ngay bên dưới để bạn thanh toán.</span>
                     </div>
                   </label>
 
-                  {/* VNPAY */}
                   <label className={`payment-method-card ${paymentMethod === 'VNPAY' ? 'active' : ''}`}>
                     <input type="radio" name="payment" value="VNPAY" checked={paymentMethod === 'VNPAY'} onChange={() => setPaymentMethod('VNPAY')} />
-                    <div className="payment-icon vnpay-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-                      </svg>
+                    <div className="payment-icon vnpay-icon" style={{ background: 'transparent', padding: '0', overflow: 'hidden' }}>
+                      <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR-1.png" alt="VNPay" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                     </div>
                     <div className="payment-info">
-                      <strong>Thanh toán VNPay</strong>
+                      <strong>Thanh toán qua VNPAY</strong>
                       <span>Ví điện tử, thẻ ATM, thẻ quốc tế. Xác nhận tức thì.</span>
                     </div>
-                    <span className="payment-badge-vnpay">VNPay</span>
                   </label>
                 </div>
 
-                {/* Box thông tin chuyển khoản */}
                 {paymentMethod === 'BANK_TRANSFER' && (
                   <div className="bank-transfer-box">
                     <div className="bank-transfer-info">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="bank-shield-icon">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                      </svg>
-                      <div>
-                        <h4 className="bank-transfer-title">Thông tin tài khoản</h4>
+                      <div className="bank-text-details">
+                        <div className="bank-title-wrapper">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="bank-shield-icon">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                          </svg>
+                          <h4 className="bank-transfer-title">Thông tin tài khoản</h4>
+                        </div>
                         <p><strong>Ngân hàng:</strong> {bankInfo.bankName}</p>
                         <p><strong>Số tài khoản:</strong> {bankInfo.accountNumber}</p>
                         <p><strong>Chủ tài khoản:</strong> {bankInfo.accountName}</p>
-                        <p style={{ color: '#666', fontSize: '13px', marginTop: 6 }}>
-                          Mã QR sẽ hiển thị sau khi bạn xác nhận đặt hàng.
+                        <p className="qr-instruction">
+                          Quét mã QR bên cạnh để thanh toán nhanh <strong>{formatPrice(finalTotal)}</strong>.
                         </p>
+                      </div>
+
+                      <div className="bank-qr-box">
+                        {bankInfo.bankId ? (
+                          <img
+                            src={`https://img.vietqr.io/image/${bankInfo.bankId}-${bankInfo.accountNumber}-compact2.png?amount=${finalTotal}&accountName=${encodeURIComponent(bankInfo.accountName)}&addInfo=Thanh toan VGA STORE`}
+                            alt="QR Chuyển khoản"
+                            className="qr-code-img"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <p style={{ color: '#94a3b8', fontSize: '13px', fontStyle: 'italic', padding: '20px' }}>Mã QR chưa sẵn sàng</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -287,7 +411,6 @@ const Checkout = () => {
               </div>
             </form>
 
-            {/* CỘT PHẢI: TÓM TẮT ĐƠN HÀNG */}
             <div className="checkout-summary-section">
               <h3>Đơn hàng của bạn ({checkoutItems.length} sản phẩm)</h3>
               <div className="checkout-items-list">
@@ -299,8 +422,8 @@ const Checkout = () => {
                       <div className="checkout-item-details">
                         <div className="item-name">{item.name}</div>
                         <div className="item-price-qty">
-                          <span className="item-qty">SL: {item.cartQuantity}</span>
-                          <span className="item-price">{formatPrice(item.price * item.cartQuantity)}</span>
+                          <span className="item-qty">SL: {item.cartQuantity || 1}</span>
+                          <span className="item-price">{formatPrice(item.price * (item.cartQuantity || 1))}</span>
                         </div>
                       </div>
                     </div>
@@ -327,7 +450,6 @@ const Checkout = () => {
         </div>
       </div>
 
-      {/* POPUP THÀNH CÔNG */}
       {showSuccessPopup && (
         <div className="checkout-popup-overlay">
           <div className="checkout-popup-content">
@@ -343,22 +465,9 @@ const Checkout = () => {
             )}
             <p className="popup-message">
               {paymentMethod === 'BANK_TRANSFER'
-                ? `Vui lòng chuyển khoản với nội dung: #${createdOrderCode} để xác nhận đơn hàng.`
+                ? `Đơn hàng của bạn đã được ghi nhận. Hệ thống sẽ xử lý ngay khi nhận được thanh toán!`
                 : 'Cảm ơn bạn đã tin tưởng mua sắm tại VGA STORE. Đơn hàng sẽ được xử lý sớm nhất.'}
             </p>
-
-            {/* Hiển thị QR chuyển khoản nếu Bank Transfer */}
-            {paymentMethod === 'BANK_TRANSFER' && (
-              <div className="qr-payment-box">
-                <img
-                  src={`https://img.vietqr.io/image/${bankInfo.bankId}-${bankInfo.accountNumber}-compact2.png?amount=${finalTotal}&addInfo=DH${createdOrderCode}&accountName=${encodeURIComponent(bankInfo.accountName)}`}
-                  alt="QR Chuyển khoản"
-                  className="qr-payment-img"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-                <p className="qr-note">Quét mã để chuyển khoản nhanh</p>
-              </div>
-            )}
 
             <div className="popup-actions">
               <button className="popup-btn-track" onClick={() => handleFinishOrder('/track-order')}>

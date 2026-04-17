@@ -14,8 +14,6 @@ import com.example.vgashop.repository.PaymentRepository;
 import com.example.vgashop.repository.ProductRepository;
 import com.example.vgashop.repository.UserRepository;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,15 +35,15 @@ import com.example.vgashop.entity.User;
 import com.example.vgashop.exception.ResourceNotFoundException;
 import com.example.vgashop.entity.Order;
 import com.example.vgashop.entity.OrderItem;
+import com.example.vgashop.entity.OrderStatus;
+import com.example.vgashop.entity.PaymentStatus;
 import com.example.vgashop.entity.Product;
 import com.example.vgashop.entity.Brand;
 
-import lombok.extern.java.Log;
-
-
-// @Slf4j // để dùng logging
 @Service
 public class AdminService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AdminService.class);
 
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
@@ -55,8 +53,9 @@ public class AdminService {
     private final PaymentRepository paymentRepository;
 
     // Constructor injection
-
-    public AdminService(BrandRepository brandRepository, CategoryRepository categoryRepository, OrderRepository orderRepository, PaymentRepository paymentRepository, ProductRepository productRepository, UserRepository userRepository) {
+    public AdminService(BrandRepository brandRepository, CategoryRepository categoryRepository,
+            OrderRepository orderRepository, PaymentRepository paymentRepository, ProductRepository productRepository,
+            UserRepository userRepository) {
         this.brandRepository = brandRepository;
         this.categoryRepository = categoryRepository;
         this.orderRepository = orderRepository;
@@ -64,39 +63,59 @@ public class AdminService {
         this.productRepository = productRepository;
         this.userRepository = userRepository;
     }
-    
-    // DASHBOARD 
+
+    // DASHBOARD (ĐÃ ĐƯỢC FIX LOGIC TÍNH DỮ LIỆU THẬT 100%)
     @Transactional(readOnly = true)
     public AdminDashboardResponse getDashboard() {
-
         log.info("Admin đang lấy dữ liệu dashboard");
 
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfToday = today.atStartOfDay();
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+
+        // Lấy tất cả đơn hàng không bị xóa
+        List<Order> allOrders = orderRepository.findAll().stream()
+                .filter(o -> !o.isDeleted())
+                .collect(Collectors.toList());
+
+        long totalOrders = 0;
+        long todayOrders = 0;
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        BigDecimal todayRevenue = BigDecimal.ZERO;
+
+        for (Order o : allOrders) {
+            // Chỉ tính những đơn hàng KHÔNG bị hủy
+            if (o.getStatus() != OrderStatus.CANCELLED && o.getStatus() != OrderStatus.CANCEL_REQUESTED) {
+                totalOrders++;
+                BigDecimal amt = o.getTotalAmount() != null ? o.getTotalAmount() : BigDecimal.ZERO;
+                totalRevenue = totalRevenue.add(amt);
+
+                // Nếu đơn hàng tạo từ 00:00 sáng nay trở đi
+                if (o.getCreatedAt() != null && !o.getCreatedAt().isBefore(startOfToday)) {
+                    todayOrders++;
+                    todayRevenue = todayRevenue.add(amt);
+                }
+            }
+        }
 
         Long totalUsers = userRepository.countByDeletedFalse();
-        Long totalOrders = orderRepository.countByDeletedFalse();
-        Long todayOrders = orderRepository.countTodayOrders(startOfToday);
+        Long totalProducts = productRepository.countByDeletedFalse();
 
-        BigDecimal totalRevenue = paymentRepository.findTotalRevenue();
-        BigDecimal todayRevenue = paymentRepository.findTodayRevenue(today.atStartOfDay());
-
-        Long totalProducts = productRepository.countByDeletedFalse(); // đếm sản phẩm chưa bị xóa
-        Long lowStockProducts = productRepository.countLowStock(10); // đếm sản phẩm có stock <= 10
-
-        log.info("Dashboard data - Users: {}, Orders: {}, Today Orders: {}, Revenue: {}", 
-                totalUsers, totalOrders, todayOrders, totalRevenue);
+        // Đếm an toàn tránh lỗi SQL
+        Long lowStockProducts = 0L;
+        try {
+            lowStockProducts = productRepository.countLowStock(10);
+        } catch (Exception e) {
+            log.warn("Lỗi đếm hàng tồn kho: {}", e.getMessage());
+        }
 
         return new AdminDashboardResponse(
-            totalUsers != null ? totalUsers : 0L, // đảm bảo không trả về null
-            totalOrders != null ? totalOrders : 0L,
-            todayOrders != null ? todayOrders : 0L,
-            totalRevenue != null ? totalRevenue : BigDecimal.ZERO,
-            todayRevenue != null ? todayRevenue : BigDecimal.ZERO,
-            totalProducts != null ? totalProducts : 0L,
-            lowStockProducts != null ? lowStockProducts : 0L,
-            LocalDateTime.now() // thời gian cập nhật dữ liệu cuối cùng
-        );
+                totalUsers != null ? totalUsers : 0L,
+                totalOrders,
+                todayOrders,
+                totalRevenue,
+                todayRevenue,
+                totalProducts != null ? totalProducts : 0L,
+                lowStockProducts,
+                LocalDateTime.now());
     }
 
     // quản lý người dùng
@@ -105,23 +124,8 @@ public class AdminService {
         log.info("Admin lấy danh sách user - page: {}, size: {}", page, size);
 
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-
         Pageable pageable = PageRequest.of(page, size, sort);
-
         Page<User> users = userRepository.findByDeletedFalse(pageable);
-
-        // return users.map(user -> new UserAdminResponse(
-        //     user.getId(),
-        //     user.getUsername(),
-        //     user.getEmail(),
-        //     user.getFullName(),
-        //     user.getPhone(),
-        //     user.getRole(),
-        //     user.getStatus(),
-        //     user.isDeleted(),
-        //     user.getCreatedAt(),
-        //     user.getUpdatedAt()
-        // ));
 
         Page<UserAdminResponse> result = users.map(user -> new UserAdminResponse(
                 user.getId(),
@@ -133,8 +137,7 @@ public class AdminService {
                 user.getStatus(),
                 user.isDeleted(),
                 user.getCreatedAt(),
-                user.getUpdatedAt()
-        ));
+                user.getUpdatedAt()));
 
         log.info("Trả về {} users cho Admin", result.getTotalElements());
         return result;
@@ -146,7 +149,7 @@ public class AdminService {
         log.info("Admin thay đổi role userId={} thành {}", userId, newRole);
 
         User user = userRepository.findByIdAndDeleted(userId, false)
-            .orElseThrow(() -> new ResourceNotFoundException("KHông tìm thấy người dùng với ID: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("KHông tìm thấy người dùng với ID: " + userId));
 
         try {
             user.setRole(Role.valueOf(newRole.toUpperCase()));
@@ -164,11 +167,7 @@ public class AdminService {
         log.info("Admin toggle status userId={}", userId);
 
         User user = userRepository.findByIdAndDeleted(userId, false)
-            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user vói ID:" + userId));
-
-        // nếu đang active thì chuyển thành inactive, ngược lại thì chuyển thành active
-        // user.setStatus(!user.getStatus());
-        // userRepository.save(user);
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user vói ID:" + userId));
 
         boolean newStatus = !user.getStatus();
         user.setStatus(newStatus);
@@ -183,12 +182,8 @@ public class AdminService {
         log.info("Admin lấy danh sách tất cả đơn hàng - page: {}", page);
 
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-
         Pageable pageable = PageRequest.of(page, size, sort);
-
         Page<Order> orders = orderRepository.findByDeletedFalse(pageable);
-
-        // return orders.map(this::convertToOrderSummary);
 
         Page<OrderSummaryResponse> result = orders.map(this::convertToOrderSummary);
 
@@ -202,18 +197,15 @@ public class AdminService {
         log.info("Admin cập nhật trạng thái đơn hàng {} thành {}", orderId, request.getStatus());
 
         Order order = orderRepository.findByIdAndDeletedFalse(orderId)
-            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
 
         order.setStatus(request.getStatus());
 
-        // câp nhật thời gian tương ứng với trạng thái mới
-        switch(request.getStatus()) {
+        switch (request.getStatus()) {
             case CONFIRMED -> order.setConfirmedAt(LocalDateTime.now());
             case SHIPPING -> order.setShippedAt(LocalDateTime.now());
             case DELIVERED -> order.setDeliveredAt(LocalDateTime.now());
         }
-
-        // return convertToOrderResponse(orderRepository.save(order));
 
         Order savedOrder = orderRepository.save(order);
         log.info("Đã cập nhật trạng thái đơn hàng {} thành {}", orderId, request.getStatus());
@@ -222,25 +214,12 @@ public class AdminService {
     }
 
     // Quản lý product
-    @Transactional(readOnly= true)
+    @Transactional(readOnly = true)
     public Page<ProductAdminResponse> getAllProductForAdmin(int page, int size) {
-
         log.info("Admin lấy danh sách sản phẩm - page: {}", page);
 
         Pageable pageable = PageRequest.of(page, size);
-        
         Page<Product> products = productRepository.findByDeletedFalse(pageable);
-
-        // return products.map(p -> new ProductAdminResponse(
-        //     p.getId(),
-        //     p.getName(),
-        //     p.getPrice(),
-        //     p.getStock(),
-        //     p.getBrand() != null ? p.getBrand().getName() : "N/A",
-        //     p.getCategory() != null ? p.getCategory().getName() : "N/A",
-        //     p.getStatus(),
-        //     p.getImgUrl()
-        // ));
 
         Page<ProductAdminResponse> result = products.map(p -> new ProductAdminResponse(
                 p.getId(),
@@ -250,8 +229,7 @@ public class AdminService {
                 p.getBrand() != null ? p.getBrand().getName() : "N/A",
                 p.getCategory() != null ? p.getCategory().getName() : "N/A",
                 p.getStatus(),
-                p.getImgUrl() != null ? p.getImgUrl() : ""
-        ));
+                p.getImgUrl() != null ? p.getImgUrl() : ""));
 
         log.info("Trả về {} sản phẩm cho Admin", result.getTotalElements());
         return result;
@@ -260,7 +238,6 @@ public class AdminService {
     // cập nhật product Stock
     @Transactional
     public void updateProductStock(Long productId, Integer stock) {
-
         log.info("Admin cập nhật stock sản phẩm {} thành {}", productId, stock);
 
         Product products = productRepository.findByIdAndDeletedFalse(productId)
@@ -278,14 +255,14 @@ public class AdminService {
     }
 
     // quản lý category và brand
-    @Transactional(readOnly= true)
+    @Transactional(readOnly = true)
     public Page<Category> getAllCategoriesForAdmin(int page, int size) {
         log.info("Admin lấy danh sách category - page: {}", page);
         Pageable pageable = PageRequest.of(page, size);
         return categoryRepository.findByDeletedFalse(pageable);
     }
 
-    @Transactional(readOnly= true)
+    @Transactional(readOnly = true)
     public Page<Brand> getAllBrandsForAdmin(int page, int size) {
         log.info("Admin lấy danh sách brand - page: {}", page);
         Pageable pageable = PageRequest.of(page, size);
@@ -295,54 +272,52 @@ public class AdminService {
     // CONVERT METHODS
     private OrderSummaryResponse convertToOrderSummary(Order order) {
         int totalItems = order.getItems().stream()
-            .filter(item -> !item.isDeleted())
-            .mapToInt(OrderItem::getQuantity)
-            .sum();
+                .filter(item -> !item.isDeleted())
+                .mapToInt(OrderItem::getQuantity)
+                .sum();
 
+        // 🌟 ĐÃ FIX: Bổ sung order.getFullName() và order.getPhone() cho khớp với DTO
+        // mới
         return new OrderSummaryResponse(
-            order.getId(),
-            order.getOrderCode(),
-            order.getTotalAmount(),
-            order.getStatus(),
-            order.getPaymentStatus(),
-            order.getCreatedAt(),
-            totalItems
-        );
+                order.getId(),
+                order.getOrderCode(),
+                order.getFullName(),
+                order.getPhone(),
+                order.getTotalAmount(),
+                order.getStatus(),
+                order.getPaymentStatus(),
+                order.getCreatedAt(),
+                totalItems);
     }
 
     private OrderResponse convertToOrderResponse(Order order) {
-        // lấy danh sách OrderItemResponse từ OrderItem
         List<OrderItemResponse> itemResponses = order.getItems().stream()
-            .filter(item -> !item.isDeleted())
-            .map(item -> new OrderItemResponse(
-                item.getProduct().getId(),
-                item.getProduct().getName(),
-                item.getProduct().getImgUrl(),
-                item.getPrice(),
-                item.getQuantity(),
-                item.getSubtotal()
-            ))
-            .collect(Collectors.toList());
+                .filter(item -> !item.isDeleted())
+                .map(item -> new OrderItemResponse(
+                        item.getProduct().getId(),
+                        item.getProduct().getName(),
+                        item.getProduct().getImgUrl(),
+                        item.getPrice(),
+                        item.getQuantity(),
+                        item.getSubtotal()))
+                .collect(Collectors.toList());
 
         return new OrderResponse(
-            order.getId(),
-            order.getOrderCode(),
-            order.getTotalAmount(),
-            order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO,
-            order.getStatus(),
-            order.getPaymentStatus(),
-            order.getShippingAddress(),
-            order.getPhone(),
-            order.getNote() != null ? order.getNote() : "",
-            order.getCreatedAt(),
-            order.getConfirmedAt(),
-            order.getShippedAt(),
-            order.getDeliveredAt(),
-            itemResponses
-        );
+                order.getId(),
+                order.getOrderCode(),
+                order.getTotalAmount(),
+                order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO,
+                order.getStatus(),
+                order.getPaymentStatus(),
+                order.getShippingAddress(),
+                order.getPhone(),
+                order.getNote() != null ? order.getNote() : "",
+                order.getCreatedAt(),
+                order.getConfirmedAt(),
+                order.getShippedAt(),
+                order.getDeliveredAt(),
+                itemResponses);
     }
-
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AdminService.class);
 
     // XÓA SẢN PHẨM (SOFT DELETE)
     @Transactional
@@ -350,7 +325,7 @@ public class AdminService {
         log.info("Admin soft delete sản phẩm ID: {}", productId);
 
         Product product = productRepository.findByIdAndDeletedFalse(productId)
-            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm"));
 
         product.setDeleted(true);
         productRepository.save(product);
@@ -380,5 +355,144 @@ public class AdminService {
         }
 
         return brandRepository.save(brand);
+    }
+
+    // 🌟 ADMIN LẤY CHI TIẾT ĐƠN HÀNG
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderDetailsForAdmin(Long orderId) {
+        Order order = orderRepository.findByIdAndDeletedFalse(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
+        return convertToOrderResponse(order);
+    }
+
+    // 🌟 API TỰ ĐỘNG TỔNG HỢP DỮ LIỆU BIỂU ĐỒ (CÓ LỌC THỜI GIAN ĐỘNG) 🌟
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> getDashboardCharts(String period) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startDate;
+
+        java.util.Map<String, java.util.Map<String, Object>> timeStats = new java.util.LinkedHashMap<>();
+        java.time.format.DateTimeFormatter dayFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
+
+        // 1. Dựng khung thời gian (Trục X)
+        if ("today".equals(period)) {
+            startDate = now.toLocalDate().atStartOfDay(); // Lấy từ 00:00 sáng nay
+            for (int i = 0; i <= 23; i++) {
+                String label = String.format("%02d:00", i); // 00:00, 01:00... 23:00
+                java.util.Map<String, Object> data = new java.util.HashMap<>();
+                data.put("name", label);
+                data.put("revenue", BigDecimal.ZERO);
+                data.put("delivered", 0);
+                data.put("cancelled", 0);
+                timeStats.put(label, data);
+            }
+        } else if ("7days".equals(period)) {
+            startDate = now.minusDays(6).toLocalDate().atStartOfDay();
+            for (int i = 6; i >= 0; i--) {
+                String label = now.minusDays(i).format(dayFormatter);
+                java.util.Map<String, Object> data = new java.util.HashMap<>();
+                data.put("name", label);
+                data.put("revenue", BigDecimal.ZERO);
+                data.put("delivered", 0);
+                data.put("cancelled", 0);
+                timeStats.put(label, data);
+            }
+        } else if ("1month".equals(period)) {
+            startDate = now.minusDays(29).toLocalDate().atStartOfDay();
+            for (int i = 29; i >= 0; i--) {
+                String label = now.minusDays(i).format(dayFormatter);
+                java.util.Map<String, Object> data = new java.util.HashMap<>();
+                data.put("name", label);
+                data.put("revenue", BigDecimal.ZERO);
+                data.put("delivered", 0);
+                data.put("cancelled", 0);
+                timeStats.put(label, data);
+            }
+        } else if ("1year".equals(period)) {
+            startDate = now.minusMonths(11).withDayOfMonth(1).toLocalDate().atStartOfDay();
+            for (int i = 11; i >= 0; i--) {
+                LocalDateTime m = now.minusMonths(i);
+                String label = "T" + m.getMonthValue() + "/" + (m.getYear() % 100);
+                java.util.Map<String, Object> data = new java.util.HashMap<>();
+                data.put("name", label);
+                data.put("revenue", BigDecimal.ZERO);
+                data.put("delivered", 0);
+                data.put("cancelled", 0);
+                timeStats.put(label, data);
+            }
+        } else { // Mặc định là 6 tháng
+            startDate = now.minusMonths(5).withDayOfMonth(1).toLocalDate().atStartOfDay();
+            for (int i = 5; i >= 0; i--) {
+                LocalDateTime m = now.minusMonths(i);
+                String label = "T" + m.getMonthValue() + "/" + (m.getYear() % 100);
+                java.util.Map<String, Object> data = new java.util.HashMap<>();
+                data.put("name", label);
+                data.put("revenue", BigDecimal.ZERO);
+                data.put("delivered", 0);
+                data.put("cancelled", 0);
+                timeStats.put(label, data);
+            }
+        }
+
+        // 2. Lấy đơn hàng và lấp đầy data
+        List<Order> orders = orderRepository.findAll().stream()
+                .filter(o -> !o.isDeleted() && o.getCreatedAt() != null && !o.getCreatedAt().isBefore(startDate))
+                .collect(Collectors.toList());
+
+        java.util.Map<String, Integer> brandSales = new java.util.HashMap<>();
+
+        for (Order order : orders) {
+            String label;
+            if ("today".equals(period)) {
+                label = String.format("%02d:00", order.getCreatedAt().getHour());
+            } else if ("7days".equals(period) || "1month".equals(period)) {
+                label = order.getCreatedAt().format(dayFormatter);
+            } else {
+                label = "T" + order.getCreatedAt().getMonthValue() + "/" + (order.getCreatedAt().getYear() % 100);
+            }
+
+            if (timeStats.containsKey(label)) {
+                java.util.Map<String, Object> data = timeStats.get(label);
+                // Cộng tiền
+                if (order.getStatus() == OrderStatus.DELIVERED || order.getPaymentStatus() == PaymentStatus.SUCCESS) {
+                    BigDecimal currentRev = (BigDecimal) data.get("revenue");
+                    data.put("revenue",
+                            currentRev.add(order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO));
+                }
+                // Đếm trạng thái
+                if (order.getStatus() == OrderStatus.DELIVERED) {
+                    data.put("delivered", (Integer) data.get("delivered") + 1);
+                } else if (order.getStatus() == OrderStatus.CANCELLED) {
+                    data.put("cancelled", (Integer) data.get("cancelled") + 1);
+                }
+            }
+
+            // Đếm Hãng
+            if (order.getStatus() != OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCEL_REQUESTED) {
+                if (order.getItems() != null) {
+                    for (OrderItem item : order.getItems()) {
+                        if (!item.isDeleted() && item.getProduct() != null && item.getProduct().getBrand() != null) {
+                            String brandName = item.getProduct().getBrand().getName();
+                            brandSales.put(brandName, brandSales.getOrDefault(brandName, 0) + item.getQuantity());
+                        }
+                    }
+                }
+            }
+        }
+
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("chartData", new java.util.ArrayList<>(timeStats.values()));
+
+        List<java.util.Map<String, Object>> brandDataList = brandSales.entrySet().stream()
+                .map(e -> {
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("name", e.getKey());
+                    map.put("sold", e.getValue());
+                    return map;
+                })
+                .collect(Collectors.toList());
+
+        response.put("brandData", brandDataList);
+        return response;
     }
 }

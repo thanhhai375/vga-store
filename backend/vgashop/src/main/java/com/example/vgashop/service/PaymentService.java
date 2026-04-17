@@ -1,6 +1,5 @@
 package com.example.vgashop.service;
 
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -35,30 +34,22 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final UserService userService;
 
-    public PaymentService(PaymentRepository paymentRepository, OrderRepository orderRepository, UserService userService) {
+    public PaymentService(PaymentRepository paymentRepository, OrderRepository orderRepository,
+            UserService userService) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
         this.userService = userService;
     }
 
-    // Tạo thành toán cho đơn hàng 
+    // Tạo thành toán cho đơn hàng
     @Transactional
     public PaymentResponse createPayment(Long orderId, PaymentRequest request) {
-
-        // lấy người dung hiện tại
         User user = userService.getCurrentUser();
-
         Order order = orderRepository.findByIdAndUser_IdAndDeletedFalse(orderId, user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng hoặc bạn không có quyền truy cập"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
 
-        // Kiểm tra trạng thái đơn hàng
         if (order.getStatus() == OrderStatus.CANCELLED) {
             throw new IllegalArgumentException("Không thể tạo thanh toán cho đơn hàng đã hủy");
-        }
-
-        // kiểm tra nếu đã có thanh toán cho đơn hàng này
-        if (paymentRepository.existsByOrder_IdAndDeletedFalse(orderId)) {
-            throw new IllegalArgumentException("Đơn hàng đã có thanh toán");
         }
 
         Payment payment = new Payment();
@@ -66,31 +57,31 @@ public class PaymentService {
         payment.setPaymentMethod(request.getPaymentMethod());
         payment.setAmount(order.getTotalAmount());
         payment.setPaymentStatus(PaymentStatus.PENDING);
-        
-        // tạo transaction code
+
         String transactionCode = "PAY-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase();
         payment.setTransactionCode(transactionCode);
 
-        String returnUrl = "http://localhost:8080/api/payments/vnpay/callback"; // Thay bằng domain thật sau này
-        
+        // 🌟 SỬA LOCALHOST THÀNH 5173 CỦA TRANG USER
+        String returnUrl = "http://localhost:5173/payment/vnpay-callback";
+
         // xử lý theo từng phương thức thanh toán
         switch (request.getPaymentMethod()) {
             case COD:
                 payment.setNote("Thanh toán khi nhận hàng (COD)");
-                payment.setPaymentStatus(PaymentStatus.PENDING); // COD sẽ cập nhật trạng thái sau khi giao hàng thành công
+                payment.setPaymentStatus(PaymentStatus.PENDING);
                 break;
-            
+
             case BANK_TRANSFER:
                 payment.setNote("Chuyển khoản ngân hàng. Nội dung: " + order.getOrderCode());
-                payment.setPaymentStatus(PaymentStatus.PENDING); // Cần xác nhận sau khi nhận được chuyển khoản
+                payment.setPaymentStatus(PaymentStatus.PENDING);
                 break;
-            
+
             case VNPAY:
                 payment.setPaymentUrl(VNPayUtils.createPaymentUrl(order, transactionCode, returnUrl));
                 payment.setNote("Thanh toán qua VNPay");
+                break; // 🌟 BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ KHÔNG BỊ VĂNG SANG MOMO
+
             case MOMO:
-                // gải lập thanh toán (thực tế sẽ tích hợp với API của VNPAY/MOMO)
-                // String paymentUrl = "https://sandbox.vnpayment.vn/payment?orderCode=" + order.getOrderCode() + "&amount=" + order.getTotalAmount() + "&TransactionCode=" + transactionCode;
                 payment.setPaymentUrl(MomoUtils.createPaymentUrl(order, transactionCode, returnUrl));
                 payment.setNote("Thanh toán qua " + request.getPaymentMethod());
                 break;
@@ -124,7 +115,7 @@ public class PaymentService {
         return convertToPaymentResponse(saved);
     }
 
-    // Lấy thanh toán theo đơn hàng 
+    // Lấy thanh toán theo đơn hàng
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByOrderId(Long orderId) {
         User currentUser = userService.getCurrentUser();
@@ -137,7 +128,8 @@ public class PaymentService {
 
     // Lọc theo trạng thái thanh toán
     @Transactional(readOnly = true)
-    public Page<PaymentSummaryResponse> getPaymentsByStatus(PaymentStatus status, int size, int page, String sortBy, String direction) {
+    public Page<PaymentSummaryResponse> getPaymentsByStatus(PaymentStatus status, int size, int page, String sortBy,
+            String direction) {
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
 
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -147,7 +139,7 @@ public class PaymentService {
     }
 
     // lấy chi tiết thanh toán theo id
-    @Transactional(readOnly= true) 
+    @Transactional(readOnly = true)
     public PaymentResponse getPaymentById(Long paymentId) {
 
         Payment payment = paymentRepository.findById(paymentId)
@@ -157,7 +149,7 @@ public class PaymentService {
     }
 
     // Lấy danh sách thanh toán của user
-    @Transactional(readOnly= true)
+    @Transactional(readOnly = true)
     public Page<PaymentSummaryResponse> getMyPayments(int size, int page, String sortBy, String direction) {
         User currentUser = userService.getCurrentUser();
 
@@ -183,27 +175,25 @@ public class PaymentService {
     // convert method
     private PaymentResponse convertToPaymentResponse(Payment payment) {
         return new PaymentResponse(
-            payment.getId(),
-            payment.getOrder().getId(),
-            payment.getOrder().getOrderCode(),
-            payment.getAmount(),
-            payment.getPaymentMethod(),
-            payment.getPaymentStatus(),
-            payment.getTransactionCode(),
-            payment.getPaymentUrl(),
-            payment.getPaidAt(),
-            payment.getNote()
-        );
+                payment.getId(),
+                payment.getOrder().getId(),
+                payment.getOrder().getOrderCode(),
+                payment.getAmount(),
+                payment.getPaymentMethod(),
+                payment.getPaymentStatus(),
+                payment.getTransactionCode(),
+                payment.getPaymentUrl(),
+                payment.getPaidAt(),
+                payment.getNote());
     }
 
     private PaymentSummaryResponse convertToPaymentSummaryResponse(Payment payment) {
         return new PaymentSummaryResponse(
-            payment.getId(),
-            payment.getOrder().getOrderCode(),
-            payment.getAmount(),
-            payment.getPaymentMethod(),
-            payment.getPaymentStatus(),
-            payment.getCreatedAt()
-        );
+                payment.getId(),
+                payment.getOrder().getOrderCode(),
+                payment.getAmount(),
+                payment.getPaymentMethod(),
+                payment.getPaymentStatus(),
+                payment.getCreatedAt());
     }
 }
