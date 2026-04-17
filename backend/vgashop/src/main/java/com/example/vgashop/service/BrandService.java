@@ -49,7 +49,7 @@ public class BrandService {
         //        new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + Id)
         //     );
 
-        return brandRepository.findByIdAndDeletedFalse(Id)
+        return brandRepository.findByIdAndDeleted(Id, false)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + Id));
     }
 
@@ -114,7 +114,7 @@ public class BrandService {
         // }
         // return null;
 
-        return brandRepository.findByIdAndDeletedFalse(id)
+        return brandRepository.findByIdAndDeleted(id, false)
         .map(brand -> {
             // kiểm tra trùng tên nếu đổi tên
             if (!brand.getName().equalsIgnoreCase(newBrand.getName()) && brandRepository.existsByNameIgnoreCase(newBrand.getName())) {
@@ -144,12 +144,12 @@ public class BrandService {
         //     throw new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + id);
         // }
         // brandRepository.deleteById(id);
-       if (!brandRepository.existsByIdAndDeletedFalse(id)) {
+       if (!brandRepository.existsByIdAndDeleted(id, false)) {
         throw new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + id);
     }
 
     // Lấy Brand ra để set deleted = true
-    Brand brand = brandRepository.findByIdAndDeletedFalse(id)
+    Brand brand = brandRepository.findByIdAndDeleted(id, false)
             .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + id));
 
     brand.setDeleted(true);           // Soft delete

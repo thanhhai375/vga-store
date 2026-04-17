@@ -1,10 +1,15 @@
 package com.example.vgashop.entity;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,66 +17,77 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name= "orders")
-public class Order {
+public class Order extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name= "id")
-    private Long id;
 
-    @Column(name= "total_price", nullable= false)
-    private Double totalPrice;
-
-    @Column(name= "status", nullable= false, length= 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name= "status", nullable= false)
+    private OrderStatus status = OrderStatus.PENDING;
 
     @Column(name= "full_name", length= 150)
     private String fullName;
 
-    @Column(name= "phone", length= 20)
-    private String phone;
-
-    @Column(name= "address", length= 255)
-    private String address;
-
-    @Column(name= "note", length= 500)
-    private String note;
-
-    @ManyToOne
+    @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name= "user_id", nullable= false)
     private User user;
 
-    @OneToMany(mappedBy= "order", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
-    private List<OrderItem> orderItems;
+    @Column(nullable = false)
+    private String orderCode; // mã đơn hàng 
 
+    @Column(nullable= false, precision= 12, scale= 2)
+    private BigDecimal totalAmount;
 
+    @Column(precision= 12, scale= 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable= false)
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
     
+    @Column(nullable= false, length= 255)
+    private String shippingAddress;
+
+    @Column(length= 15)
+    private String phone;
+
+    @Column(columnDefinition= "TEXT")
+    private String note;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime confirmedAt; // 
+    private LocalDateTime shippedAt;
+    private LocalDateTime deliveredAt;
+
+    @OneToMany(mappedBy= "order", cascade= CascadeType.ALL, orphanRemoval= true, fetch= FetchType.LAZY)
+    private List<OrderItem> items = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+
+    // constuctor mặc định
+    public Order() {};
+
+    // method
+    public void calculateTotal() {
+        this.totalAmount = items.stream()
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     // getter setter
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(Double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-    public String getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 
@@ -81,28 +97,90 @@ public class Order {
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public String getAddress() { return shippingAddress; }
+    public void setAddress(String address) { this.shippingAddress = address; }
 
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
 
-    public User getUser() {
-        return user;
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
-    public List<OrderItem> getOrderItems() {
-        return orderItems;
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
     }
 
-    public void setOrderItems(List<OrderItem> orderItems) {
-        this.orderItems = orderItems;
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getShippingAddress() {
+        return shippingAddress;
+    }
+
+    public void setShippingAddress(String shippingAddress) {
+        this.shippingAddress = shippingAddress;
+    }
+
+    public LocalDateTime getConfirmedAt() {
+        return confirmedAt;
+    }
+
+    public void setConfirmedAt(LocalDateTime confirmedAt) {
+        this.confirmedAt = confirmedAt;
+    }
+
+    public LocalDateTime getShippedAt() {
+        return shippedAt;
+    }
+
+    public void setShippedAt(LocalDateTime shippedAt) {
+        this.shippedAt = shippedAt;
+    }
+
+    public LocalDateTime getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(LocalDateTime deliveredAt) {
+        this.deliveredAt = deliveredAt;
+    }
+
+    public List<OrderItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+    }
+
+    public String getOrderCode() {
+        return orderCode;
+    }
+
+    public void setOrderCode(String orderCode) {
+        this.orderCode = orderCode;
     }
 
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
     
 }

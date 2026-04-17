@@ -125,6 +125,11 @@ public class GlobalExceptionHandler {
         ApiResponse<Object> response = ApiResponse.error("Đã xảy ra lỗi hệ thống vui lòng thử lại!");
         // // Chỉ log lỗi thật, không trả stack trace về client
         ex.printStackTrace();
+        ApiError error = new ApiError(
+        HttpStatus.INTERNAL_SERVER_ERROR.value(), 
+        "Internal Server Error",
+        ex.getMessage() != null ? ex.getMessage() : "Đã xảy ra lỗi hệ thống"
+        );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

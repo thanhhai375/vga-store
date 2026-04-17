@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart } from "../../redux/cartSlice";
+import { addToCartDb } from "../../redux/cartSlice";
 import { toggleWishlist } from "../../redux/wishlistSlice";
 import "./ProductCard.css";
 
@@ -13,17 +13,25 @@ const ProductCard = ({ product }) => {
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const isAuthenticated = useSelector(state => state.auth?.isAuthenticated);
+
+  // 1. CHUYỂN TẤT CẢ HOOKS LÊN ĐẦU
+  // Kiểm tra sản phẩm này có trong wishlist không
+  const wishlistItems = useSelector(state => state.wishlist?.wishlistItems || []);
+  const isWishlisted = product ? wishlistItems.some(item => item.id === product.id) : false;
 
   // BẢO VỆ CHỐNG SẬP: Nếu API chưa tải xong product, không render gì cả
   if (!product) return null;
 
-  // Kiểm tra sản phẩm này có trong wishlist không
-  const wishlistItems = useSelector(state => state.wishlist?.wishlistItems || []);
-  const isWishlisted = wishlistItems.some(item => item.id === product.id);
-
   const handleToggleWishlist = (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      import('../../redux/authSlice').then(({ openAuthModal }) => dispatch(openAuthModal()));
+      return;
+    }
+
     dispatch(toggleWishlist(product));
   };
 
@@ -51,6 +59,11 @@ const ProductCard = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
 
+    if (!isAuthenticated) {
+      import('../../redux/authSlice').then(({ openAuthModal }) => dispatch(openAuthModal()));
+      return;
+    }
+
     const itemToAdd = {
       id: product.id,
       name: product.name,
@@ -58,7 +71,7 @@ const ProductCard = ({ product }) => {
       thumbnail: finalImageUrl,
     };
 
-    dispatch(addToCart(itemToAdd));
+    dispatch(addToCartDb({ product: itemToAdd, quantity: 1 }));
     setShowPopup(true);
   };
 

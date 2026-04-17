@@ -1,12 +1,17 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { addToCart, decreaseCart, removeFromCart, clearCart } from '../../redux/cartSlice';
+import { Link, useNavigate } from 'react-router-dom';
+import { 
+  addToCart, decreaseCart, removeFromCart, clearCart,
+  addToCartDb, updateCartItemDb, removeCartItemDbAction, clearCartDb
+} from '../../redux/cartSlice';
 import './Cart.css';
 
 const Cart = () => {
   const cartItems = useSelector((state) => state.cart.cartItems);
+  const { isAuthenticated } = useSelector((state) => state.auth) || {};
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN').format(price) + '₫';
@@ -14,11 +19,48 @@ const Cart = () => {
 
   const totalAmount = cartItems.reduce((total, item) => total + (item.price * item.cartQuantity), 0);
 
+  const handleIncrease = (item) => {
+    if (isAuthenticated) {
+      dispatch(updateCartItemDb({ item, quantity: item.cartQuantity + 1 }));
+      dispatch(addToCartDb({ product: item, quantity: 1 })); 
+      // do backend addToCart cộng dồn quantity, updateItem set thẳng
+    } else {
+      dispatch(addToCart(item));
+    }
+  };
+
+  const handleDecrease = (item) => {
+    if (isAuthenticated) {
+      if (item.cartQuantity > 1) {
+        dispatch(updateCartItemDb({ item, quantity: item.cartQuantity - 1 }));
+      } else {
+        dispatch(removeCartItemDbAction(item));
+      }
+    } else {
+      dispatch(decreaseCart(item));
+    }
+  };
+
+  const handleRemove = (item) => {
+    dispatch(removeCartItemDbAction(item));
+  };
+
+  const handleClear = () => {
+    dispatch(clearCartDb());
+  };
+
+  const handleCheckoutClick = (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      import('../../redux/authSlice').then(({ openAuthModal }) => dispatch(openAuthModal()));
+      return;
+    }
+    navigate('/checkout');
+  };
+
   return (
     <div className="cart-page">
       <div className="cart-layout">
-
-        {/* TIÊU ĐỀ GIỎ HÀNG */}
         <h2 className="cart-page-title">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d8282e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="9" cy="21" r="1"></circle>
@@ -29,7 +71,6 @@ const Cart = () => {
         </h2>
 
         {cartItems.length === 0 ? (
-          /* NẾU GIỎ HÀNG TRỐNG */
           <div className="cart-empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="9" cy="21" r="1"></circle>
@@ -44,10 +85,7 @@ const Cart = () => {
             </Link>
           </div>
         ) : (
-          /* NẾU CÓ HÀNG TRONG GIỎ */
           <div className="cart-content-wrapper">
-
-            {/* CỘT TRÁI: DANH SÁCH SẢN PHẨM */}
             <div className="cart-items-list">
               <div className="cart-header-row">
                 <div className="col-product">Sản phẩm</div>
@@ -58,9 +96,7 @@ const Cart = () => {
               </div>
 
               {cartItems.map((item) => {
-                // 🌟 DÒ ẢNH TỪ REDUX HOẶC DB
                 const cardImage = item.imgUrl || item.img || item.thumbnail || '/images/products/gpu_original.png';
-
                 return (
                   <div className="cart-item-row" key={item.id}>
                     <div className="col-product">
@@ -70,14 +106,14 @@ const Cart = () => {
                     <div className="col-price">{formatPrice(item.price)}</div>
                     <div className="col-quantity">
                       <div className="qty-controls">
-                        <button onClick={() => dispatch(decreaseCart(item))}>-</button>
+                        <button onClick={() => handleDecrease(item)}>-</button>
                         <span className="qty-number">{item.cartQuantity}</span>
-                        <button onClick={() => dispatch(addToCart(item))}>+</button>
+                        <button onClick={() => handleIncrease(item)}>+</button>
                       </div>
                     </div>
                     <div className="col-total">{formatPrice(item.price * item.cartQuantity)}</div>
                     <div className="col-action">
-                      <button className="btn-remove-item" onClick={() => dispatch(removeFromCart(item))} title="Xóa sản phẩm">
+                      <button className="btn-remove-item" onClick={() => handleRemove(item)} title="Xóa sản phẩm">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="18" y1="6" x2="6" y2="18"></line>
                           <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -89,7 +125,7 @@ const Cart = () => {
               })}
 
               <div className="cart-footer-actions">
-                <button className="btn-clear-all" onClick={() => dispatch(clearCart())}>
+                <button className="btn-clear-all" onClick={handleClear}>
                   Xóa toàn bộ giỏ hàng
                 </button>
               </div>
@@ -111,9 +147,9 @@ const Cart = () => {
                 <span>Tổng cộng:</span>
                 <span className="final-price">{formatPrice(totalAmount)}</span>
               </div>
-              <Link to="/checkout" className="btn-checkout-now">
+              <button className="btn-checkout-now" onClick={handleCheckoutClick}>
                 TIẾN HÀNH THANH TOÁN
-              </Link>
+              </button>
             </div>
           </div>
         )}
