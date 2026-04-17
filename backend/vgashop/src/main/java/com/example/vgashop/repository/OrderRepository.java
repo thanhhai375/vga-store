@@ -44,7 +44,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // phần admin dashboard
     long countByDeletedFalse();
 
-    long countByCreatedAtAfterAndDeletedFalse(LocalDateTime dateTime, boolean deleted);
+    long countByCreatedAtAfterAndDeletedFalse(LocalDateTime dateTime);
 
     // Đếm số đơn hàng hôm nay (từ 00:00:00 đến hiện tại)
     @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt >= :startOfDay")

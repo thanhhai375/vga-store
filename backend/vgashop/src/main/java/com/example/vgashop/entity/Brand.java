@@ -34,7 +34,7 @@ public class Brand extends BaseEntity {
     @Column(name = "slug", unique = true, length = 150)
     private String slug;
 
-    @Column(nullable = false)
+    @Column(name = "status")
     private Boolean status = true;
 
     // mối quan hệ

@@ -1,6 +1,5 @@
 package com.example.vgashop.security;
 
-import com.example.vgashop.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,11 +18,9 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
 
-    public JwtAuthFilter(JwtUtil jwtUtil, UserRepository userRepository) {
+    public JwtAuthFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
-        this.userRepository = userRepository;
     }
 
     @Override
@@ -33,15 +30,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            if (jwtUtil.validateToken(token)) {
-                String username = jwtUtil.extractUsername(token);
-                userRepository.findByUsername(username).ifPresent(user -> {
+            try {
+                if (jwtUtil.validateToken(token)) {
+                    String username = jwtUtil.extractUsername(token);
+                    String role = jwtUtil.extractRole(token); // lấy role từ token (không cần DB lookup)
+
                     var auth = new UsernamePasswordAuthenticationToken(
                             username, null,
-                            List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
+                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
                     );
                     SecurityContextHolder.getContext().setAuthentication(auth);
-                });
+                }
+            } catch (Exception e) {
+                // Token không hợp lệ -> không set auth, Spring Security sẽ trả 401
+                SecurityContextHolder.clearContext();
             }
         }
         filterChain.doFilter(request, response);

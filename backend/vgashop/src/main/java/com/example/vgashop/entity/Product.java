@@ -40,7 +40,7 @@ public class Product extends BaseEntity {
 
     @Column(name= "img_url", length= 500)
     private String imgUrl;
-    @Column(nullable = false)
+    @Column(name = "status")
     private Boolean status = true;
 
     @Column(name= "images_json", columnDefinition= "TEXT")
