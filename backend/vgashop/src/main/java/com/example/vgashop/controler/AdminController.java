@@ -53,7 +53,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/admin")
 @CrossOrigin
-@PreAuthorize("hasRole('ADMIN')") // Ch cho php truy cp nu c vai tr ADMIN
+@PreAuthorize("hasRole('ADMIN')") // Chỉ cho phép truy cập nếu có vai trò ADMIN
 public class AdminController {
 
     private final AdminService adminService;
@@ -67,21 +67,21 @@ public class AdminController {
         this.reviewRepository = reviewRepository;
     }
 
-    // Dashboard, ly d liu tng quan cho admin
+    // Dashboard, lấy dữ liệu tổng quan cho admin
     @GetMapping("/dashboard")
     public ApiResponse<AdminDashboardResponse> getDashboard() {
         AdminDashboardResponse dashboard = adminService.getDashboard();
         return ApiResponse.success("Lấy dashboard thành công", dashboard);
     }
 
-    // Alias /dashboard/stats cho Frontend gi
+    // Alias /dashboard/stats cho Frontend gọi
     @GetMapping("/dashboard/stats")
     public ApiResponse<AdminDashboardResponse> getDashboardStats() {
         AdminDashboardResponse dashboard = adminService.getDashboard();
         return ApiResponse.success("Lấy thống kê dashboard thành công", dashboard);
     }
 
-    // Qun ly User, ly tt c ng dng
+    // Quản lấy User, lấy tất cả ng dùng
     @GetMapping("/users")
     public ApiResponse<Page<UserAdminResponse>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
@@ -100,7 +100,7 @@ public class AdminController {
         return ApiResponse.success("Tạo cấu hình người dùng thành công", createdUser);
     }
 
-    // thay i Role ca ng dng
+    // thay đổi Role của ng dùng
     @GetMapping("/users/{userId}/role")
     public ApiResponse<String> changeUserRole(@PathVariable Long userId, @RequestParam String role) {
         adminService.changeUserRole(userId, role);
@@ -119,7 +119,7 @@ public class AdminController {
         return ApiResponse.success("Đã xóa người dùng thành công", "OK");
     }
 
-    // Admin xem tt c n hng (c filter status ty chn)
+    // Admin xem tất cả đơn hàng (có filter status tùy chọn)
     @GetMapping("/orders")
     public ApiResponse<Page<OrderSummaryResponse>> getAllOrders(
             @RequestParam(defaultValue = "0") int page,
@@ -131,7 +131,7 @@ public class AdminController {
         return ApiResponse.success("Lấy tất cả đơn hàng thành công", orders);
     }
 
-    // Admin cp nht trng thi n hng
+    // Admin cập nhật trạng thái đơn hàng
     @PutMapping("/orders/{orderId}/status")
     public ApiResponse<OrderResponse> updateOrderStatus(@PathVariable Long orderId,
             @Valid @RequestBody OrderStatusUpdateRequest request) {
@@ -139,8 +139,8 @@ public class AdminController {
         return ApiResponse.success("Cập nhật trạng thái đơn hàng thành công", order);
     }
 
-    // ======== Qun l Product
-    // Admin xem danh sch tt c sn phm
+    // ======== Quản lý Product
+    // Admin xem danh sách tất cả sản phẩm
 
     @GetMapping("/products")
     public ApiResponse<Page<ProductAdminResponse>> getAllProductsForAdmin(
@@ -150,42 +150,42 @@ public class AdminController {
         return ApiResponse.success("Lấy danh sách sản phẩm thành công", products);
     }
 
-    // Admin cp nht s lng tn kho ca sn phm
+    // Admin cập nhật số lượng tồn kho của sản phẩm
     @PutMapping("/products/{productID}/stock")
     public ApiResponse<String> updateProductStock(@PathVariable Long productId, @RequestParam Integer stock) {
         adminService.updateProductStock(productId, stock);
         return ApiResponse.success("Cập nhật số lượng tồn kho thành công", "OK");
     }
 
-    // Admin soft delete sn phm
+    // Admin soft delete sản phẩm
     @DeleteMapping("/products/{productId}")
     public ApiResponse<String> softDeleteProduct(@PathVariable Long productId) {
         adminService.softDeleteProduct(productId);
         return ApiResponse.success("Đã xóa mềm sản phẩm thành công", "OK");
     }
 
-    // Admin ly thng tin chi tit 1 sn phm
+    // Admin lấy thông tin chi tiết 1 sản phẩm
     @GetMapping("/products/{productId}")
     public ApiResponse<Product> getProductById(@PathVariable Long productId) {
         Product product = productService.getProductById(productId);
         return ApiResponse.success("Lấy sản phẩm thành công", product);
     }
 
-    // Admin to sn phm mi (km upload nh)
+    // Admin tạo sản phẩm mới (kèm upload ảnh)
     @PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Product> createProduct(@Valid @ModelAttribute ProductImageDTO dto) {
         Product saved = productService.createProductWithImage(dto);
         return ApiResponse.success("Tạo sản phẩm thành công", saved);
     }
 
-    // Admin sa sn phm (nh tu chn)
+    // Admin sửa sản phẩm (ảnh tuỳ chọn)
     @PutMapping(value = "/products/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Product> updateProduct(@PathVariable Long productId, @ModelAttribute ProductImageDTO dto) {
         Product updated = productService.updateProductWithImage(productId, dto);
         return ApiResponse.success("Cập nhật sản phẩm thành công", updated);
     }
 
-    // QUN L CATEGORY
+    // QUẢN LÝ CATEGORY
     @GetMapping("/categories")
     public ApiResponse<Page<Category>> getAllCategoriesForAdmin(
             @RequestParam(defaultValue = "0") int page,
@@ -194,7 +194,7 @@ public class AdminController {
         return ApiResponse.success("Lấy danh sách danh mục thành công", categorys);
     }
 
-    // Admin thm danh mc mi
+    // Admin thêm danh mục mới
     @PostMapping("/categories")
     public ApiResponse<Category> addCategory(@Valid @RequestBody Category category) {
         Category savedCategory = adminService.addCategories(category);
@@ -213,7 +213,7 @@ public class AdminController {
         return ApiResponse.success("Đã xóa danh mục thành công", "OK");
     }
 
-    // QUN L BRAND
+    // QUẢN LÝ BRAND
     @GetMapping("/brands")
     public ApiResponse<Page<Brand>> getAllBrandsForAdmin(
             @RequestParam(defaultValue = "0") int page,
@@ -222,7 +222,7 @@ public class AdminController {
         return ApiResponse.success("Lấy danh sách thương hiệu thành công", brands);
     }
 
-    // Admin thm thng hiu mi
+    // Admin thêm thương hiệu mới
     @PostMapping("/brands")
     public ApiResponse<Brand> addBrand(@Valid @RequestBody Brand brand) {
         Brand savedBrand = adminService.addBrand(brand);
@@ -241,7 +241,7 @@ public class AdminController {
         return ApiResponse.success("Đã xóa thương hiệu thành công", "OK");
     }
 
-    // QUN L BLOG
+    // QUẢN LÝ BLOG
     @PostMapping(value = "/blogs", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Blog> createBlog(@RequestPart("blog") @Valid BlogDTO dto, @RequestPart(value = "image", required = false) MultipartFile image) {
         Blog createdBlog = adminService.createBlog(dto, image);
@@ -260,7 +260,7 @@ public class AdminController {
         return ApiResponse.success("Đã xóa bài viết thành công", "OK");
     }
 
-    // QUN L NH GI
+    // QUẢN LÝ ĐÁNH GIÁ
     @GetMapping("/reviews")
     public ApiResponse<List<Map<String, Object>>> getAllReviews() {
         List<Review> all = reviewRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
@@ -306,7 +306,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getOrderDetailsForAdmin(id));
     }
 
-    // Ly d liu ng cho Biu
+    // Lấy dữ liệu động cho Biểu đồ
     @GetMapping("/dashboard/charts")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getDashboardCharts(
@@ -314,7 +314,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getDashboardCharts(period));
     }
 
-    // TNH NNG Y LN U (PIN TO TOP)
+    // TÍNH NĂNG ĐẨY LÊN ĐẦU (PIN TO TOP)
     @PutMapping("/pin-top/{entityType}/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ApiResponse<String> pinToTop(@PathVariable String entityType, @PathVariable Long id) {

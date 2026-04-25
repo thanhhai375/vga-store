@@ -10,12 +10,12 @@ public class OrderSummaryResponse {
 
     private Long orderId;
     private String orderCode;
-    private String fullName; // Thm Tn Khch Hng
-    private String phone; // Thm ST
+    private String fullName; // 🌟 Thêm Tên Khách Hàng
+    private String phone; // 🌟 Thêm SĐT
     private BigDecimal totalAmount;
     private OrderStatus status;
     private PaymentStatus paymentStatus;
-    private LocalDateTime createdAt; // Sa li chnh t (trc y l creratedAt)
+    private LocalDateTime createdAt; // 🌟 Sửa lỗi chính tả (trước đây là creratedAt)
     private Integer totalItems;
 
     public OrderSummaryResponse() {
@@ -35,7 +35,7 @@ public class OrderSummaryResponse {
         this.totalItems = totalItems;
     }
 
-    // Getter v Setter
+    // Getter và Setter
     public Long getOrderId() {
         return orderId;
     }

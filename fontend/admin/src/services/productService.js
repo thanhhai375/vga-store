@@ -3,11 +3,11 @@ import axiosClient from '../api/axiosClient';
 const productService = {
   getAll: (params) => axiosClient.get('/admin/products', { params }),
   getById: (id) => axiosClient.get(`/admin/products/${id}`),
-  // To mi - gi FormData (multipart/form-data vi nh)
+  // Tạo mới - gửi FormData (multipart/form-data với ảnh)
   create: (formData) => axiosClient.post('/admin/products', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  // Cp nht - gi FormData (multipart/form-data vi nh ty chn)
+  // Cập nhật - gửi FormData (multipart/form-data với ảnh tùy chọn)
   update: (id, formData) => axiosClient.put(`/admin/products/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),

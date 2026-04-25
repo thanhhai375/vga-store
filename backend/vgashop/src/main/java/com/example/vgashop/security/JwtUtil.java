@@ -19,7 +19,7 @@ public class JwtUtil {
         this.expirationTime = expiration;
     }
 
-    // to JWT token with Role Object
+    // tạo JWT token with Role Object
     public String generateToken(String username, Role role) {
         return Jwts.builder()
                 .setSubject(username)
@@ -30,7 +30,7 @@ public class JwtUtil {
                 .compact();
     }
     
-    // to JWT token with String role (for backwards compatibility if needed)
+    // tạo JWT token with String role (for backwards compatibility if needed)
     public String generateToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
@@ -41,7 +41,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // ly username t token
+    // lấy username từ token
     public String extractUsername(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -51,7 +51,7 @@ public class JwtUtil {
                 .getSubject();
     }
 
-    // ly role t token
+    // lấy role từ token
     public String extractRole(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -61,7 +61,7 @@ public class JwtUtil {
                 .get("role", String.class);
     }
 
-    // kim tra token c hp l khng
+    // kiểm tra token có hợp lệ không
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);

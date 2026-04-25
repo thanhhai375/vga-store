@@ -70,7 +70,7 @@ const AuthModal = ({ isOpen, onClose }) => {
       if (isLogin) {
         const res = await authService.login(email, password);
         const payload = res.data || res;
-        // AuthResponse tr v: { token, username, email, role, userId } - khng c nested 'user'
+        // AuthResponse trả về: { token, username, email, role, userId } - không có nested 'user'
         const userObj = payload.user || {
           id: payload.userId,
           username: payload.username,

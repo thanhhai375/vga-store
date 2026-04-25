@@ -30,7 +30,7 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
-    private final UserService userService; // ly thng tin user t SecurityContext
+    private final UserService userService; // để lấy thông tin user từ SecurityContext
 
     public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository, ProductRepository productRepository, UserService userService) {
         this.cartRepository = cartRepository;
@@ -39,10 +39,10 @@ public class CartService {
         this.userService = userService;
     }
 
-    // ly gi hng ca user hin ti, nu cha c th to mi
+    // lấy giỏ hàng của user hiện tại, nếu chưa có thì tạo mới
     @Transactional(readOnly= true)
     public CartResponse getMyCart() {
-        // ly user t JWT token
+        // lấy user từ JWT token
         User currentUser = userService.getCurrentUser();
         Cart cart = cartRepository.findByUser_IdAndDeletedFalse(currentUser.getId())
                 .orElseGet(() -> createNewCartForUser(currentUser));
@@ -50,7 +50,7 @@ public class CartService {
         return convertToCartResponse(cart);
     }
 
-    // to gi hang mi cho user nu cha c
+    // tạo giỏ hang mới cho user nếu chưa có
     private Cart createNewCartForUser(User user) {
         Cart cart = new Cart();
         cart.setUser(user);
@@ -58,7 +58,7 @@ public class CartService {
        return cartRepository.save(cart);
     }
 
-    // thm sn phm vo gi hng
+    // thêm sản phẩm vào giỏ hàng
     @Transactional
     public CartResponse addToCart(AddToCartRequest request) {
         User currentUser = userService.getCurrentUser();
@@ -68,57 +68,57 @@ public class CartService {
         Product product = productRepository.findByIdAndDeleted(request.getProductId(), false)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm"));
         
-        // kim tra stock nu cn, hoc cc iu kin khc trc khi thm vo gi hng
+        // kiểm tra stock nếu cần, hoặc các điều kiện khác trước khi thêm vào giỏ hàng
         if (product.getStock() < request.getQuantity()) {
             throw new IllegalArgumentException("Sản phẩm không đủ số lượng trong kho");
         }
 
-        // logic thm sn phm vo gi hng, nu  c th tng s lng, nu cha c th to mi cart item
+        // logic thêm sản phẩm vào giỏ hàng, nếu đã có thì tăng số lượng, nếu chưa có thì tạo mới cart item
         CartItem existingItem = cart.getCartItems().stream()
                 .filter(item -> item.getProduct().getId().equals(product.getId()) && !item.isDeleted())
                 .findFirst()
                 .orElse(null);
 
         if (existingItem != null) {
-            // c sn phm trong gi hng, tng s lng
+            // đã có sản phẩm trong giỏ hàng, tăng số lượng
             int newQuantity = existingItem.getQuantity() + request.getQuantity();
             if (newQuantity > product.getStock()) {
                 throw new IllegalArgumentException("Sản phẩm không đủ số lượng trong kho");
             }
             existingItem.setQuantity(newQuantity);
-            existingItem.calculateSubtotal(); // cp nht subtotal ca item
+            existingItem.calculateSubtotal(); // cập nhật subtotal của item
         } else {
-            // thm mi sn phm vo gi hng
+            // thêm mới sản phẩm vào giỏ hàng
             CartItem newItem = new CartItem();
             newItem.setCart(cart);
             newItem.setProduct(product);
             newItem.setQuantity(request.getQuantity());
-            newItem.calculateSubtotal(); // tnh subtotal ca item
+            newItem.calculateSubtotal(); // tính subtotal của item
             cart.getCartItems().add(newItem);
         }
 
-        cart.recalculateTotal(); // cp nht tng tin ca gi hng
+        cart.recalculateTotal(); // cập nhật tổng tiền của giỏ hàng
         cartRepository.save(cart);
         return convertToCartResponse(cart);
     }
 
-    // cp nht s lng ca item trong gi hng, xa item khi gi hng, hoc cc chc nng khc lin quan n gi hng c th thm  y
+    // cập nhật số lượng của item trong giỏ hàng, xóa item khỏi giỏ hàng, hoặc các chức năng khác liên quan đến giỏ hàng có thể thêm ở đây
     @Transactional
     public CartResponse updateCartItem(Long cartItemId, UpdateCartItemRequest request) {
-        // logic cp nht s lng ca item trong gi hng, hoc xa item nu s lng mi l 0, sau  cp nht li tng tin ca gi hng
+        // logic cập nhật số lượng của item trong giỏ hàng, hoặc xóa item nếu số lượng mới là 0, sau đó cập nhật lại tổng tiền của giỏ hàng
         User currentUser = userService.getCurrentUser();
         Cart cart = cartRepository.findByUser_IdAndDeletedFalse(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng không tồn tại"));
-        // tm cart item theo id v kim tra xem n c thuc v gi hng ca user hin ti khng
+        // tìm cart item theo id và kiểm tra xem nó có thuộc về giỏ hàng của user hiện tại không
         CartItem cartItem = cart.getCartItems().stream()
                 .filter(item -> item.getId().equals(cartItemId) && !item.isDeleted())
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy item trong giỏ"));
-        // nu s lng mi l 0 th xa item khi gi hng
+        // nếu số lượng mới là 0 thì xóa item khỏi giỏ hàng
         if (request.getQuantity() <= 0) {
             cart.getCartItems().remove(cartItem);
         } else {
-            // cp nht s lng v subtotal ca item
+            // cập nhật số lượng và subtotal của item
             if (request.getQuantity() > cartItem.getProduct().getStock()) {
                 throw new IllegalArgumentException("Vượt quá số lượng tồn kho của sản phẩm");
             }
@@ -126,55 +126,55 @@ public class CartService {
             cartItem.calculateSubtotal();
         }
 
-        cart.recalculateTotal(); // cp nht tng tin ca gi hng
+        cart.recalculateTotal(); // cập nhật tổng tiền của giỏ hàng
         cartRepository.save(cart);
 
         return convertToCartResponse(cart);
     }
 
-    // xa item khi gi
+    // xóa item khỏi giỏ 
     @Transactional
     public CartResponse removeCartItem(Long cartItemId) {
         User currerentUser = userService.getCurrentUser();
         Cart cart = cartRepository.findByUser_IdAndDeletedFalse(currerentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng không tồn tại"));
         
-        // tm cart item theo id v kim tra xem n c thuc v gi hng ca user hin ti khng
+        // tìm cart item theo id và kiểm tra xem nó có thuộc về giỏ hàng của user hiện tại không
         boolean removed = cart.getCartItems().removeIf(item -> item.getId().equals(cartItemId));
 
         if (!removed) {
             throw new ResourceNotFoundException("Không tìm thấy item trong giỏ");
         }
 
-        cart.recalculateTotal(); // cp nht tng tin ca gi hng
+        cart.recalculateTotal(); // cập nhật tổng tiền của giỏ hàng
         cartRepository.save(cart);
 
         return convertToCartResponse(cart);
     }
 
-    // xa ton b gi hng ca user, c th dng khi user mun xa gi hng hoc sau khi t hng thnh cng
+    // xóa toàn bộ giỏ hàng của user, có thể dùng khi user muốn xóa giỏ hàng hoặc sau khi đặt hàng thành công
     @Transactional
     public void clearCart() {
         User currentUser = userService.getCurrentUser();
         Cart cart = cartRepository.findByUser_IdAndDeletedFalse(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng không tồn tại"));
         
-        // anh du tt c cart item l  xa, hoc xa hn khi database nu mun
-        cart.getCartItems().forEach(item -> item.setDeleted(true)); // nh du tt c item l  xa, khi ly gi hng s khng ly nhng item  b xa
-        cart.getCartItems().clear(); // xa tt c item khi gi hng
-        cart.setTotalAmount(BigDecimal.ZERO); // reset tng tin v 0
+        // đanh dấu tất cả cart item là đã xóa, hoặc xóa hẳn khỏi database nếu muốn
+        cart.getCartItems().forEach(item -> item.setDeleted(true)); // đánh dấu tất cả item là đã xóa, khi lấy giỏ hàng sẽ không lấy những item đã bị xóa
+        cart.getCartItems().clear(); // xóa tất cả item khỏi giỏ hàng
+        cart.setTotalAmount(BigDecimal.ZERO); // reset tổng tiền về 0
         cartRepository.save(cart);
 
-        // c th lm cch ny
-        // cart.isDeleted(true); // nh du gi hng l  xa, khi ly gi hng s khng ly nhng gi hng  b xa
+        // có thể làm cách này 
+        // cart.isDeleted(true); // đánh dấu giỏ hàng là đã xóa, khi lấy giỏ hàng sẽ không lấy những giỏ hàng đã bị xóa
         // cartRepository.save(cart);
 
     }
 
-    // chuyn i Cart entity sang CartResponse DTO  tr v cho client
+    // chuyển đổi Cart entity sang CartResponse DTO để trả về cho client
     public CartResponse convertToCartResponse(Cart cart) {
         List<CartItemResponse> itemResponses = cart.getCartItems().stream()
-            .filter(item -> !item.isDeleted()) // ch ly nhng item ch b xa
+            .filter(item -> !item.isDeleted()) // chỉ lấy những item ch bị xóa
             .map(item -> new CartItemResponse(
                 item.getId(),
                 item.getProduct().getId(),

@@ -32,13 +32,13 @@ const Products = () => {
     }
   };
 
-  // Hm x l URL nh thng minh: ging ProductCard.jsx User
+  // Hàm xử lý URL ảnh thông minh: giống ProductCard.jsx ở User
   const getImageUrl = (imgUrl) => {
     if (!imgUrl) return null;
     if (imgUrl.startsWith('/uploads/')) return `http://localhost:8080${imgUrl}`;
-    // nh nm trong public/images ca User Frontend (port 5173)
+    // Ảnh nằm trong public/images của User Frontend (port 5173)
     if (imgUrl.startsWith('/images/')) return `http://localhost:5173${imgUrl}`;
-    // URL t do (http:// hoc https://)
+    // URL tự do (http:// hoặc https://)
     return imgUrl;
   };
 

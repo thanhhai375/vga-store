@@ -10,27 +10,27 @@ import com.example.vgashop.entity.Category;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    // Search by name
+    // tìm kiếm theo tên 
     Page<Category> findByNameContaining(String keyWord, Pageable pageable);
 
-    // ch ly category ang active
+    // chỉ lấy category đang active
     Page<Category> findByActiveTrue(Pageable pageable);
 
-    // kim tra trng tn
+    // kiểm tra trùng tên 
     boolean existsByNameIgnoreCase(String name);
 
-    // Lc theo status
+    // Lọc theo status
     Page<Category> findByActive(Boolean active, Pageable pageable);
 
-    // Lc theo tn cha + status
+    // Lọc theo tên chứa + status
     Page<Category> findByNameContainingIgnoreCaseAndActive(String keyword, Boolean active, Pageable pageable);
 
-    // ly tt cha b xa
+    // lấy tất chưa bị xóa
     Page<Category> findByDeletedFalse(Pageable pageable);
 
-    // ly theo ID v ch b xa
+    // lấy theo ID và ch bị xóa
     Optional<Category> findByIdAndDeleted(Long id, boolean deleted);
 
-    // kim tra tn ti v ch b xa
+    // kiểm tra tồn tại và ch bị xóa
     boolean existsByIdAndDeleted(Long id, boolean deleted);
 }

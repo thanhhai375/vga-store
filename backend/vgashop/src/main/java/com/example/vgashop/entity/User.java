@@ -17,7 +17,7 @@ import com.example.vgashop.entity.Role;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
-@Entity // nh du l bng trong DB
+@Entity // đánh dấu là bảng trong DB
 @Table(name="users")
 public class User extends BaseEntity {
 
@@ -25,7 +25,7 @@ public class User extends BaseEntity {
     private String username;
 
     @Column(name = "password", nullable=false, length=255)
-    private String password; // s m ha BCrypt
+    private String password; // sẽ mã hóa BCrypt
 
     @Column(name = "full_name", length = 100)
     private String fullName;
@@ -70,7 +70,7 @@ public class User extends BaseEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UserAddress> addresses;
-    // getter v setter
+    // getter và setter
 
     public String getUsername() {
         return username;

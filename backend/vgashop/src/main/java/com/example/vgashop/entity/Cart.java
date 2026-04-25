@@ -27,10 +27,10 @@ public class Cart extends BaseEntity {
     @OneToMany(mappedBy= "cart", cascade= CascadeType.ALL, orphanRemoval= true, fetch= FetchType.LAZY)
     private List<CartItem> cartItems = new ArrayList<>();
 
-    @Column(precision= 12, scale= 2) // tng tin ca gi hng, c th tnh li mi khi thm/xa/sa cart item. ct ny gip trnh phi tnh ton li mi ln truy vn gi hng, ci thin hiu sut
-    private BigDecimal totalAmount = BigDecimal.ZERO; // to mc nh l 0  trnh null
+    @Column(precision= 12, scale= 2) // tổng tiền của giỏ hàng, có thể tính lại mỗi khi thêm/xóa/sửa cart item. cột này giúp tránh phải tính toán lại mỗi lần truy vấn giỏ hàng, cải thiện hiệu suất
+    private BigDecimal totalAmount = BigDecimal.ZERO; // tạo mặc định là 0 để tránh null
 
-    // method tnh tng tin ca gi hng, c th gi sau mi ln thm/xa/sa cart item
+    // method tính tổng tiền của giỏ hàng, có thể gọi sau mỗi lần thêm/xóa/sửa cart item
     public void recalculateTotal() {
         this.totalAmount = cartItems.stream()
             .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))

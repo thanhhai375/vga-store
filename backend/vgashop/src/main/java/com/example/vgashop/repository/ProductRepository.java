@@ -13,57 +13,57 @@ import com.example.vgashop.entity.Product;
 
 public interface  ProductRepository extends JpaRepository<Product, Long> {
 
-    // Search by name
+    // tìm kiếm theo tên 
     Page<Product> findByNameContaining(String keyWord, Pageable pageable);
 
-    // Search by brand
+    // tìm kiếm theo brand
     Page<Product> findByBrand_Name(String keyWord, Pageable pageable);
 
-    // Filter by brand ID
+    // tìm theo brand_id
     Page<Product> findByBrand_Id(Long brandId, Pageable pageable);
 
-    // Filter by multiple brand IDs (multi select)
+    // tìm nhiều brand (multi select)
     Page<Product> findByBrand_IdIn(List<Long> brandIds, Pageable pageable);
 
-    // Filter by price range
+    // lọc giá
     Page<Product> findByPriceBetween(Double minPrice, Double maxPrice, Pageable pageable);
 
-    // Combined search and filter
+    // lọc + tìm kiếm
     Page<Product> findByNameContainingAndBrand_Name(String keyWord, String brandName, Pageable pageable);
 
     Page<Product> findByNameContainingAndBrand_Id(String keyWord, Long brandId, Pageable pageable);
 
-    // Search with price filter
+    // tìm + price
     Page<Product> findByNameContainingAndPriceBetween(String keyWord, Double minPrice, Double maxPrice, Pageable pageable);
 
-    // tìm theo brand + Filter by price range
+    // tìm theo brand + lọc giá
     Page<Product> findByBrand_IdAndPriceBetween(Long brandId, Double minPrice, Double maxPrice, Pageable pageable);
 
 
-    // Full filter with all criteria
+    // full tính năng lọc
     Page<Product> findByNameContainingAndBrand_IdInAndPriceBetween(String keyWord, List<Long> brandIds, Double minPrice, Double maxPrice, Pageable pageable);
 
-    // Check if a product with this name already exists
+    // Kiểm tra xem đã tồn tại sản phẩm với tên này chưa 
    
     boolean existsByNameIgnoreCase(String name);
 
-    // Check for duplicate SKU
+    // kiểm tra trùng sku
     boolean existsBySkuIgnoreCase(String sku);
 
-    // Retrieve all non-deleted records
+    // Lấy tất cả chưa bị xóa
     Page<Product> findByDeletedFalse(Pageable pageable);
 
-    // Retrieve by ID (non-deleted only)
+    // Lấy theo ID và chưa bị xóa
     Optional<Product> findByIdAndDeleted(Long id, boolean deleted);
 
-    // Check existence (non-deleted only)
+    // Kiểm tra tồn tại và chưa bị xóa
     boolean existsByIdAndDeleted(Long id, boolean deleted);
 
-    // Reserved for brand/category filtering if needed
+    // Nếu sau này cần lọc theo brand/category chưa xóa
     long countByBrand_IdAndDeletedFalse(Long brandId);
     long countByCategory_IdAndDeletedFalse(Long categoryId);
 
-    // Admin dashboard statistics
+    // phần admin dashboard
     Long countByDeletedFalse();
 
     @Query("SELECT COUNT(p) FROM Product p WHERE p.deleted = false AND p.stock <= :threshold")
@@ -71,7 +71,7 @@ public interface  ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findByIdAndDeletedFalse(Long id);
 
-    // Retrieve products received by user but not yet reviewed
+    // Lấy danh sách sản phẩm user đã nhận nhưng chưa đánh giá
     @Query("SELECT DISTINCT p FROM Product p JOIN p.orderItems oi JOIN oi.order o " +
            "WHERE o.user.id = :userId AND o.status = 'DELIVERED' " +
            "AND p.id NOT IN (SELECT r.product.id FROM Review r WHERE r.user.id = :userId)")

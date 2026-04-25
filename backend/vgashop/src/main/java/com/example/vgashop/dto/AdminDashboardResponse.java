@@ -4,17 +4,17 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
-// DTO tr v d liu dashboard cho Admin
+// DTO trả về dữ liệu dashboard cho Admin
 public class AdminDashboardResponse {
 
-    private Long totalUsers; // Tng s ngi dng
-    private Long totalOrders; // Tng s n hng
-    private Long todayOrders; // S n hng hm nay
-    private BigDecimal totalRevenue; // Tng doanh thu
-    private BigDecimal todayRevenue; // Doanh thu hm nay
-    private Long totalProducts; // Tng s sn phm
-    private Long lowStockProducts; // S sn phm sp ht hng
-    private LocalDateTime lastUpdated; // thi gian cp nht d liu cui cng
+    private Long totalUsers; // Tổng số người dùng
+    private Long totalOrders; // Tổng số đơn hàng
+    private Long todayOrders; // Số đơn hàng hôm nay
+    private BigDecimal totalRevenue; // Tổng doanh thu
+    private BigDecimal todayRevenue; // Doanh thu hôm nay
+    private Long totalProducts; // Tổng số sản phẩm
+    private Long lowStockProducts; // Số sản phẩm sắp hết hàng
+    private LocalDateTime lastUpdated; // thời gian cập nhật dữ liệu cuối cùng
 
     // Constuctor
 

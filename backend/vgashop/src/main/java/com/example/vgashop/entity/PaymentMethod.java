@@ -1,8 +1,8 @@
 package com.example.vgashop.entity;
 
 public enum PaymentMethod {
-    COD, // thanh ton khi nhn hng
-    BANK_TRANSFER, // chuyn khong ngn hng
-    VNPAY, // thanh ton qua VNPAY
-    MOMO // qua v momo
+    COD, // thanh toán khi nhận hàng
+    BANK_TRANSFER, //chuyển khoảng ngân hàng
+    VNPAY, // thanh toán qua VNPAY
+    MOMO // qua ví momo
 }

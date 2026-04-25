@@ -5,7 +5,7 @@ import com.example.vgashop.entity.OrderStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-// dng cho admin cp nht trng thi
+// dùng cho admin cập nhật trạng thái
 public class OrderStatusUpdateRequest {
 
     @NotNull(message= "Trạng thái đơn hàng không được để trống")

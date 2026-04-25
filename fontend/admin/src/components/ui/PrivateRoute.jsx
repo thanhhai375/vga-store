@@ -9,7 +9,7 @@ const PrivateRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Ch cho php ADMIN hoc STAFF vo
+  // Chỉ cho phép ADMIN hoặc STAFF vào
   if (user?.role && !['ADMIN', 'STAFF'].includes(user.role)) {
     return <Navigate to="/login" replace />;
   }

@@ -4,7 +4,7 @@ import { createContext, useState } from 'react';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // null = cha ng nhp
+  const [user, setUser] = useState(null); // null = chưa đăng nhập
   return (
     <AuthContext.Provider value={{ user, setUser }}>
       {children}

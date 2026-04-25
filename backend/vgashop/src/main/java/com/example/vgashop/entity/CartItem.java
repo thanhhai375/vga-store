@@ -27,7 +27,7 @@ public class CartItem extends BaseEntity {
     @JoinColumn(name= "product_id", nullable= false)
     private Product product;
 
-    // to bin subtotal  lu tng tin ca item ny (quantity * product price), c th tnh li mi khi thay i quantity hoc product
+    // tạo biến subtotal để lưu tổng tiền của item này (quantity * product price), có thể tính lại mỗi khi thay đổi quantity hoặc product
     @Column(name= "subtotal", precision= 12, scale= 2)
     private BigDecimal subtotal;
 

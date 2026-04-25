@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-// orderSlice ch gi state cache d liu thc ly t API qua orderService
+// orderSlice chỉ giữ state cache — dữ liệu thực lấy từ API qua orderService
 const initialState = {
-  orders: [] // s c load t API trong TrackOrder/Profile
+  orders: [] // sẽ được load từ API trong TrackOrder/Profile
 };
 
 const orderSlice = createSlice({

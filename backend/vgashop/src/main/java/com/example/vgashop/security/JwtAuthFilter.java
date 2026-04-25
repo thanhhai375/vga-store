@@ -33,7 +33,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             try {
                 if (jwtUtil.validateToken(token)) {
                     String username = jwtUtil.extractUsername(token);
-                    String role = jwtUtil.extractRole(token); // ly role t token (khng cn DB lookup)
+                    String role = jwtUtil.extractRole(token); // lấy role từ token (không cần DB lookup)
 
                     var auth = new UsernamePasswordAuthenticationToken(
                             username, null,
@@ -42,7 +42,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             } catch (Exception e) {
-                // Token khng hp l -> khng set auth, Spring Security s tr 401
+                // Token không hợp lệ -> không set auth, Spring Security sẽ trả 401
                 SecurityContextHolder.clearContext();
             }
         }

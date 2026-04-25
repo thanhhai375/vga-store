@@ -24,7 +24,7 @@ const ProductForm = () => {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
 
-  // Hm x l URL nh thng minh
+  // Hàm xử lý URL ảnh thông minh
   const getImageUrl = (imgUrl) => {
     if (!imgUrl) return null;
     if (imgUrl.startsWith('/uploads/')) return `http://localhost:8080${imgUrl}`;
@@ -33,7 +33,7 @@ const ProductForm = () => {
   };
 
   useEffect(() => {
-    // Ly danh sch categories v brands
+    // Lấy danh sách categories và brands
     categoryService.getAll().then(res => {
       const d = res.data || res;
       setCategories(Array.isArray(d) ? d : (d.content || []));
@@ -46,7 +46,7 @@ const ProductForm = () => {
 
     if (isEdit) {
       productService.getById(id).then(res => {
-        // axiosClient tr v ApiResponse: { success, message, data: Product }
+        // axiosClient trả về ApiResponse: { success, message, data: Product }
         const p = res.data || res;
         if (!p || !p.name) {
           toastError('Không tìm thấy sản phẩm');
@@ -98,7 +98,7 @@ const ProductForm = () => {
 
     setSaving(true);
     
-    // Dng FormData gi km file
+    // Dùng FormData để gửi kèm file
     const formData = new FormData();
     formData.append('name', form.name);
     formData.append('price', Number(form.price));
@@ -152,7 +152,7 @@ const ProductForm = () => {
       </div>
 
       <form onSubmit={handleSave} style={{display:'grid', gridTemplateColumns:'1fr 360px', gap: 24, alignItems:'start'}}>
-{/* Ct tri */}
+        {/* Cột trái */}
         <div style={{display:'flex', flexDirection:'column', gap: 20}}>
           <div className="card">
             <div className="card-header">
@@ -230,7 +230,7 @@ const ProductForm = () => {
           </div>
         </div>
 
-{/* Ct phi */}
+        {/* Cột phải */}
         <div style={{display:'flex', flexDirection:'column', gap: 20}}>
           <div className="card">
             <div className="card-header">

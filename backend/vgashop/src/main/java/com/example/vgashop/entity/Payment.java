@@ -32,15 +32,15 @@ public class Payment extends BaseEntity {
     @Column(nullable= false, precision= 12, scale= 2)
     private BigDecimal amount;
 
-    // m giao dch t VNP/ MOMO
+    // mã giao dịch từ VNP/ MOMO
     @Column(length= 100)
     private String transactionCode;
 
-    // link thanh ton nu l VNpay/ Momo
+    // link thanh toán nếu là VNpay/ Momo
     @Column(length= 500)
     private String paymentUrl;
 
-    // tg thanh ton thnh cng
+    // tg thanh toán thành công
     private LocalDateTime paidAt;
 
     @Column(columnDefinition= "TEXT")

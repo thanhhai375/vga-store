@@ -22,7 +22,7 @@ const Orders = () => {
   const [total, setTotal] = useState(0);
   const [filter, setFilter] = useState('');
 
-  // State cho Modal Chi Tit
+  // 🌟 State cho Modal Chi Tiết
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -32,13 +32,13 @@ const Orders = () => {
     setLoading(true);
     try {
       const res = await orderService.getAll({ page, size: SIZE, status: filter || undefined });
-      // axiosClient interceptor: nu c ApiResponse wrapper th data nm res.data
+      // axiosClient interceptor: nếu có ApiResponse wrapper thì data nằm ở res.data
       const raw = res?.data?.data || res?.data || res;
       const list = Array.isArray(raw) ? raw : (raw.content || []);
       const totalPg = raw.totalPages || (Array.isArray(raw) ? 1 : 1);
       setOrders(list);
       setTotal(totalPg);
-      // Mark tt c n hin ti l xem khi admin vo trang Orders
+      // ✅ Mark tất cả đơn hiện tại là đã xem khi admin vào trang Orders
       markOrdersAsSeen(list.map(o => o.orderId || o.id));
     } catch { setOrders([]); }
     finally { setLoading(false); }
@@ -51,7 +51,7 @@ const Orders = () => {
   useEffect(() => {
     if (location.state?.openOrderId) {
       viewOrderDetails(location.state.openOrderId);
-      window.history.replaceState({}, document.title); // Xa state khng t m li khi F5
+      window.history.replaceState({}, document.title); // Xóa state để không tự mở lại khi F5
     }
   }, [location.state?.openOrderId]);
 
@@ -72,7 +72,7 @@ const Orders = () => {
     } catch { toastError('Cập nhật thất bại!'); }
   };
 
-  // HM M POPUP V TI CHI TIT
+  // 🌟 HÀM MỞ POPUP VÀ TẢI CHI TIẾT
   const viewOrderDetails = async (id) => {
     setIsModalOpen(true);
     setSelectedOrder({ loading: true, id });
@@ -167,7 +167,7 @@ const Orders = () => {
           </div>
         )}
 
-{/* MODAL CHI TIT N HNG */}
+        {/* 🌟 MODAL CHI TIẾT ĐƠN HÀNG 🌟 */}
         {isModalOpen && selectedOrder && (
           <div className="admin-modal-overlay" onClick={() => setIsModalOpen(false)}>
             <div className="admin-modal-box" onClick={e => e.stopPropagation()}>
@@ -265,7 +265,7 @@ const Orders = () => {
                   <p style={{ textAlign: 'center', padding: '20px' }}>Đang tải dữ liệu...</p>
                 ) : (
                   <>
-{/* Nu c l do hy, bi ni bt */}
+                    {/* Nếu có lý do hủy, bôi đỏ nổi bật */}
                     {selectedOrder.note && selectedOrder.note.includes('[LÝ DO HỦY]') && (
                       <div className="admin-cancel-reason">
                         <strong>Lý do khách yêu cầu hủy:</strong> {selectedOrder.note.split('[LÝ DO HỦY]:')[1]}

@@ -41,7 +41,7 @@ public class PaymentService {
         this.userService = userService;
     }
 
-    // To thnh ton cho n hng
+    // Tạo thành toán cho đơn hàng
     @Transactional
     public PaymentResponse createPayment(Long orderId, PaymentRequest request) {
         User user = userService.getCurrentUser();
@@ -61,10 +61,10 @@ public class PaymentService {
         String transactionCode = "PAY-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase();
         payment.setTransactionCode(transactionCode);
 
-        // SA LOCALHOST THNH 5173 CA TRANG USER
+        // 🌟 SỬA LOCALHOST THÀNH 5173 CỦA TRANG USER
         String returnUrl = "http://localhost:5173/payment/vnpay-callback";
 
-        // x l theo tng phng thc thanh ton
+        // xử lý theo từng phương thức thanh toán
         switch (request.getPaymentMethod()) {
             case COD:
                 payment.setNote("Thanh toán khi nhận hàng (COD)");
@@ -79,7 +79,7 @@ public class PaymentService {
             case VNPAY:
                 payment.setPaymentUrl(VNPayUtils.createPaymentUrl(order, transactionCode, returnUrl));
                 payment.setNote("Thanh toán qua VNPay");
-                break; // BT BUC PHI C DNG NY  KHNG B VNG SANG MOMO
+                break; // 🌟 BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ KHÔNG BỊ VĂNG SANG MOMO
 
             case MOMO:
                 payment.setPaymentUrl(MomoUtils.createPaymentUrl(order, transactionCode, returnUrl));
@@ -90,7 +90,7 @@ public class PaymentService {
         return convertToPaymentResponse(savedPayment);
     }
 
-    // cp nht trang thi thanh ton (WEBHOOK / ADMIN )
+    // cập nhật trang thái thanh toán (WEBHOOK / ADMIN )
     @Transactional
     public PaymentResponse updatePaymentStatus(Long paymentId, PaymentStatus newStatus, String transactionCode) {
         Payment payment = paymentRepository.findById(paymentId)
@@ -100,13 +100,13 @@ public class PaymentService {
 
         if (newStatus == PaymentStatus.SUCCESS) {
             payment.setPaidAt(LocalDateTime.now());
-            // cp nhp trng thi n hng thnh confirmed
+            // cập nhập trạng thái đơn hàng thành confirmed
             Order order = payment.getOrder();
             order.setStatus(OrderStatus.CONFIRMED);
             orderRepository.save(order);
         }
 
-        // cp nht transaction code nu c
+        // cập nhật transaction code nếu có
         if (transactionCode != null && !transactionCode.isEmpty()) {
             payment.setTransactionCode(transactionCode);
         }
@@ -115,7 +115,7 @@ public class PaymentService {
         return convertToPaymentResponse(saved);
     }
 
-    // Ly thanh ton theo n hng
+    // Lấy thanh toán theo đơn hàng
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByOrderId(Long orderId) {
         User currentUser = userService.getCurrentUser();
@@ -126,7 +126,7 @@ public class PaymentService {
         return convertToPaymentResponse(payment);
     }
 
-    // Lc theo trng thi thanh ton
+    // Lọc theo trạng thái thanh toán
     @Transactional(readOnly = true)
     public Page<PaymentSummaryResponse> getPaymentsByStatus(PaymentStatus status, int size, int page, String sortBy,
             String direction) {
@@ -138,7 +138,7 @@ public class PaymentService {
         return payments.map(this::convertToPaymentSummaryResponse);
     }
 
-    // ly chi tit thanh ton theo id
+    // lấy chi tiết thanh toán theo id
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentById(Long paymentId) {
 
@@ -148,7 +148,7 @@ public class PaymentService {
         return convertToPaymentResponse(payment);
     }
 
-    // Ly danh sch thanh ton ca user
+    // Lấy danh sách thanh toán của user
     @Transactional(readOnly = true)
     public Page<PaymentSummaryResponse> getMyPayments(int size, int page, String sortBy, String direction) {
         User currentUser = userService.getCurrentUser();
@@ -161,7 +161,7 @@ public class PaymentService {
         return payments.map(this::convertToPaymentSummaryResponse);
     }
 
-    // ADMIN: ly tt c thanh ton
+    // ADMIN: lấy tất cả thanh toán
     @Transactional(readOnly = true)
     public Page<PaymentSummaryResponse> getAllPayments(int size, int page, String sortBy, String direction) {
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();

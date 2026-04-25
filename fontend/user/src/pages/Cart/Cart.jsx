@@ -23,7 +23,7 @@ const Cart = () => {
     if (isAuthenticated) {
       dispatch(updateCartItemDb({ item, quantity: item.cartQuantity + 1 }));
       dispatch(addToCartDb({ product: item, quantity: 1 })); 
-      // do backend addToCart cng dn quantity, updateItem set thng
+      // do backend addToCart cộng dồn quantity, updateItem set thẳng
     } else {
       dispatch(addToCart(item));
     }
@@ -131,7 +131,7 @@ const Cart = () => {
               </div>
             </div>
 
-{/* CT PHI: TNG KT N HNG */}
+            {/* CỘT PHẢI: TỔNG KẾT ĐƠN HÀNG */}
             <div className="cart-summary-box">
               <h3 className="summary-title">Tóm tắt đơn hàng</h3>
               <div className="summary-line">

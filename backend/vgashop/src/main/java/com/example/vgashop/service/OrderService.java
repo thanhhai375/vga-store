@@ -63,7 +63,9 @@ public class OrderService {
         this.paymentRepository = paymentRepository;
     }
 
-    // --- Order placement (direct frontend request) ---
+    // ===================================
+    // TỪ NHÁNH HEAD: TẠO ĐƠN TRỰC TIẾP TỪ FE
+    // ===================================
     @Transactional
     public Map<String, Object> placeOrder(OrderRequest req, String username) {
         User user = userRepository.findByUsername(username)
@@ -109,7 +111,7 @@ public class OrderService {
 
         Map<String, Object> resp = new LinkedHashMap<>();
         resp.put("orderId", saved.getId());
-        resp.put("orderCode", saved.getOrderCode()); // orderCode must be returned to avoid undefined on frontend
+        resp.put("orderCode", saved.getOrderCode()); // 🌟 FIX LỖI #UNDEFINED Ở ĐÂY
         resp.put("status", saved.getStatus().name());
         resp.put("totalPrice", saved.getTotalAmount());
         resp.put("fullName", saved.getFullName());
@@ -127,7 +129,7 @@ public class OrderService {
         for (Order order : orderRepository.findByUserIdOrderByIdDesc(user.getId())) {
             Map<String, Object> o = new LinkedHashMap<>();
             o.put("id", order.getId());
-            o.put("orderCode", order.getOrderCode());
+            o.put("orderCode", order.getOrderCode()); // Thêm cho chắc
             o.put("status", order.getStatus().name());
             o.put("totalAmount", order.getTotalAmount());
             o.put("itemCount", order.getItems() != null ? order.getItems().size() : 0);
@@ -141,7 +143,9 @@ public class OrderService {
         return result;
     }
 
-    // --- Order placement from shopping cart ---
+    // ===================================
+    // TẠO ĐƠN HÀNG TỪ GIỎ HÀNG (CART)
+    // ===================================
     @Transactional
     public OrderResponse createOrderFromCart(CreateOrderRequest request) {
         User currentUser = userService.getCurrentUser();
@@ -163,7 +167,7 @@ public class OrderService {
         order.setPhone(request.getPhone());
         order.setNote(request.getNote() != null ? request.getNote() : "");
 
-        // Fallback to username if full name is not set, to ensure admin panel displays a name
+        // 🌟 BỔ SUNG GÁN FULL NAME ĐỂ TRANG ADMIN KHÔNG BỊ TRỐNG
         String fullName = currentUser.getFullName() != null && !currentUser.getFullName().isEmpty()
                 ? currentUser.getFullName()
                 : currentUser.getUsername();
@@ -218,7 +222,7 @@ public class OrderService {
         return convertTOrderResponse(order);
     }
 
-    // Handles customer-initiated cancellation requests
+    // Hủy đơn hàng (Khách hàng yêu cầu)
     @Transactional
     public OrderResponse cancelOrder(Long orderId, String reason) {
         User currentUser = userService.getCurrentUser();
@@ -230,10 +234,10 @@ public class OrderService {
             throw new IllegalArgumentException("Chỉ có thể hủy đơn hàng ở trạng thái chờ duyệt hoặc đang xử lý");
         }
 
-        // Transition to CANCEL_REQUESTED so admin can review before confirming cancellation
+        // 🌟 Chuyển trạng thái sang Yêu cầu hủy
         order.setStatus(OrderStatus.CANCEL_REQUESTED);
 
-        // Append cancellation reason to the order note field for admin visibility
+        // 🌟 Nhét lý do hủy vào Ghi chú để Admin đọc
         if (reason != null && !reason.trim().isEmpty()) {
             String currentNote = order.getNote() != null ? order.getNote() : "";
             String separator = currentNote.isEmpty() ? "" : " | ";
@@ -294,15 +298,15 @@ public class OrderService {
             if (payment != null && payment.getPaymentMethod() != null) {
                 paymentMethodStr = payment.getPaymentMethod().name();
             }
-        } catch (Exception e) { /* Payment record may not exist yet for new orders */ }
+        } catch (Exception e) { /* Đơn mới chưa có payment */ }
 
         return new OrderResponse(
                 order.getId(), order.getOrderCode(), order.getTotalAmount(), order.getDiscountAmount(),
                 order.getStatus(), order.getPaymentStatus(), order.getShippingAddress(), order.getPhone(),
                 order.getNote(), order.getCreatedAt(), order.getConfirmedAt(), order.getShippedAt(),
                 order.getDeliveredAt(), itemResponses,
-                order.getFullName() != null && !order.getFullName().trim().isEmpty() ? order.getFullName() : (order.getUser() != null ? order.getUser().getUsername() : "Anonymous"),
-                order.getUser() != null ? order.getUser().getEmail() : "N/A",
+                order.getFullName() != null && !order.getFullName().trim().isEmpty() ? order.getFullName() : (order.getUser() != null ? order.getUser().getUsername() : "Khách ẩn danh"),
+                order.getUser() != null ? order.getUser().getEmail() : "Không có",
                 paymentMethodStr
         );
     }
@@ -315,12 +319,12 @@ public class OrderService {
         return new OrderSummaryResponse(
                 order.getId(),
                 order.getOrderCode(),
-                order.getFullName(),
-                order.getPhone(),
+                order.getFullName(), // 🌟 Bổ sung truyền Tên
+                order.getPhone(), // 🌟 Bổ sung truyền SĐT
                 order.getTotalAmount(),
                 order.getStatus(),
                 order.getPaymentStatus(),
-                order.getCreatedAt(),
+                order.getCreatedAt(), // 🌟 Đã sửa lỗi chính tả
                 totalItems);
     }
 }

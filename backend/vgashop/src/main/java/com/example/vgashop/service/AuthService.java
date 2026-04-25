@@ -27,7 +27,7 @@ public class AuthService {
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
-    // ng k cho USER from Profile UI
+    // Đăng ký cho USER from Profile UI
     public AuthResponse register(RegisterRequest req) {
         if (userRepository.existsByUsername(req.getUsername())) {
             throw new RuntimeException("Tên đăng nhập đã tồn tại!");
@@ -49,7 +49,7 @@ public class AuthService {
         return new AuthResponse(token, saved.getUsername(), saved.getEmail(), saved.getRole().name(), saved.getId(), "Đăng ký thành công");
     }
 
-    // ng k t Admin/BE (Fallback)
+    // Đăng ký từ Admin/BE (Fallback)
     public AuthResponse register(UserDTO dto) {
         if (userRepository.existsByUsername(dto.getUsername())) {
             throw new DuplicateResourceException("Username đã tồn tại!");
@@ -81,7 +81,7 @@ public class AuthService {
         System.out.println("=== LOGIN ATTEMPT ===");
         System.out.println("Username input: [" + username + "]");
 
-        // Tm user
+        // Tìm user
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> {
                     System.out.println("ERROR: User not found with username: " + username);
@@ -90,13 +90,13 @@ public class AuthService {
 
         System.out.println("User found - ID: " + user.getId() + ", Role: " + user.getRole() + ", Status: " + user.getStatus());
 
-        // Kim tra trng thi ti khon
+        // Kiểm tra trạng thái tài khoản
         if (Boolean.FALSE.equals(user.getStatus())) {
             System.out.println("ERROR: Account is disabled");
             throw new RuntimeException("Tài khoản đã bị khóa");
         }
 
-        // Kim tra mt khu
+        // Kiểm tra mật khẩu
         boolean passwordMatch = passwordEncoder.matches(password, user.getPassword());
         System.out.println("Password match result: " + passwordMatch);
 
@@ -105,7 +105,7 @@ public class AuthService {
             throw new RuntimeException("Tài khoản hoặc mật khẩu không đúng");
         }
 
-        // To token
+        // Tạo token
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
         System.out.println("Login successful - Token generated");
 

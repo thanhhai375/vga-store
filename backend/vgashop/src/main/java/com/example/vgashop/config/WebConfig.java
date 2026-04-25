@@ -11,7 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve nh t th mc uploads/ bn ngoi JAR
+        // Serve ảnh từ thư mục uploads/ bên ngoài JAR
         String uploadDir = Paths.get("uploads").toAbsolutePath().toUri().toString();
 
         registry.addResourceHandler("/uploads/**")

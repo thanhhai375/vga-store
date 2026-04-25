@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // Thm dng ny
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // 🌟 Thêm dòng này
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -78,14 +78,14 @@ public class AdminService {
         this.blogRepository = blogRepository;
     }
 
-    // DASHBOARD ( C FIX LOGIC TNH D LIU THT 100%)
+    // DASHBOARD (ĐÃ ĐƯỢC FIX LOGIC TÍNH DỮ LIỆU THẬT 100%)
     @Transactional(readOnly = true)
     public AdminDashboardResponse getDashboard() {
         log.info("Admin đang lấy dữ liệu dashboard");
 
         LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
 
-        // Ly tt c n hng khng b xa
+        // Lấy tất cả đơn hàng không bị xóa
         List<Order> allOrders = orderRepository.findAll().stream()
                 .filter(o -> !o.isDeleted())
                 .collect(Collectors.toList());
@@ -96,13 +96,13 @@ public class AdminService {
         BigDecimal todayRevenue = BigDecimal.ZERO;
 
         for (Order o : allOrders) {
-            // Ch tnh nhng n hng KHNG b hy
+            // Chỉ tính những đơn hàng KHÔNG bị hủy
             if (o.getStatus() != OrderStatus.CANCELLED && o.getStatus() != OrderStatus.CANCEL_REQUESTED) {
                 totalOrders++;
                 BigDecimal amt = o.getTotalAmount() != null ? o.getTotalAmount() : BigDecimal.ZERO;
                 totalRevenue = totalRevenue.add(amt);
 
-                // Nu n hng to t 00:00 sng nay tr i
+                // Nếu đơn hàng tạo từ 00:00 sáng nay trở đi
                 if (o.getCreatedAt() != null && !o.getCreatedAt().isBefore(startOfToday)) {
                     todayOrders++;
                     todayRevenue = todayRevenue.add(amt);
@@ -113,7 +113,7 @@ public class AdminService {
         Long totalUsers = userRepository.countByDeletedFalse();
         Long totalProducts = productRepository.countByDeletedFalse();
 
-        // m an ton trnh li SQL
+        // Đếm an toàn tránh lỗi SQL
         Long lowStockProducts = 0L;
         try {
             lowStockProducts = productRepository.countLowStock(10);
@@ -132,7 +132,7 @@ public class AdminService {
                 LocalDateTime.now());
     }
 
-    // qun l ngi dng
+    // quản lý người dùng
     @Transactional(readOnly = true)
     public Page<UserAdminResponse> getAllUsers(int page, int size, String sortBy, String direction, String search, String roleStr) {
         log.info("Admin lấy danh sách user - search: {}, role: {}", search, roleStr);
@@ -168,7 +168,7 @@ public class AdminService {
         return result;
     }
 
-    // To user mi t Admin
+    // Tạo user mới từ Admin
     @Transactional
     public UserAdminResponse createUser(com.example.vgashop.dto.UserDTO dto) {
         log.info("Admin tạo user mới: {}", dto.getUsername());
@@ -198,7 +198,7 @@ public class AdminService {
                                      saved.getStatus(), saved.isDeleted(), saved.getCreatedAt(), saved.getUpdatedAt());
     }
 
-    // thay i role ca user
+    // thay đổi role của user
     @Transactional
     public void changeUserRole(Long userId, String newRole) {
         log.info("Admin thay đổi role userId={} thành {}", userId, newRole);
@@ -216,7 +216,7 @@ public class AdminService {
         }
     }
 
-    // toggle trng thi active/inactive ca user
+    // toggle trạng thái active/inactive của user
     @Transactional
     public void toggleUserStatus(Long userId) {
         log.info("Admin toggle status userId={}", userId);
@@ -231,7 +231,7 @@ public class AdminService {
         log.info("Đã thay đổi status userId={} thành {}", userId, newStatus);
     }
 
-    // Xa mm user
+    // Xóa mềm user
     @Transactional
     public void softDeleteUser(Long userId) {
         log.info("Admin xóa mềm userId={}", userId);
@@ -243,7 +243,7 @@ public class AdminService {
         log.info("Đã xóa mềm (deleted=true) userId={}", userId);
     }
 
-    // Qun l Order
+    // Quản lý Order
     @Transactional(readOnly = true)
     public Page<OrderSummaryResponse> getAllOrders(int page, int size, String sortBy, String direction, String status) {
         log.info("Admin lấy danh sách tất cả đơn hàng - page: {}, status: {}", page, status);
@@ -268,7 +268,7 @@ public class AdminService {
         return result;
     }
 
-    // cp nht trng thi n hng
+    // cập nhật trạng thái đơn hàng
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, OrderStatusUpdateRequest request) {
         log.info("Admin cập nhật trạng thái đơn hàng {} thành {}", orderId, request.getStatus());
@@ -290,12 +290,12 @@ public class AdminService {
         return convertToOrderResponse(savedOrder);
     }
 
-    // Qun l product
+    // Quản lý product
     @Transactional(readOnly = true)
     public Page<ProductAdminResponse> getAllProductForAdmin(int page, int size) {
         log.info("Admin lấy danh sách sản phẩm - page: {}", page);
 
-        // Sp xp theo th t hin th (displayOrder), sau  n ID
+        // Sắp xếp theo thứ tự hiển thị (displayOrder), sau đó đến ID
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by(Sort.Direction.ASC, "id")));
         Page<Product> products = productRepository.findByDeletedFalse(pageable);
 
@@ -313,7 +313,7 @@ public class AdminService {
         return result;
     }
 
-    // cp nht product Stock
+    // cập nhật product Stock
     @Transactional
     public void updateProductStock(Long productId, Integer stock) {
         log.info("Admin cập nhật stock sản phẩm {} thành {}", productId, stock);
@@ -332,7 +332,7 @@ public class AdminService {
         log.info("Đã cập nhật stock sản phẩm {} thành {}", productId, stock);
     }
 
-    // qun l category v brand
+    // quản lý category và brand
     @Transactional(readOnly = true)
     public Page<Category> getAllCategoriesForAdmin(int page, int size) {
         log.info("Admin lấy danh sách category - page: {}", page);
@@ -354,8 +354,8 @@ public class AdminService {
                 .mapToInt(OrderItem::getQuantity)
                 .sum();
 
-        // FIX: B sung order.getFullName() v order.getPhone() cho khp vi DTO
-        // mi
+        // 🌟 ĐÃ FIX: Bổ sung order.getFullName() và order.getPhone() cho khớp với DTO
+        // mới
         return new OrderSummaryResponse(
                 order.getId(),
                 order.getOrderCode(),
@@ -411,7 +411,7 @@ public class AdminService {
         );
     }
 
-    // XA SN PHM (SOFT DELETE)
+    // XÓA SẢN PHẨM (SOFT DELETE)
     @Transactional
     public void softDeleteProduct(Long productId) {
         log.info("Admin soft delete sản phẩm ID: {}", productId);
@@ -425,7 +425,7 @@ public class AdminService {
         log.info("Đã soft delete sản phẩm ID: {}", productId);
     }
 
-    // THM CATEGORY T ADMIN
+    // THÊM CATEGORY TỪ ADMIN
     @Transactional
     public Category addCategories(Category category) {
         log.info("Admin thêm category mới: {}", category.getName());
@@ -459,7 +459,7 @@ public class AdminService {
         categoryRepository.save(category);
     }
 
-    // THM BRAND T ADMIN
+    // THÊM BRAND TỪ ADMIN
     @Transactional
     public Brand addBrand(Brand brand) {
         log.info("Admin thêm brand mới: {}", brand.getName());
@@ -493,7 +493,7 @@ public class AdminService {
         brandRepository.save(brand);
     }
 
-    // QUN L BLOG
+    // QUẢN LÝ BLOG
     @Transactional
     public Blog createBlog(BlogDTO dto, MultipartFile image) {
         log.info("Admin thêm blog mới: {}", dto.getTitle());
@@ -538,8 +538,8 @@ public class AdminService {
         log.info("Admin xóa blog ID: {}", id);
         Blog blog = blogRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài viết"));
-        // Nu entity Blog c h tr deleted, hy set deleted=true
-        // y gi nh soft delete qua BaseEntity
+        // Nếu entity Blog có hỗ trợ deleted, hãy set deleted=true
+        // Ở đây giả định soft delete qua BaseEntity
         blog.setDeleted(true);
         blogRepository.save(blog);
     }
@@ -561,7 +561,7 @@ public class AdminService {
         }
     }
 
-    // ADMIN LY CHI TIT N HNG
+    // 🌟 ADMIN LẤY CHI TIẾT ĐƠN HÀNG
     @Transactional(readOnly = true)
     public OrderResponse getOrderDetailsForAdmin(Long orderId) {
         Order order = orderRepository.findByIdAndDeletedFalse(orderId)
@@ -569,7 +569,7 @@ public class AdminService {
         return convertToOrderResponse(order);
     }
 
-    // API T NG TNG HP D LIU BIU  (C LC THI GIAN NG)
+    // 🌟 API TỰ ĐỘNG TỔNG HỢP DỮ LIỆU BIỂU ĐỒ (CÓ LỌC THỜI GIAN ĐỘNG) 🌟
     @Transactional(readOnly = true)
     public java.util.Map<String, Object> getDashboardCharts(String period) {
         LocalDateTime now = LocalDateTime.now();
@@ -578,9 +578,9 @@ public class AdminService {
         java.util.Map<String, java.util.Map<String, Object>> timeStats = new java.util.LinkedHashMap<>();
         java.time.format.DateTimeFormatter dayFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
 
-        // 1. Dng khung thi gian (Trc X)
+        // 1. Dựng khung thời gian (Trục X)
         if ("today".equals(period)) {
-            startDate = now.toLocalDate().atStartOfDay(); // Ly t 00:00 sng nay
+            startDate = now.toLocalDate().atStartOfDay(); // Lấy từ 00:00 sáng nay
             for (int i = 0; i <= 23; i++) {
                 String label = String.format("%02d:00", i); // 00:00, 01:00... 23:00
                 java.util.Map<String, Object> data = new java.util.HashMap<>();
@@ -624,7 +624,7 @@ public class AdminService {
                 data.put("cancelled", 0);
                 timeStats.put(label, data);
             }
-        } else { // Mc nh l 6 thng
+        } else { // Mặc định là 6 tháng
             startDate = now.minusMonths(5).withDayOfMonth(1).toLocalDate().atStartOfDay();
             for (int i = 5; i >= 0; i--) {
                 LocalDateTime m = now.minusMonths(i);
@@ -638,7 +638,7 @@ public class AdminService {
             }
         }
 
-        // 2. Ly n hng v lp y data
+        // 2. Lấy đơn hàng và lấp đầy data
         List<Order> orders = orderRepository.findAll().stream()
                 .filter(o -> !o.isDeleted() && o.getCreatedAt() != null && !o.getCreatedAt().isBefore(startDate))
                 .collect(Collectors.toList());
@@ -657,13 +657,13 @@ public class AdminService {
 
             if (timeStats.containsKey(label)) {
                 java.util.Map<String, Object> data = timeStats.get(label);
-                // Cng tin
+                // Cộng tiền
                 if (order.getStatus() == OrderStatus.DELIVERED || order.getPaymentStatus() == PaymentStatus.SUCCESS) {
                     BigDecimal currentRev = (BigDecimal) data.get("revenue");
                     data.put("revenue",
                             currentRev.add(order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO));
                 }
-                // m trng thi
+                // Đếm trạng thái
                 if (order.getStatus() == OrderStatus.DELIVERED) {
                     data.put("delivered", (Integer) data.get("delivered") + 1);
                 } else if (order.getStatus() == OrderStatus.CANCELLED) {
@@ -671,7 +671,7 @@ public class AdminService {
                 }
             }
 
-            // m Hng
+            // Đếm Hãng
             if (order.getStatus() != OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCEL_REQUESTED) {
                 if (order.getItems() != null) {
                     for (OrderItem item : order.getItems()) {
@@ -700,7 +700,7 @@ public class AdminService {
         return response;
     }
 
-    // PIN TO TOP: y ln u bng (s dng thi gian m  cng sau s cng nh)
+    // PIN TO TOP: Đẩy lên đầu bảng (sử dụng thời gian âm để càng sau số càng nhỏ)
     @org.springframework.transaction.annotation.Transactional
     public void pinToTop(String entityType, Long id) {
         int newPriority = (int) -(System.currentTimeMillis() / 1000);

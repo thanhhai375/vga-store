@@ -82,7 +82,7 @@ const Profile = () => {
 };
 
 // ==========================================
-// 1. THNG TIN C NHN (INFO)
+// 1. THÔNG TIN CÁ NHÂN (INFO)
 // ==========================================
 const ProfileInfo = ({ user, dispatch }) => {
   const [formData, setFormData] = useState({
@@ -200,7 +200,7 @@ const ProfileInfo = ({ user, dispatch }) => {
 };
 
 // ==========================================
-// 2. S A CH (ADDRESS)
+// 2. SỔ ĐỊA CHỈ (ADDRESS)
 // ==========================================
 const ProfileAddress = () => {
   const [addresses, setAddresses] = useState([]);
@@ -327,7 +327,7 @@ const ProfileAddress = () => {
 };
 
 // ==========================================
-// 3. I MT KHU (PASSWORD)
+// 3. ĐỔI MẬT KHẨU (PASSWORD)
 // ==========================================
 const ProfilePassword = () => {
   const [formData, setFormData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });

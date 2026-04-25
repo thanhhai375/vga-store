@@ -26,9 +26,9 @@ public class DataSeeder {
 
         return args -> {
 
-            // KHNG xa reviews - y l d liu thc ca ngi dng!
+            // KHÔNG xóa reviews - đây là dữ liệu thực của người dùng!
 
-            // SA LI NH GI (G KHA NOT NULL CHO USER_ID)
+            // SỬA LỖI ĐÁNH GIÁ (GỠ KHÓA NOT NULL CHO USER_ID)
             try {
                 jdbcTemplate.execute("ALTER TABLE reviews ALTER COLUMN user_id DROP NOT NULL");
             } catch (Exception e) {
@@ -42,7 +42,7 @@ public class DataSeeder {
                 systemSettingRepository.save(SystemSetting.builder().settingKey("BANK_ACC_NAME").settingValue("CONG TY VGA STORE").description("Tên chủ tài khoản").build());
             }
 
-            // CH SEED nu bng TRNG
+            // ── CHỈ SEED nếu bảng TRỐNG ─────────────────────────────────────
             if (blogRepository.count() == 0) {
                 Blog b1 = new Blog();
                 b1.setTitle("Lo Dien Dong Card AMD Radeon RX 8000 Series Sap Ra Mat");

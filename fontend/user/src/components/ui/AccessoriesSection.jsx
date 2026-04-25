@@ -12,7 +12,7 @@ const removeAccents = (str) => {
 };
 
 // ==========================================
-// D LIU GI (MOCK DATA) CHNG CHY UI
+// DỮ LIỆU GIẢ (MOCK DATA) ĐỂ CHỐNG CHÁY UI
 // ==========================================
 const mockAccessories = [
     {
@@ -34,9 +34,9 @@ const AccessoriesSection = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        productService.getAll({ size: 200 }) // Load d r cho chc
+        productService.getAll({ size: 200 }) // Load dư rả cho chắc
             .then(data => {
-                // Qut thng minh: Tn c "Herculx" hoc SKU c "ACC" hoc Category c "phu kien"
+                // Quét thông minh: Tên có "Herculx" hoặc SKU có "ACC" hoặc Category có "phu kien"
                 const findRealAccessories = data.filter(p => {
                     const name = p.name ? p.name.toLowerCase() : '';
                     const sku = p.sku ? p.sku.toLowerCase() : '';
@@ -46,10 +46,10 @@ const AccessoriesSection = () => {
                 });
 
                 if (findRealAccessories.length > 0) {
-                    // C HNG THT TRONG DB -> Dng lun hng tht (ly max 2 ci)
+                    // CÓ HÀNG THẬT TRONG DB -> Dùng luôn hàng thật (lấy max 2 cái)
                     setAccessories(findRealAccessories.slice(0, 2));
                 } else {
-                    // NU TM CON MT KHNG THY -> Mi dng hng Fake ID 9998
+                    // NẾU TÌM ĐỎ CON MẮT KHÔNG THẤY -> Mới dùng hàng Fake ID 9998
                     setAccessories(mockAccessories);
                 }
             })

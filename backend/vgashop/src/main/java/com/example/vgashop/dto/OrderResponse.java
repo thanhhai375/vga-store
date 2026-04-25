@@ -9,28 +9,28 @@ import com.example.vgashop.entity.PaymentStatus;
 
 
 /**
-* DTO tr v thng tin chi tit ca mt n hng cho ngi dng xem.
-* Dng cho endpoint xem chi tit n hng v danh sch n hng.
+ * DTO trả về thông tin chi tiết của một đơn hàng cho người dùng xem.
+ * Dùng cho endpoint xem chi tiết đơn hàng và danh sách đơn hàng.
  */
 public class OrderResponse {
 
     private  Long orderId;
     private String orderCode;
-    private BigDecimal totalAmount; // tng tin n hng
-    private BigDecimal discountAmount; // s tin gim gi
-    private OrderStatus status; // trng thi n hng
-    private PaymentStatus paymentStatus; // trng thi thanh ton
-    private String shippingAddress; // a ch giao hng
+    private BigDecimal totalAmount; // tổng tiền đơn hàng
+    private BigDecimal discountAmount; // số tiền giảm giá 
+    private OrderStatus status; // trạng thái đơn hàng 
+    private PaymentStatus paymentStatus; // trạng thái thanh toán
+    private String shippingAddress; // địa chỉ giao hàng
     private String phone;
     private String note;
-    private LocalDateTime createdAt; // thi gian to n
-    private LocalDateTime confirmedAt; // thi gian xc nhn n
-    private LocalDateTime shippedAt; // thi gian giao
-    private LocalDateTime deliveredAt; // thi gian nhn
-    private List<OrderItemResponse> items; // danh sch sn phm trong n
-    private String fullName; // Thm tn ngi t
-    private String email; // Thm email ti khon t
-    private String paymentMethod; // Phng thc thanh ton
+    private LocalDateTime createdAt; // thời gian tạo đơn
+    private LocalDateTime confirmedAt; // thời gian xác nhận đơn
+    private LocalDateTime shippedAt; // thời gian giao
+    private LocalDateTime deliveredAt; // thời gian nhận 
+    private List<OrderItemResponse> items; // danh sách sản phẩm trong đơn
+    private String fullName; // Thêm tên người đặt
+    private String email; // Thêm email tài khoản đặt
+    private String paymentMethod; // Phương thức thanh toán
 
     // constructor
     public OrderResponse() {}

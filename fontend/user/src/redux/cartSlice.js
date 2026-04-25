@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import cartService from '../services/cartService';
 import { toastError } from '../utils/alertUtils';
 
-// Thunk: Load gi hng t DB
+// Thunk: Load giỏ hàng từ DB
 export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { getState }) => {
   const state = getState();
   if (!state.auth?.isAuthenticated) return null;
@@ -10,7 +10,7 @@ export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { getState
   return res?.items || res?.data?.items || [];
 });
 
-// Thunk: Thm vo gi
+// Thunk: Thêm vào giỏ
 export const addToCartDb = createAsyncThunk('cart/addToCartDb', async ({ product, quantity }, { dispatch, getState, rejectWithValue }) => {
   const state = getState();
   if (state.auth?.isAuthenticated) {
@@ -27,16 +27,16 @@ export const addToCartDb = createAsyncThunk('cart/addToCartDb', async ({ product
   return { product, quantity };
 });
 
-// Thunk: Cp nht s lng
+// Thunk: Cập nhật số lượng
 export const updateCartItemDb = createAsyncThunk('cart/updateCartItemDb', async ({ item, quantity }, { dispatch, getState }) => {
   const state = getState();
   if (state.auth?.isAuthenticated) {
     if (item.cartItemId) await cartService.updateItem(item.cartItemId, quantity);
     dispatch(fetchCart());
   } else {
-    // Nu local, decreaseCart/addToCart x l, nhng y c th cp nht trc tip, ta dng cch c
-    // Hoc x l n gin: nu quantity > hin ti => addToCart, else => decreaseCart (phc tp)
-    // Tt nht l dispatch gim hoc tng t component.
+    // Nếu local, decreaseCart/addToCart xử lý, nhưng ở đây có thể cập nhật trực tiếp, ta dùng cách cũ
+    // Hoặc xử lý đơn giản: nếu quantity > hiện tại => addToCart, else => decreaseCart (phức tạp)
+    // Tốt nhất là dispatch giảm hoặc tăng từ component.
   }
   return { item, quantity };
 });
@@ -52,7 +52,7 @@ export const removeCartItemDbAction = createAsyncThunk('cart/removeCartItemDbAct
   return item;
 });
 
-// Thunk: Checkout (X l xa gi)
+// Thunk: Checkout (Xử lý xóa giỏ)
 export const clearCartDb = createAsyncThunk('cart/clearCartDb', async (_, { dispatch, getState }) => {
   const state = getState();
   if (state.auth?.isAuthenticated) {
@@ -71,7 +71,7 @@ const initialState = {
 };
 
 const mapDbItemToLocal = (dbItem) => ({
-  cartItemId: dbItem.id, // Sa dbItem.cartItemId -> dbItem.id v Backend tr v l "id"
+  cartItemId: dbItem.id, // Sửa dbItem.cartItemId -> dbItem.id vì Backend trả về là "id"
   id: dbItem.productId,
   name: dbItem.productName,
   price: dbItem.price,
@@ -89,7 +89,7 @@ const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    // Cc thao tc local khi khng ng nhp
+    // Các thao tác local khi không đăng nhập
     addToCart(state, action) {
       const product = action.payload;
       const index = state.cartItems.findIndex(i => i.id === product.id);
@@ -121,7 +121,7 @@ const cartSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    // X l fetchCart
+    // Xử lý fetchCart
     builder.addCase(fetchCart.pending, (state) => { state.loading = true; });
     builder.addCase(fetchCart.fulfilled, (state, action) => {
       state.loading = false;
@@ -132,7 +132,7 @@ const cartSlice = createSlice({
     });
     builder.addCase(fetchCart.rejected, (state) => { state.loading = false; });
 
-    // X l bo li nu add API throw error
+    // Xử lý báo lỗi nếu add API throw error
     builder.addCase(addToCartDb.rejected, (state, action) => {
       toastError(action.payload || 'Lỗi hệ thống khi thêm sản phẩm vào giỏ!');
     });

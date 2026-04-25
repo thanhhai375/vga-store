@@ -26,7 +26,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByUsernameAndDeletedFalse(String username);
 
-    // Tm kim theo username hoc email
+    // Tìm kiếm theo username hoặc email
     Page<User> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(String username, String email, Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE u.deleted = false " +
@@ -34,6 +34,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
            "AND (:role IS NULL OR u.role = :role)")
     Page<User> searchActiveUsers(@Param("search") String search, @Param("role") Role role, Pageable pageable);
 
-    // Admin dashboard statistics
+    // phần admin dashboard
     Long countByDeletedFalse();
 }

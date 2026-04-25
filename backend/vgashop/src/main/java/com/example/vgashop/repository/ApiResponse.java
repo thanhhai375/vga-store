@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-// wapper thng nht cho tt c response API
+// wapper thống nhất cho tất cả response API
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
 
@@ -16,12 +16,12 @@ public class ApiResponse<T> {
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern= "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;
 
-    // constuctor mc inhk
+    // constuctor mặc đinhk
     public ApiResponse() {
         this.timestamp = LocalDateTime.now();
     }
 
-    // constutor c tham s, dng nhiu
+    // constutor có tham số, dùng nhiều
     public ApiResponse(boolean success, String message, T data) {
         this.success = success;
         this.message = message;

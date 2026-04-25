@@ -29,34 +29,34 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    // ly gi ca ti, nu cha c th to mi
+    // lấy giỏ của tôi, nếu chưa có thì tạo mới
     @GetMapping
     public ApiResponse<CartResponse> getMyCart() {
         CartResponse response = cartService.getMyCart();
         return ApiResponse.success("Lấy giỏ hành thành công", response);
     }
-    // c th thm cc endpoint khc nh thm item vo gi, sa s lng item trong gi, xa item khi gi, xa gi hng,... ty theo nhu cu ca frontend
-    // thm sn phm vo gi hng
+    // có thể thêm các endpoint khác như thêm item vào giỏ, sửa số lượng item trong giỏ, xóa item khỏi giỏ, xóa giỏ hàng,... tùy theo nhu cầu của frontend
+    // thêm sản phẩm vào giỏ hàng
     @PostMapping("/add")
     public ApiResponse<CartResponse> addToCart(@Valid @RequestBody AddToCartRequest request) {
         CartResponse response = cartService.addToCart(request);
         return ApiResponse.success("Thêm vào giỏ hàng thành công", response);
     }
 
-    // cp nht s lng ca item trong gi hng
+    // cập nhật số lượng của item trong giỏ hàng
     @PutMapping("/items/{cartItemId}")
     public ApiResponse<CartResponse> updateCartItem(@PathVariable Long cartItemId, @Valid @RequestBody UpdateCartItemRequest request) {
         CartResponse response = cartService.updateCartItem(cartItemId, request);
         return ApiResponse.success("Cập nhật số lượng thành công", response);
     }
-    // xa gi hng (c th xa hn hoc nh du l  xa, ty cch x l ca service)
+    // xóa giỏ hàng (có thể xóa hẳn hoặc đánh dấu là đã xóa, tùy cách xử lý của service)
     @DeleteMapping("/items/{cartItemId}")
     public ApiResponse<CartResponse> removeCartItem(@PathVariable Long cartItemId) {
         CartResponse cart = cartService.removeCartItem(cartItemId);
         return ApiResponse.success("Xóa item thành công", cart);
     }
 
-    // xa ton b
+    // xóa toàn bộ 
     @DeleteMapping
     public ApiResponse<Void> clearCart() {
         cartService.clearCart();

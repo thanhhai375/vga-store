@@ -15,20 +15,20 @@ public class SystemSettingController {
 
     private final SystemSettingService settingService;
 
-    // API Public cho Client ly thng tin thanh ton (Khng cn auth)
+    // API Public cho Client lấy thông tin thanh toán (Không cần auth)
     @GetMapping("/settings/public")
     public ResponseEntity<Map<String, String>> getPublicSettings() {
         return ResponseEntity.ok(settingService.getAllSettings());
     }
 
-    // API Admin ly cu hnh hin ti
+    // API Admin lấy cấu hình hiện tại
     @GetMapping("/admin/settings")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Map<String, String>> getAdminSettings() {
         return ResponseEntity.ok(settingService.getAllSettings());
     }
 
-    // API Admin lu cu hnh
+    // API Admin lưu cấu hình
     @PutMapping("/admin/settings")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> updateSettings(@RequestBody Map<String, String> settings) {

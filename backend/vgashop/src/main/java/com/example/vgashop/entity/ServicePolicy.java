@@ -20,7 +20,7 @@ public class ServicePolicy {
     private String id; // e.g. "bao-hanh", "thanh-toan"
 
     @Column(nullable = false, length = 100)
-    private String label; // Tn hin th trn menu
+    private String label; // Tên hiển thị trên menu
 
     @Column(nullable = false, length = 200)
     private String title;

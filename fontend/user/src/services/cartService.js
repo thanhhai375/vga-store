@@ -1,7 +1,7 @@
 import axiosClient from '../api/axiosClient';
 
 const cartService = {
-  // Ly gi hng t DB (to mi nu cha c)
+  // Lấy giỏ hàng từ DB (tạo mới nếu chưa có)
   getCart: async () => {
     try {
       const res = await axiosClient.get('/cart');
@@ -12,7 +12,7 @@ const cartService = {
     }
   },
 
-  // Thm sn phm vo gi
+  // Thêm sản phẩm vào giỏ
   addItem: async (productId, quantity = 1) => {
     try {
       const res = await axiosClient.post('/cart/add', { productId, quantity });
@@ -23,7 +23,7 @@ const cartService = {
     }
   },
 
-  // Cp nht s lng 1 item
+  // Cập nhật số lượng 1 item
   updateItem: async (cartItemId, quantity) => {
     try {
       const res = await axiosClient.put(`/cart/items/${cartItemId}`, { quantity });
@@ -34,7 +34,7 @@ const cartService = {
     }
   },
 
-  // Xa 1 item khi gi
+  // Xóa 1 item khỏi giỏ
   removeItem: async (cartItemId) => {
     try {
       const res = await axiosClient.delete(`/cart/items/${cartItemId}`);
@@ -45,7 +45,7 @@ const cartService = {
     }
   },
 
-  // Xa ton b gi
+  // Xóa toàn bộ giỏ
   clearCart: async () => {
     try {
       await axiosClient.delete('/cart');

@@ -3,10 +3,10 @@ package com.example.vgashop.exception;
 
 
 /*
-dng khi:
-Category name  tn ti
-Brand name  tn ti
-Product SKU  tn ti
+dùng khi:
+Category name đã tồn tại
+Brand name đã tồn tại
+Product SKU đã tồn tại
 */
 public class DuplicateResourceException extends RuntimeException {
 

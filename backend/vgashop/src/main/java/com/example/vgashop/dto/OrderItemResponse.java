@@ -2,7 +2,7 @@ package com.example.vgashop.dto;
 
 import java.math.BigDecimal;
 
-// chi tit tng sn phm trong n hng
+// chi tiết từng sản phẩm trong đơn hàng 
 public class OrderItemResponse {
 
     private Long productId;

@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-    baseURL: 'http:// localhost:8080/api', // ng link gc ca Backend
+    baseURL: 'http://localhost:8080/api', // Đường link gốc của Backend
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Thm interceptor t ng nht token vo header nu ng nhp
+// Thêm interceptor để tự động nhét token vào header nếu đã đăng nhập
 axiosClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -21,21 +21,21 @@ axiosClient.interceptors.request.use(
   }
 );
 
-// Thm interceptor x l data tr v cho gn
+// Thêm interceptor để xử lý data trả về cho gọn
 axiosClient.interceptors.response.use(
     (response) => {
         if (response && response.data) {
-             // Tu theo API c bc ApiResponse khng
+             // Tuỳ theo API có bọc ApiResponse không
              return (response.data.success !== undefined) ? response.data : response.data;
         }
         return response;
     },
     (error) => {
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            // Xa session rt/ht hn trnh b kt 403 vnh vin
+            // Xóa session rớt/hết hạn để tránh bị kẹt 403 vĩnh viễn
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            // Ti li trang xa sch state Redux
+            // Tải lại trang để xóa sạch state Redux
             if(window.location.pathname !== '/login' && window.location.pathname !== '/') {
                  window.location.reload();
             }

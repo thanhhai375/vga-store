@@ -57,7 +57,7 @@ public class ProductController {
         return ApiResponse.success("Lấy danh sách sản phẩm thành công", data);
     }
 
-    // tm kim
+    // tìm kiếm
     @GetMapping("/search")
     public ApiResponse<Page<Product>> search(
         @RequestParam String keyWord,
@@ -68,13 +68,13 @@ public class ProductController {
         return ApiResponse.success("Tìm kiếm sản phẩm thành công", data);
     }
 
-    // lc brand
+    // lọc brand
     public Page<Product> filterBrand(@RequestParam String brand) {
         return productService.filterByBrand(brand);
     }
 
-    // tm kim v lc
-    // Lc sn phm y  (tm kim + brand + khong gi)
+    // tìm kiếm và lọc
+    // Lọc sản phẩm đầy đủ (tìm kiếm + brand + khoảng giá)
     @GetMapping("/filter")
     public ApiResponse<Page<Product>> filter(
         @RequestParam(required = false) String keyWord,
@@ -92,7 +92,7 @@ public class ProductController {
         return ApiResponse.success("Lọc sản phẩm thành công", data);
     }
 
-    // filter y
+    // filter đầy đủ
     // @GetMapping("/filter")
     // public Page<Product> filter(
 
@@ -121,14 +121,14 @@ public class ProductController {
     //     return productService.filterProducts(keyWord, brandIds, minPrice, maxPrice, page, size, sortBy, direction);
     // }
 
-    // Ly 1 sn phm theo ID
+    // Lấy 1 sản phẩm theo ID
     @GetMapping("/{id}")
    public ApiResponse<Product> getById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
         return ApiResponse.success("Lấy sản phẩm thành công", product);
     }
 
-    // to mi
+    // tạo mới
     // @PostMapping
     // public Product create(@RequestBody Product product) {
     //     return productService.creatProduct(product);
@@ -141,7 +141,7 @@ public class ProductController {
         return ApiResponse.success("Tạo sản phẩm thành công", saved);
     }
 
-    // cp nht
+    // cập nhật
     // @PutMapping("/{id}")
     // public Product update(@PathVariable Long id, @RequestBody Product product) {
     //     return productService.updateProduct(id, product);
@@ -155,21 +155,21 @@ public class ProductController {
         return ApiResponse.success("Cập nhật sản phẩm thành công", updated);
     }
 
-    // xa
+    // xóa
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ApiResponse.message("Xóa sản phẩm thành công");
     }
 
-    // upload nh + to sn phm
+    // upload ảnh + tạo sản phẩm
     @PostMapping("/upload") 
     public ApiResponse<Product> createWithImage(@Valid @ModelAttribute ProductImageDTO dto) {
         Product saved = productService.createProductWithImage(dto);
         return ApiResponse.success("Tạo sản phẩm kèm ảnh thành công", saved);
     }
 
-    // CONVERT DTO  ENTITY
+    // CONVERT DTO → ENTITY
     private Product convertDtoToEntity(ProductDTO dto) {
         Product product = new Product();
         product.setName(dto.getName());

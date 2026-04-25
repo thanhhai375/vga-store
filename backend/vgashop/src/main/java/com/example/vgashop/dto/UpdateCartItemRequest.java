@@ -3,14 +3,14 @@ package com.example.vgashop.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-// dng khi cn sa s lng ca item trong gi hng, c th thm cc trng khc nu cn
+// dùng khi cần sửa số lượng của item trong giỏ hàng, có thể thêm các trường khác nếu cần
 public class UpdateCartItemRequest {
 
     @NotNull(message= "Số lượng không được để trống")
     @Min(value = 1, message= "Số lượng phải lớn hơn hoặc bằng 1")
     private Integer quantity;
 
-    // constructor mc nh
+    // constructor mặc định
     public UpdateCartItemRequest() {}
 
     public UpdateCartItemRequest(Integer quantity) {

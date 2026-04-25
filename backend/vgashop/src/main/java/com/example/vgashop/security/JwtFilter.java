@@ -30,14 +30,14 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7); // b "Bearer "
+            String token = authHeader.substring(7); // bỏ "Bearer "
 
             try {
                 if (jwtUtil.validateToken(token)) {
                     String username = jwtUtil.extractUsername(token);
                     String role = jwtUtil.extractRole(token);
 
-                    // to Authentication object v set vo SecurityContext
+                    // tạo Authentication object và set vào SecurityContext
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         username,
                         null,
@@ -47,7 +47,7 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             } catch (Exception e) {
-                // Token kh hp l -> khng set authentication,  Spring Security t ng tr v 401
+                // Token kh hợp lệ -> không set authentication, để Spring Security tự động trả về 401
                 SecurityContextHolder.clearContext();
             }
         }

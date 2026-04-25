@@ -11,25 +11,25 @@ import com.example.vgashop.entity.Brand;
 
 public interface  BrandRepository extends JpaRepository<Brand, Long> {
 
-    // Search by name
+    // tìm kiếm theo tên
     Page<Brand> findByNameContaining(String keyWord, Pageable pageable);
 
-    // Kim tra brand tn ti theo tn (khng phn bit hoa thng) - dng cho validation
+    // Kiểm tra brand tồn tại theo tên (không phân biệt hoa thường) - dùng cho validation
     boolean existsByNameIgnoreCase(String name);
 
-    // Lc theo status
+    // Lọc theo status
     Page<Brand> findByStatus(Boolean status, Pageable pageable);
 
-    // Lc theo tn cha + status
+    // Lọc theo tên chứa + status
     Page<Brand> findByNameContainingIgnoreCaseAndStatus(String keyword, Boolean status, Pageable pageable);
 
-    // Retrieve all non-deleted records
+    // Lấy tất cả chưa bị xóa
     Page<Brand> findByDeletedFalse(Pageable pageable);
 
-    // Retrieve by ID (non-deleted only)
-    // (dng trong getById v update)
+    // Lấy theo ID và chưa bị xóa
+    // (dùng trong getById và update)
     Optional<Brand> findByIdAndDeleted(Long id, boolean deleted);
 
-    // Check existence (non-deleted only)
+    // Kiểm tra tồn tại và chưa bị xóa
     boolean existsByIdAndDeleted(Long id, boolean deleted);
 }
