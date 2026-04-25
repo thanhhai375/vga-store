@@ -5,6 +5,7 @@ import com.example.vgashop.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -20,13 +21,19 @@ public class DataSeeder {
             BlogRepository blogRepository,
             ReviewRepository reviewRepository,
             ServicePolicyRepository servicePolicyRepository,
-            SystemSettingRepository systemSettingRepository) {
+            SystemSettingRepository systemSettingRepository,
+            JdbcTemplate jdbcTemplate) {
 
         return args -> {
 
-            // Xóa dữ liệu rác cũ
-            reviewRepository.deleteAll();
-            blogRepository.deleteAll();
+            // KHÔNG xóa reviews - đây là dữ liệu thực của người dùng!
+
+            // SỬA LỖI ĐÁNH GIÁ (GỠ KHÓA NOT NULL CHO USER_ID)
+            try {
+                jdbcTemplate.execute("ALTER TABLE reviews ALTER COLUMN user_id DROP NOT NULL");
+            } catch (Exception e) {
+                System.out.println("Cột user_id trong reviews đã cho phép Null hoặc CSDL không hỗ trợ lệnh này.");
+            }
 
             // Seed Settings
             if (systemSettingRepository.count() == 0) {

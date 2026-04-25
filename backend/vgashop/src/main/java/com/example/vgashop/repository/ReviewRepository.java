@@ -10,4 +10,7 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByProductIdOrderByCreatedAtDesc(Long productId);
     List<Review> findByBlogIdOrderByCreatedAtDesc(Long blogId);
+    
+    // Kiểm tra xem user đã review sản phẩm này chưa
+    boolean existsByUser_IdAndProduct_Id(Long userId, Long productId);
 }

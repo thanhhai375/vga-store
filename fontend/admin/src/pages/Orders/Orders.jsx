@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import orderService from '../../services/orderService';
-import axiosClient from '../../api/axiosClient'; // Bắt buộc import để gọi API chi tiết
+import { toastSuccess, toastError, confirmAction } from '../../utils/alertUtils';
+import axiosClient from '../../api/axiosClient';
+import { markOrdersAsSeen, isOrderNew } from '../../utils/orderNewUtils';
 import './Orders.css';
 
 const STATUS_MAP = {
@@ -29,34 +32,44 @@ const Orders = () => {
     setLoading(true);
     try {
       const res = await orderService.getAll({ page, size: SIZE, status: filter || undefined });
-      const data = res.data || res;
-      if (data.content) {
-        setOrders(data.content);
-        setTotal(data.totalPages || 1);
-      } else if (Array.isArray(data)) {
-        setOrders(data);
-        setTotal(1);
-      }
+      // axiosClient interceptor: nếu có ApiResponse wrapper thì data nằm ở res.data
+      const raw = res?.data?.data || res?.data || res;
+      const list = Array.isArray(raw) ? raw : (raw.content || []);
+      const totalPg = raw.totalPages || (Array.isArray(raw) ? 1 : 1);
+      setOrders(list);
+      setTotal(totalPg);
+      // ✅ Mark tất cả đơn hiện tại là đã xem khi admin vào trang Orders
+      markOrdersAsSeen(list.map(o => o.orderId || o.id));
     } catch { setOrders([]); }
     finally { setLoading(false); }
   };
 
+  const location = useLocation();
+
   useEffect(() => { fetchOrders(); }, [page, filter]);
+
+  useEffect(() => {
+    if (location.state?.openOrderId) {
+      viewOrderDetails(location.state.openOrderId);
+      window.history.replaceState({}, document.title); // Xóa state để không tự mở lại khi F5
+    }
+  }, [location.state?.openOrderId]);
 
   const handleStatusChange = async (id, status) => {
     if (status === 'CANCELLED') {
-      if (!window.confirm('Duyệt HỦY đơn hàng này? Số lượng sản phẩm sẽ được tự động hoàn về kho.')) return;
-    }
-    if (status === 'PENDING') {
-      if (!window.confirm('Từ chối yêu cầu hủy? Đơn hàng sẽ quay về trạng thái Chờ xử lý.')) return;
+      const isConfirmed = await confirmAction('Hủy đơn hàng?', 'Duyệt HỦY đơn hàng này? Số lượng sản phẩm sẽ được tự động hoàn về kho.');
+      if (!isConfirmed) return;
+    } else if (status === 'PENDING') {
+      const isConfirmed = await confirmAction('Từ chối Hủy?', 'Từ chối yêu cầu hủy? Đơn hàng sẽ quay về trạng thái Chờ xử lý.');
+      if (!isConfirmed) return;
     }
 
     try {
       await orderService.updateStatus(id, status);
-      if (status === 'CANCELLED') alert('Đã duyệt Hủy đơn hàng và hoàn kho!');
+      if (status === 'CANCELLED') toastSuccess('Đã duyệt Hủy đơn hàng và hoàn kho!');
       fetchOrders();
       if (isModalOpen) setIsModalOpen(false);
-    } catch { alert('Cập nhật thất bại!'); }
+    } catch { toastError('Cập nhật thất bại!'); }
   };
 
   // 🌟 HÀM MỞ POPUP VÀ TẢI CHI TIẾT
@@ -68,7 +81,7 @@ const Orders = () => {
       const data = res.data?.data || res.data || res;
       setSelectedOrder(data);
     } catch (err) {
-      alert("Không thể tải chi tiết đơn hàng");
+      toastError("Không thể tải chi tiết đơn hàng");
       setIsModalOpen(false);
     }
   };
@@ -111,9 +124,17 @@ const Orders = () => {
                   <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Không có đơn hàng</td></tr>
                 ) : orders.map(o => {
                   const st = STATUS_MAP[o.status] || { label: o.status, cls: 'badge-secondary' };
+                  const orderIsNew = isOrderNew(o.orderId || o.id);
                   return (
-                    <tr key={o.orderId || o.id} onClick={() => viewOrderDetails(o.orderId || o.id)} style={{ cursor: 'pointer' }}>
-                      <td><strong style={{ color: '#2563eb' }}>{o.orderCode || `#${o.orderId}`}</strong></td>
+                    <tr key={o.orderId || o.id}
+                      onClick={() => viewOrderDetails(o.orderId || o.id)}
+                      style={{ cursor: 'pointer' }}
+                      className={orderIsNew ? 'row-new-order' : ''}
+                    >
+                      <td>
+                        <strong style={{ color: '#2563eb' }}>{o.orderCode || `#${o.orderId}`}</strong>
+                        {orderIsNew && <span className="badge-new">MỚI</span>}
+                      </td>
                       <td>{o.fullName || o.user?.username || '--'}</td>
                       <td>{o.phone || o.phoneNumber || '--'}</td>
                       <td>{o.totalAmount ? `${Number(o.totalAmount).toLocaleString('vi-VN')}đ` : '--'}</td>
@@ -152,7 +173,91 @@ const Orders = () => {
             <div className="admin-modal-box" onClick={e => e.stopPropagation()}>
               <div className="admin-modal-header">
                 <h3>Chi tiết đơn hàng {selectedOrder.orderCode ? `#${selectedOrder.orderCode}` : ''}</h3>
-                <button className="close-btn" onClick={() => setIsModalOpen(false)}>✕</button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <button 
+                    onClick={() => {
+                      const maskPhone = (p) => p && p.length >= 8 ? p.substring(0, 3) + '****' + p.substring(p.length - 3) : 'N/A';
+                      const maskEmail = (e) => {
+                        if (!e || e === 'Không có' || e === 'Khách Vãng Lai' || !e.includes('@')) return 'N/A';
+                        const [name, domain] = e.split('@');
+                        if (name.length <= 3) return `${name[0]}***@${domain}`;
+                        return `${name.substring(0, 2)}***${name.substring(name.length - 1)}@${domain}`;
+                      };
+
+                      const printWindow = window.open('', '_blank');
+                      printWindow.document.write(`
+                        <html>
+                          <head>
+                            <title>In đơn hàng ${selectedOrder.orderCode || selectedOrder.orderId}</title>
+                            <style>
+                              body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+                              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+                              .header h2 { margin: 0; font-size: 24px; text-transform: uppercase; }
+                              .header p { margin: 5px 0; font-size: 14px; color: #666; }
+                              .info-section { margin-bottom: 20px; }
+                              .info-section p { margin: 5px 0; font-size: 14px; }
+                              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                              th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
+                              th { background-color: #f8fafc; font-weight: bold; text-transform: uppercase; }
+                              .total-section { margin-top: 20px; text-align: right; font-size: 18px; font-weight: bold; }
+                              .note-section { margin-top: 30px; padding: 15px; border: 1px dashed #ccc; background: #fafafa; font-size: 14px; }
+                            </style>
+                          </head>
+                          <body onload="window.print();window.close()">
+                            <div class="header">
+                              <h2>VGA STORE - PHIẾU GIAO HÀNG</h2>
+                              <p>Ngày in: ${new Date().toLocaleString('vi-VN')}</p>
+                            </div>
+                            <div class="info-section">
+                              <p><strong>Mã đơn hàng:</strong> ${selectedOrder.orderCode || '#' + selectedOrder.orderId}</p>
+                              <p><strong>Người nhận:</strong> ${selectedOrder.fullName || 'Khách hàng'}</p>
+                              <p><strong>Số điện thoại:</strong> ${maskPhone(selectedOrder.phone)}</p>
+                              <p><strong>Địa chỉ giao hàng:</strong> ${selectedOrder.shippingAddress || 'N/A'}</p>
+                              <p><strong>Email Tài khoản:</strong> ${maskEmail(selectedOrder.email)}</p>
+                            </div>
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>STT</th>
+                                  <th>Sản phẩm</th>
+                                  <th style="text-align: center;">SL</th>
+                                  <th style="text-align: right;">Đơn giá</th>
+                                  <th style="text-align: right;">Thành tiền</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                ${selectedOrder.items?.map((item, idx) => `
+                                  <tr>
+                                    <td style="text-align: center;">${idx + 1}</td>
+                                    <td>${item.productName || item.name}</td>
+                                    <td style="text-align: center;">${item.quantity || item.cartQuantity || 1}</td>
+                                    <td style="text-align: right;">${Number(item.price).toLocaleString('vi-VN')}đ</td>
+                                    <td style="text-align: right;">${Number(item.price * (item.quantity || item.cartQuantity || 1)).toLocaleString('vi-VN')}đ</td>
+                                  </tr>
+                                `).join('')}
+                              </tbody>
+                            </table>
+                            <div class="total-section">
+                              TỔNG THANH TOÁN: ${Number(selectedOrder.totalAmount).toLocaleString('vi-VN')}đ
+                            </div>
+                            ${selectedOrder.note && !selectedOrder.note.includes('[LÝ DO HỦY]') ? `
+                            <div class="note-section">
+                              <strong>Ghi chú của khách hàng:</strong><br/>
+                              ${selectedOrder.note}
+                            </div>
+                            ` : ''}
+                          </body>
+                        </html>
+                      `);
+                      printWindow.document.close();
+                    }} 
+                    className="btn-print" 
+                    title="In phiếu giao hàng"
+                  >
+                    🖨️ In Đơn
+                  </button>
+                  <button className="close-btn" style={{ padding: '4px', fontSize: '20px' }} onClick={() => setIsModalOpen(false)}>✕</button>
+                </div>
               </div>
 
               <div className="admin-modal-body">
@@ -172,7 +277,21 @@ const Orders = () => {
                         <h4>Thông tin Khách hàng</h4>
                         <p><strong>Tên:</strong> {selectedOrder.fullName || 'N/A'}</p>
                         <p><strong>SĐT:</strong> {selectedOrder.phone || 'N/A'}</p>
+                        <p><strong>Email Tài Khoản:</strong> {selectedOrder.email || 'Khách Vãng Lai'}</p>
                         <p><strong>Địa chỉ:</strong> {selectedOrder.shippingAddress || 'N/A'}</p>
+                        <p><strong>Thanh toán:</strong>{' '}
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '2px 10px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            background: selectedOrder.paymentMethod === 'COD' ? '#fef3c7' : selectedOrder.paymentMethod === 'VNPAY' ? '#dbeafe' : selectedOrder.paymentMethod === 'MOMO' ? '#fce7f3' : '#f3f4f6',
+                            color: selectedOrder.paymentMethod === 'COD' ? '#92400e' : selectedOrder.paymentMethod === 'VNPAY' ? '#1e40af' : selectedOrder.paymentMethod === 'MOMO' ? '#9d174d' : '#374151',
+                          }}>
+                            {selectedOrder.paymentMethod === 'COD' ? '💵 Tiền mặt (COD)' : selectedOrder.paymentMethod === 'VNPAY' ? '🏦 VNPay' : selectedOrder.paymentMethod === 'MOMO' ? '💜 MoMo' : selectedOrder.paymentMethod || 'Chưa rõ'}
+                          </span>
+                        </p>
                         {selectedOrder.note && !selectedOrder.note.includes('[LÝ DO HỦY]') && (
                           <p><strong>Ghi chú:</strong> {selectedOrder.note}</p>
                         )}

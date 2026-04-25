@@ -42,8 +42,10 @@ public class CategoryController {
     )  {
         Sort sort = direction.equalsIgnoreCase("desc")
              ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+             
+         Sort finalSort = Sort.by(Sort.Direction.ASC, "displayOrder").and(sort);
 
-         PageRequest pageable = PageRequest.of(page, size, sort);
+         PageRequest pageable = PageRequest.of(page, size, finalSort);
          Page<Category> data = categoryService.getAllCategories(pageable);
 
          return ApiResponse.success("Lấy danh sách danh mục thành công!", data);
@@ -57,7 +59,9 @@ public class CategoryController {
         @RequestParam(defaultValue= "10")
         int size
     ) {
-        Page<Category> data =  categoryService.getActiveCategories(PageRequest.of(page, size));
+        Page<Category> data =  categoryService.getActiveCategories(
+            PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by(Sort.Direction.ASC, "id")))
+        );
         return ApiResponse.success("Lấy danh mục đang active thành công", data);
     }
 

@@ -28,6 +28,9 @@ public class OrderResponse {
     private LocalDateTime shippedAt; // thời gian giao
     private LocalDateTime deliveredAt; // thời gian nhận 
     private List<OrderItemResponse> items; // danh sách sản phẩm trong đơn
+    private String fullName; // Thêm tên người đặt
+    private String email; // Thêm email tài khoản đặt
+    private String paymentMethod; // Phương thức thanh toán
 
     // constructor
     public OrderResponse() {}
@@ -50,6 +53,41 @@ public class OrderResponse {
         this.shippedAt = shippedAt;
         this.deliveredAt = deliveredAt;
         this.items = items;
+    }
+
+    public OrderResponse(Long orderId, String orderCode, BigDecimal totalAmount, BigDecimal discountAmount,
+            OrderStatus status, PaymentStatus paymentStatus, String shippingAddress, String phone, String note,
+            LocalDateTime createdAt, LocalDateTime confirmedAt, LocalDateTime shippedAt, LocalDateTime deliveredAt,
+            List<OrderItemResponse> items, String fullName, String email, String paymentMethod) {
+        this(orderId, orderCode, totalAmount, discountAmount, status, paymentStatus, shippingAddress, phone, note,
+                createdAt, confirmedAt, shippedAt, deliveredAt, items);
+        this.fullName = fullName;
+        this.email = email;
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     // getter setter

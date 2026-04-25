@@ -70,4 +70,10 @@ public interface  ProductRepository extends JpaRepository<Product, Long> {
     Long countLowStock(@Param("threshold") int threshold);
 
     Optional<Product> findByIdAndDeletedFalse(Long id);
+
+    // Lấy danh sách sản phẩm user đã nhận nhưng chưa đánh giá
+    @Query("SELECT DISTINCT p FROM Product p JOIN p.orderItems oi JOIN oi.order o " +
+           "WHERE o.user.id = :userId AND o.status = 'DELIVERED' " +
+           "AND p.id NOT IN (SELECT r.product.id FROM Review r WHERE r.user.id = :userId)")
+    List<Product> findProductsPendingReview(@Param("userId") Long userId);
 }

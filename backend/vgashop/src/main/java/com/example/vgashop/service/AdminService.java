@@ -13,10 +13,13 @@ import com.example.vgashop.repository.OrderRepository;
 import com.example.vgashop.repository.PaymentRepository;
 import com.example.vgashop.repository.ProductRepository;
 import com.example.vgashop.repository.UserRepository;
+import com.example.vgashop.repository.BlogRepository;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // 🌟 Thêm dòng này
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +32,16 @@ import com.example.vgashop.dto.OrderStatusUpdateRequest;
 import com.example.vgashop.dto.OrderSummaryResponse;
 import com.example.vgashop.dto.ProductAdminResponse;
 import com.example.vgashop.dto.UserAdminResponse;
+import com.example.vgashop.dto.BlogDTO;
 import com.example.vgashop.entity.Category;
+import com.example.vgashop.entity.Role;
+import com.example.vgashop.entity.User;
+import com.example.vgashop.entity.Blog;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.util.Date;
 import com.example.vgashop.entity.Role;
 import com.example.vgashop.entity.User;
 import com.example.vgashop.exception.ResourceNotFoundException;
@@ -51,17 +63,19 @@ public class AdminService {
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
     private final PaymentRepository paymentRepository;
+    private final BlogRepository blogRepository;
 
     // Constructor injection
     public AdminService(BrandRepository brandRepository, CategoryRepository categoryRepository,
             OrderRepository orderRepository, PaymentRepository paymentRepository, ProductRepository productRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository, BlogRepository blogRepository) {
         this.brandRepository = brandRepository;
         this.categoryRepository = categoryRepository;
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.blogRepository = blogRepository;
     }
 
     // DASHBOARD (ĐÃ ĐƯỢC FIX LOGIC TÍNH DỮ LIỆU THẬT 100%)
@@ -120,12 +134,23 @@ public class AdminService {
 
     // quản lý người dùng
     @Transactional(readOnly = true)
-    public Page<UserAdminResponse> getAllUsers(int page, int size, String sortBy, String direction) {
-        log.info("Admin lấy danh sách user - page: {}, size: {}", page, size);
+    public Page<UserAdminResponse> getAllUsers(int page, int size, String sortBy, String direction, String search, String roleStr) {
+        log.info("Admin lấy danh sách user - search: {}, role: {}", search, roleStr);
 
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<User> users = userRepository.findByDeletedFalse(pageable);
+        
+        Role roleObj = null;
+        if (roleStr != null && !roleStr.trim().isEmpty()) {
+            try {
+                roleObj = Role.valueOf(roleStr.toUpperCase());
+            } catch (Exception e) {
+                log.warn("Lọc role không tồn tại: {}", roleStr);
+            }
+        }
+        
+        String querySearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+        Page<User> users = userRepository.searchActiveUsers(querySearch, roleObj, pageable);
 
         Page<UserAdminResponse> result = users.map(user -> new UserAdminResponse(
                 user.getId(),
@@ -141,6 +166,36 @@ public class AdminService {
 
         log.info("Trả về {} users cho Admin", result.getTotalElements());
         return result;
+    }
+
+    // Tạo user mới từ Admin
+    @Transactional
+    public UserAdminResponse createUser(com.example.vgashop.dto.UserDTO dto) {
+        log.info("Admin tạo user mới: {}", dto.getUsername());
+
+        if (userRepository.existsByUsername(dto.getUsername())) {
+            throw new com.example.vgashop.exception.DuplicateResourceException("Username đã tồn tại!");
+        }
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new com.example.vgashop.exception.DuplicateResourceException("Email đã tồn tại!");
+        }
+
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        user.setPassword(encoder.encode(dto.getPassword()));
+        
+        user.setFullName(dto.getFullName());
+        user.setRole(dto.getRole() != null ? Role.valueOf(dto.getRole().toUpperCase()) : Role.USER);
+        user.setStatus(true);
+
+        User saved = userRepository.save(user);
+        
+        return new UserAdminResponse(saved.getId(), saved.getUsername(), saved.getEmail(), 
+                                     saved.getFullName(), saved.getPhone(), saved.getRole(), 
+                                     saved.getStatus(), saved.isDeleted(), saved.getCreatedAt(), saved.getUpdatedAt());
     }
 
     // thay đổi role của user
@@ -176,17 +231,39 @@ public class AdminService {
         log.info("Đã thay đổi status userId={} thành {}", userId, newStatus);
     }
 
+    // Xóa mềm user
+    @Transactional
+    public void softDeleteUser(Long userId) {
+        log.info("Admin xóa mềm userId={}", userId);
+        User user = userRepository.findByIdAndDeleted(userId, false)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user với ID:" + userId));
+
+        user.setDeleted(true);
+        userRepository.save(user);
+        log.info("Đã xóa mềm (deleted=true) userId={}", userId);
+    }
+
     // Quản lý Order
     @Transactional(readOnly = true)
-    public Page<OrderSummaryResponse> getAllOrders(int page, int size, String sortBy, String direction) {
-        log.info("Admin lấy danh sách tất cả đơn hàng - page: {}", page);
+    public Page<OrderSummaryResponse> getAllOrders(int page, int size, String sortBy, String direction, String status) {
+        log.info("Admin lấy danh sách tất cả đơn hàng - page: {}, status: {}", page, status);
 
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Order> orders = orderRepository.findByDeletedFalse(pageable);
+
+        Page<Order> orders;
+        if (status != null && !status.isBlank()) {
+            try {
+                OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
+                orders = orderRepository.findByStatusAndDeletedFalse(orderStatus, pageable);
+            } catch (IllegalArgumentException e) {
+                orders = orderRepository.findByDeletedFalse(pageable);
+            }
+        } else {
+            orders = orderRepository.findByDeletedFalse(pageable);
+        }
 
         Page<OrderSummaryResponse> result = orders.map(this::convertToOrderSummary);
-
         log.info("Trả về {} đơn hàng cho Admin", result.getTotalElements());
         return result;
     }
@@ -218,7 +295,8 @@ public class AdminService {
     public Page<ProductAdminResponse> getAllProductForAdmin(int page, int size) {
         log.info("Admin lấy danh sách sản phẩm - page: {}", page);
 
-        Pageable pageable = PageRequest.of(page, size);
+        // Sắp xếp theo thứ tự hiển thị (displayOrder), sau đó đến ID
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by(Sort.Direction.ASC, "id")));
         Page<Product> products = productRepository.findByDeletedFalse(pageable);
 
         Page<ProductAdminResponse> result = products.map(p -> new ProductAdminResponse(
@@ -258,14 +336,14 @@ public class AdminService {
     @Transactional(readOnly = true)
     public Page<Category> getAllCategoriesForAdmin(int page, int size) {
         log.info("Admin lấy danh sách category - page: {}", page);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by(Sort.Direction.ASC, "id")));
         return categoryRepository.findByDeletedFalse(pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<Brand> getAllBrandsForAdmin(int page, int size) {
         log.info("Admin lấy danh sách brand - page: {}", page);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by(Sort.Direction.ASC, "id")));
         return brandRepository.findByDeletedFalse(pageable);
     }
 
@@ -302,6 +380,16 @@ public class AdminService {
                         item.getSubtotal()))
                 .collect(Collectors.toList());
 
+        String paymentMethodStr = "Chưa rõ";
+        try {
+            com.example.vgashop.entity.Payment payment = paymentRepository.findByOrder_IdAndDeletedFalse(order.getId()).orElse(null);
+            if (payment != null && payment.getPaymentMethod() != null) {
+                paymentMethodStr = payment.getPaymentMethod().name();
+            }
+        } catch (Exception e) {
+            log.warn("Không lấy được paymentMethod cho order {}: {}", order.getId(), e.getMessage());
+        }
+
         return new OrderResponse(
                 order.getId(),
                 order.getOrderCode(),
@@ -316,7 +404,11 @@ public class AdminService {
                 order.getConfirmedAt(),
                 order.getShippedAt(),
                 order.getDeliveredAt(),
-                itemResponses);
+                itemResponses,
+                order.getFullName() != null && !order.getFullName().trim().isEmpty() ? order.getFullName() : (order.getUser() != null ? order.getUser().getUsername() : "Khách ẩn danh"),
+                order.getUser() != null ? order.getUser().getEmail() : "Không có",
+                paymentMethodStr
+        );
     }
 
     // XÓA SẢN PHẨM (SOFT DELETE)
@@ -345,6 +437,28 @@ public class AdminService {
         return categoryRepository.save(category);
     }
 
+    @Transactional
+    public Category updateCategory(Long id, Category categoryReq) {
+        log.info("Admin cập nhật category ID: {}", id);
+        Category category = categoryRepository.findByIdAndDeleted(id, false)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục"));
+        
+        category.setName(categoryReq.getName());
+        category.setDescription(categoryReq.getDescription());
+        category.setActive(categoryReq.getActive());
+        return categoryRepository.save(category);
+    }
+
+    @Transactional
+    public void deleteCategory(Long id) {
+        log.info("Admin xóa category ID: {}", id);
+        Category category = categoryRepository.findByIdAndDeleted(id, false)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục"));
+        
+        category.setDeleted(true);
+        categoryRepository.save(category);
+    }
+
     // THÊM BRAND TỪ ADMIN
     @Transactional
     public Brand addBrand(Brand brand) {
@@ -355,6 +469,96 @@ public class AdminService {
         }
 
         return brandRepository.save(brand);
+    }
+
+    @Transactional
+    public Brand updateBrand(Long id, Brand brandReq) {
+        log.info("Admin cập nhật brand ID: {}", id);
+        Brand brand = brandRepository.findByIdAndDeleted(id, false)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thương hiệu"));
+        
+        brand.setName(brandReq.getName());
+        brand.setDescription(brandReq.getDescription());
+        brand.setStatus(brandReq.getStatus());
+        return brandRepository.save(brand);
+    }
+
+    @Transactional
+    public void deleteBrand(Long id) {
+        log.info("Admin xóa brand ID: {}", id);
+        Brand brand = brandRepository.findByIdAndDeleted(id, false)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thương hiệu"));
+        
+        brand.setDeleted(true);
+        brandRepository.save(brand);
+    }
+
+    // QUẢN LÝ BLOG
+    @Transactional
+    public Blog createBlog(BlogDTO dto, MultipartFile image) {
+        log.info("Admin thêm blog mới: {}", dto.getTitle());
+        Blog blog = new Blog();
+        blog.setTitle(dto.getTitle());
+        blog.setCategory(dto.getCategory());
+        blog.setExcerpt(dto.getExcerpt());
+        blog.setAuthor(dto.getAuthor() != null ? dto.getAuthor() : "Admin");
+        blog.setContent(dto.getContent());
+        blog.setPublishedDate(new Date());
+        
+        if (image != null && !image.isEmpty()) {
+            blog.setThumbnail(uploadBlogImage(image));
+        } else {
+            blog.setThumbnail("");
+        }
+
+        return blogRepository.save(blog);
+    }
+
+    @Transactional
+    public Blog updateBlog(Long id, BlogDTO dto, MultipartFile image) {
+        log.info("Admin cập nhật blog ID: {}", id);
+        Blog blog = blogRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài viết"));
+        
+        blog.setTitle(dto.getTitle());
+        blog.setCategory(dto.getCategory());
+        blog.setExcerpt(dto.getExcerpt());
+        if (dto.getAuthor() != null) blog.setAuthor(dto.getAuthor());
+        blog.setContent(dto.getContent());
+
+        if (image != null && !image.isEmpty()) {
+            blog.setThumbnail(uploadBlogImage(image));
+        }
+
+        return blogRepository.save(blog);
+    }
+
+    @Transactional
+    public void deleteBlog(Long id) {
+        log.info("Admin xóa blog ID: {}", id);
+        Blog blog = blogRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài viết"));
+        // Nếu entity Blog có hỗ trợ deleted, hãy set deleted=true
+        // Ở đây giả định soft delete qua BaseEntity
+        blog.setDeleted(true);
+        blogRepository.save(blog);
+    }
+
+    private String uploadBlogImage(MultipartFile file) {
+        try {
+            String uploadDir = "uploads/blogs/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            String originalFileName = file.getOriginalFilename();
+            String fileName = System.currentTimeMillis() + "_" + originalFileName;
+            Path filePath = uploadPath.resolve(fileName);
+            file.transferTo(filePath.toFile());
+            return "/uploads/blogs/" + fileName;
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể upload ảnh Blog: " + e.getMessage(), e);
+        }
     }
 
     // 🌟 ADMIN LẤY CHI TIẾT ĐƠN HÀNG
@@ -494,5 +698,39 @@ public class AdminService {
 
         response.put("brandData", brandDataList);
         return response;
+    }
+
+    // PIN TO TOP: Đẩy lên đầu bảng (sử dụng thời gian âm để càng sau số càng nhỏ)
+    @org.springframework.transaction.annotation.Transactional
+    public void pinToTop(String entityType, Long id) {
+        int newPriority = (int) -(System.currentTimeMillis() / 1000);
+        switch (entityType.toLowerCase()) {
+            case "product":
+                Product product = productRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm"));
+                product.setDisplayOrder(newPriority);
+                productRepository.save(product);
+                break;
+            case "blog":
+                Blog blog = blogRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài viết"));
+                blog.setDisplayOrder(newPriority);
+                blogRepository.save(blog);
+                break;
+            case "category":
+                Category category = categoryRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục"));
+                category.setDisplayOrder(newPriority);
+                categoryRepository.save(category);
+                break;
+            case "brand":
+                Brand brand = brandRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thương hiệu"));
+                brand.setDisplayOrder(newPriority);
+                brandRepository.save(brand);
+                break;
+            default:
+                throw new IllegalArgumentException("Loại thực thể không hợp lệ");
+        }
     }
 }

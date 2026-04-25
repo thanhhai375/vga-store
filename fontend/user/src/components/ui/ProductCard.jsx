@@ -40,8 +40,11 @@ const ProductCard = ({ product }) => {
   };
 
   const currentPrice = Number(product.price || 0);
-  const oldPrice = currentPrice * 1.1;
-  const discountPercent = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
+  const oldPrice = Number(product.oldPrice || 0);
+  let discountPercent = 0;
+  if (oldPrice > currentPrice) {
+    discountPercent = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
+  }
 
   // 1. LẤY LINK ẢNH THÔNG MINH (Bao trọn mọi trường hợp từ API Backend của bạn)
   const dbImageUrl =
@@ -51,9 +54,15 @@ const ProductCard = ({ product }) => {
     product.image ||
     (product.images && product.images.length > 0 && product.images[0]?.url);
 
+  // Xử lý thông minh: Nếu ảnh được Upload từ Backend Admin (/uploads/..), nối thêm tên miền của Backend
+  let formattedImageUrl = dbImageUrl;
+  if (dbImageUrl && dbImageUrl.startsWith('/uploads/')) {
+    formattedImageUrl = `http://localhost:8080${dbImageUrl}`;
+  }
+
   // 2. CHỐT HẠ: Dùng ảnh gốc cực xịn của Asus làm phòng hờ nếu DB lỗi
   const fallbackImage = '/images/products/gpu_original.png';
-  const finalImageUrl = (imgError || !dbImageUrl) ? fallbackImage : dbImageUrl;
+  const finalImageUrl = (imgError || !formattedImageUrl) ? fallbackImage : formattedImageUrl;
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
@@ -109,19 +118,26 @@ const ProductCard = ({ product }) => {
           <h3 className="card-name" title={product.name}>{product.name}</h3>
 
           <div className="card-price-area">
-            <div className="old-price-group">
-              <span className="old-price">{formatPrice(oldPrice)}</span>
-            </div>
+            {oldPrice > currentPrice && (
+              <div className="old-price-group">
+                <span className="old-price">{formatPrice(oldPrice)}</span>
+              </div>
+            )}
             <div className="new-price-group">
               <span className="new-price">{formatPrice(currentPrice)}</span>
-              <span className="discount-percent">-{discountPercent}%</span>
+              {discountPercent > 0 && <span className="discount-percent">-{discountPercent}%</span>}
             </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
             <div className="card-rating">
-              <span className="stars">⭐ 0.0</span>
-              <span className="review-count">(0 đánh giá)</span>
+              <span className="stars" style={{ color: '#fbbf24' }}>
+                {'⭐'.repeat(Math.max(1, Math.round(Number(product.averageRating || 5))))} 
+                <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>
+                  {(product.averageRating || 5.0).toFixed(1)}
+                </span>
+              </span>
+              <span className="review-count">({product.reviewCount || 0} đánh giá)</span>
             </div>
 
             <button

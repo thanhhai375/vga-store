@@ -321,3 +321,44 @@
   color: #3b82f6;
   background: rgba(59, 130, 246, 0.1);
 }
+
+/* ===== BADGE "MỚI" & ROW HIGHLIGHT ===== */
+.badge-new {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 7px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  animation: badgePop 0.4s ease;
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0.5); opacity: 0; }
+  80% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.row-new-order {
+  background: linear-gradient(90deg, #fffbeb 0%, #ffffff 100%) !important;
+  border-left: 3px solid #f59e0b !important;
+}
+
+.row-new-order td:first-child {
+  padding-left: 13px;
+}
+
+/* ===== NOTIFICATION BADGE PULSE ===== */
+.notification-badge--pulse {
+  animation: badgePulse 1.5s infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}

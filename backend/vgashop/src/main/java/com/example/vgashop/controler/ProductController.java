@@ -174,6 +174,7 @@ public class ProductController {
         Product product = new Product();
         product.setName(dto.getName());
         product.setPrice(dto.getPrice());
+        product.setOldPrice(dto.getOldPrice());
         product.setDescription(dto.getDescription());
         product.setStock(dto.getStock());
         product.setImgUrl(dto.getImgUrl());

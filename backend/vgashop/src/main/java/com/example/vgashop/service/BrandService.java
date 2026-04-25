@@ -32,15 +32,17 @@ public class BrandService {
     ) {
         Sort sort = direction.equalsIgnoreCase("desc")
         ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        
+        Sort finalSort = Sort.by(Sort.Direction.ASC, "displayOrder").and(sort);
 
-        PageRequest pageable = PageRequest.of(page, size, sort);
+        PageRequest pageable = PageRequest.of(page, size, finalSort);
 
         return brandRepository.findAll(pageable);
     }
 
     // lấy tất cả nhưng kh phân trang (dùng cho dropdown frontend)
     public List<Brand> getAllNoPage() {
-        return brandRepository.findAll(Sort.by("name").ascending());
+        return brandRepository.findAll(Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by("name").ascending()));
     }
 
     // lấy 1 brand theo id
@@ -73,8 +75,10 @@ public class BrandService {
 
         Sort sort = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+                
+        Sort finalSort = Sort.by(Sort.Direction.ASC, "displayOrder").and(sort);
 
-        PageRequest pageable = PageRequest.of(page, size, sort);
+        PageRequest pageable = PageRequest.of(page, size, finalSort);
         if (keyWord.isEmpty() && status == null) {
             return brandRepository.findAll(pageable);
         }

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import cartService from '../services/cartService';
+import { toastError } from '../utils/alertUtils';
 
 // Thunk: Load giỏ hàng từ DB
 export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { getState }) => {
@@ -133,7 +134,7 @@ const cartSlice = createSlice({
 
     // Xử lý báo lỗi nếu add API throw error
     builder.addCase(addToCartDb.rejected, (state, action) => {
-      alert(action.payload || 'Lỗi hệ thống khi thêm sản phẩm vào giỏ!');
+      toastError(action.payload || 'Lỗi hệ thống khi thêm sản phẩm vào giỏ!');
     });
   }
 });

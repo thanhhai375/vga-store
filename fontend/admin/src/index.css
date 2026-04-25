@@ -272,3 +272,8 @@ tr:hover td { background: var(--bg-hover); color: var(--text-primary); }
   flex-wrap: wrap;
 }
 
+/* ===== FIX SWEETALERT2 POPUP ===== */
+.swal2-container {
+  z-index: 99999 !important;
+}
+

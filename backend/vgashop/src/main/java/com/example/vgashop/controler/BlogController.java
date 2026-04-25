@@ -3,6 +3,7 @@ package com.example.vgashop.controler;
 import com.example.vgashop.entity.Blog;
 import com.example.vgashop.repository.BlogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,8 @@ public class BlogController {
 
     @GetMapping
     public ResponseEntity<List<Blog>> getAllBlogs() {
-        return ResponseEntity.ok(blogRepository.findAll());
+        // Sắp xếp theo thứ tự ưu tiên (displayOrder) sau đó mới đến ID
+        return ResponseEntity.ok(blogRepository.findAll(Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by(Sort.Direction.ASC, "id"))));
     }
 
     @GetMapping("/{id}")

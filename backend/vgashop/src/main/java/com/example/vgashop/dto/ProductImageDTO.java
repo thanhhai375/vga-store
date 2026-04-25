@@ -25,6 +25,8 @@ public class ProductImageDTO {
     @Positive(message = "Giá phải lớn hơn 0")
     private BigDecimal price;
 
+    private BigDecimal oldPrice;
+
     @NotNull(message = "Số lượng tồn kho là bắt buộc")
     @Min(value = 0, message = "Số lượng không được âm")
     private Integer stock;
@@ -36,6 +38,14 @@ public class ProductImageDTO {
     private Long categoryId;
 
     private String sku;
+
+    private String gpuModel;
+    private String vram;
+    private String memoryType;
+    private String coolingType;
+    private String powerConnectors;
+    private String recommendedPsu;
+    private String dimension;
 
      // Getters and Setters
     public String getName() {
@@ -56,6 +66,12 @@ public class ProductImageDTO {
     }
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+    public BigDecimal getOldPrice() {
+        return oldPrice;
+    }
+    public void setOldPrice(BigDecimal oldPrice) {
+        this.oldPrice = oldPrice;
     }
     public Integer getStock() {
         return stock;
@@ -87,5 +103,26 @@ public class ProductImageDTO {
     public void setImageFile(MultipartFile imageFile) {
         this.imageFile = imageFile;
     }
+
+    public String getGpuModel() { return gpuModel; }
+    public void setGpuModel(String gpuModel) { this.gpuModel = gpuModel; }
+
+    public String getVram() { return vram; }
+    public void setVram(String vram) { this.vram = vram; }
+
+    public String getMemoryType() { return memoryType; }
+    public void setMemoryType(String memoryType) { this.memoryType = memoryType; }
+
+    public String getCoolingType() { return coolingType; }
+    public void setCoolingType(String coolingType) { this.coolingType = coolingType; }
+
+    public String getPowerConnectors() { return powerConnectors; }
+    public void setPowerConnectors(String powerConnectors) { this.powerConnectors = powerConnectors; }
+
+    public String getRecommendedPsu() { return recommendedPsu; }
+    public void setRecommendedPsu(String recommendedPsu) { this.recommendedPsu = recommendedPsu; }
+
+    public String getDimension() { return dimension; }
+    public void setDimension(String dimension) { this.dimension = dimension; }
 
 }

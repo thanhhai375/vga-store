@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Save, ArrowLeft, Upload, Image as ImageIcon } from 'lucide-react';
 import blogService from '../../services/blogService';
+import { toastSuccess, toastError } from '../../utils/alertUtils';
 
 const BlogForm = () => {
   const { id } = useParams();
@@ -11,16 +12,32 @@ const BlogForm = () => {
   const [form, setForm] = useState({
     title: '', category: '', excerpt: '', author: ''
   });
-  const [content, setContent] = useState(''); // Text đơn giản JSON hoặc HTML tuỳ thiết kế ban đầu
+  const [content, setContent] = useState('');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   
   const [loading, setLoading] = useState(isEdit);
+  const [saving, setSaving] = useState(false);
+
+  // Hàm xử lý URL ảnh thông minh
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('/uploads/')) return `http://localhost:8080${url}`;
+    if (url.startsWith('/images/')) return `http://localhost:5173${url}`;
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  };
 
   useEffect(() => {
     if (isEdit) {
       blogService.getById(id).then(res => {
+        // axiosClient unwrap 1 lớp: res = { success, message, data: Blog }
         const b = res.data || res;
+        if (!b || !b.title) {
+          toastError('Không tìm thấy bài viết');
+          navigate('/blogs');
+          return;
+        }
         setForm({
           title: b.title || '', 
           category: b.category || '', 
@@ -28,10 +45,12 @@ const BlogForm = () => {
           author: b.author || ''
         });
         setContent(b.content || '');
-        if (b.image) setPreview(`http://localhost:8080${b.image}`);
+        // Đọc field thumbnail (từ backend Blog entity)
+        const thumbUrl = b.thumbnail || b.image;
+        if (thumbUrl) setPreview(getImageUrl(thumbUrl) || thumbUrl);
         setLoading(false);
-      }).catch(() => {
-        alert('Không tìm thấy bài viết');
+      }).catch((e) => {
+        toastError('Không tìm thấy bài viết');
         navigate('/blogs');
       });
     }
@@ -47,9 +66,9 @@ const BlogForm = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!form.title || !form.category) return alert('Vui lòng điền đủ thông tin tiêu đề, thể loại');
-
-    // Chuyển đối tượng Blog thành JSON Blob
+    if (!form.title || !form.category) return toastError('Vui lòng điền đủ thông tin tiêu đề, thể loại');
+    
+    setSaving(true);
     const formData = new FormData();
     formData.append('blog', new Blob([JSON.stringify({
       title: form.title,
@@ -67,9 +86,12 @@ const BlogForm = () => {
       } else {
         await blogService.create(formData);
       }
+      toastSuccess('Lưu bài viết thành công!');
       navigate('/blogs');
-    } catch {
-      alert('Đã có lỗi xảy ra hoặc Back-end chưa mở API cho Form Data Blog');
+    } catch (e) {
+      toastError(e?.response?.data?.message || 'Đã có lỗi xảy ra khi lưu bài viết!');
+    } finally {
+      setSaving(false);
     }
   };
 

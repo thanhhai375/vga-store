@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, ArrowUp } from 'lucide-react';
 import categoryService from '../../services/categoryService';
+import axiosClient from '../../api/axiosClient';
+import { toastSuccess, toastError, confirmDelete } from '../../utils/alertUtils';
 
 const Categories = () => {
   const [items, setItems] = useState([]);
@@ -9,17 +11,18 @@ const Categories = () => {
   const [form, setForm] = useState({ name: '', description: '' });
   const [editId, setEditId] = useState(null);
 
-  const fetch = async () => {
+  const fetchCategories = async () => {
     setLoading(true);
     try {
       const res = await categoryService.getAll();
       const data = res.data || res;
-      setItems(Array.isArray(data) ? data : data.content || []);
+      const arr = Array.isArray(data) ? data : (data.content || []);
+      setItems(arr);
     } catch { setItems([]); }
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetchCategories(); }, []);
 
   const openAdd = () => { setForm({ name: '', description: '' }); setEditId(null); setShowModal(true); };
   const openEdit = (item) => { setForm({ name: item.name, description: item.description || '' }); setEditId(item.id); setShowModal(true); };
@@ -31,15 +34,28 @@ const Categories = () => {
       } else {
         await categoryService.create(form);
       }
+      setForm({ name: '', description: '' });
       setShowModal(false);
-      fetch();
-    } catch { alert('Lưu thất bại!'); }
+      fetchCategories();
+      toastSuccess('Lưu thành công!');
+    } catch { toastError('Lưu thất bại!'); }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Xác nhận xóa danh mục?')) return;
-    try { await categoryService.delete(id); fetch(); }
-    catch { alert('Xóa thất bại!'); }
+    const isConfirmed = await confirmDelete('Dữ liệu danh mục này sẽ bị xóa khỏi hệ thống.', 'Xác nhận xóa danh mục?');
+    if (!isConfirmed) return;
+    try { await categoryService.delete(id); fetchCategories(); toastSuccess('Xóa thành công!'); }
+    catch { toastError('Xóa thất bại!'); }
+  };
+
+  const handlePinToTop = async (id) => {
+    try {
+      await axiosClient.put(`/admin/pin-top/category/${id}`);
+      fetchCategories();
+      toastSuccess('Đã đẩy danh mục lên đầu bảng!');
+    } catch (e) {
+      toastError('Không thể đẩy lên đầu!');
+    }
   };
 
   return (
@@ -58,17 +74,20 @@ const Categories = () => {
         {loading ? <div className="spinner"></div> : (
           <div className="table-wrapper">
             <table>
-              <thead><tr><th>ID</th><th>Tên danh mục</th><th>Mô tả</th><th>Hành động</th></tr></thead>
+              <thead><tr><th>STT</th><th>Tên danh mục</th><th>Mô tả</th><th>Hành động</th></tr></thead>
               <tbody>
                 {items.length === 0 ? (
                   <tr><td colSpan="4" style={{textAlign:'center', padding:'40px', color:'var(--text-muted)'}}>Chưa có danh mục</td></tr>
-                ) : items.map(item => (
+                ) : items.map((item, index) => (
                   <tr key={item.id}>
-                    <td>#{item.id}</td>
+                    <td>{index + 1}</td>
                     <td style={{fontWeight:600, color:'var(--text-primary)'}}>{item.name}</td>
                     <td>{item.description || '--'}</td>
                     <td>
                       <div className="action-btns">
+                        <button className="btn btn-ghost btn-sm" onClick={() => handlePinToTop(item.id)} title="Đẩy lên đầu trang">
+                          <ArrowUp size={14} />
+                        </button>
                         <button className="btn btn-ghost btn-sm" onClick={() => openEdit(item)}><Edit2 size={14} /> Sửa</button>
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}><Trash2 size={14} /> Xóa</button>
                       </div>

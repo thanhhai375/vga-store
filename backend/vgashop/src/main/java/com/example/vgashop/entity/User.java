@@ -2,6 +2,7 @@ package com.example.vgashop.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -47,9 +48,11 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Boolean status = true;
 
+    @JsonIgnore
     @OneToMany(mappedBy= "user", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private List<Order> orders;
 
+    @JsonIgnore
     @OneToOne(mappedBy= "user", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private Cart cart;
     // Constructor
@@ -64,6 +67,7 @@ public class User extends BaseEntity {
     @Column(name = "dob")
     private java.time.LocalDate dob;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UserAddress> addresses;
     // getter và setter

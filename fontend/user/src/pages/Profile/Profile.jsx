@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { userService } from '../../services/userService';
 import { logout, updateUser } from '../../redux/authSlice';
+import { toastSuccess, toastError, confirmDelete } from "../../utils/alertUtils";
 import './Profile.css';
 
 const Profile = () => {
@@ -207,40 +208,59 @@ const ProfileAddress = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ recipientName: '', phone: '', detailedAddress: '', isDefault: false });
 
+  const fetchAddresses = async () => {
+    setLoading(true);
+    try {
+      const res = await userService.getProfile();
+      if (res?.success && res.data.addresses) setAddresses(res.data.addresses);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAddresses = async () => {
-      setLoading(true);
-      try {
-        const res = await userService.getProfile();
-        if (res?.success && res.data.addresses) setAddresses(res.data.addresses);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchAddresses();
   }, []);
 
   const handleAdd = async (e) => {
     e.preventDefault();
+    
+    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    if (!phoneRegex.test(formData.phone)) {
+      toastError('Số điện thoại không hợp lệ! Phải là 10 số (vd: 0912345678).');
+      return;
+    }
+
+    if (formData.recipientName.trim().length < 2) {
+      toastError('Vui lòng nhập đầy đủ Họ tên thực!');
+      return;
+    }
+
     try {
       const res = await userService.addAddress(formData);
       if (res?.success) {
         setAddresses(res.data.addresses);
         setShowForm(false);
         setFormData({ recipientName: '', phone: '', detailedAddress: '', isDefault: false });
+        fetchAddresses();
+        toastSuccess("Thêm địa chỉ thành công!");
       }
     } catch (err) {
-      alert("Lỗi khi thêm địa chỉ!");
+      toastError("Lỗi khi thêm địa chỉ!");
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) return;
+  const handleDeleteAddress = async (id) => {
+    const isConfirmed = await confirmDelete("Bạn có chắc chắn muốn xóa địa chỉ này?");
+    if (!isConfirmed) return;
     try {
       const res = await userService.deleteAddress(id);
-      if (res?.success) setAddresses(res.data.addresses);
+      if (res?.success) {
+        fetchAddresses();
+        toastSuccess("Xóa địa chỉ thành công!");
+      }
     } catch (err) {
-      alert("Xóa thất bại!");
+      toastError("Xóa thất bại!");
     }
   };
 
@@ -296,7 +316,7 @@ const ProfileAddress = () => {
                 {addr.isDefault && <span className="default-tag">Mặc định</span>}
               </div>
               <div className="addr-actions">
-                <button className="btn-text-danger" onClick={() => handleDelete(addr.id)}>Xóa</button>
+                <button className="btn-text-danger" onClick={() => handleDeleteAddress(addr.id)}>Xóa</button>
               </div>
             </div>
           ))

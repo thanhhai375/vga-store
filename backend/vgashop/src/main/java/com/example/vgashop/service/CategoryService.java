@@ -51,8 +51,10 @@ public class CategoryService {
 
         Sort sort = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+                
+        Sort finalSort = Sort.by(Sort.Direction.ASC, "displayOrder").and(sort);
 
-        PageRequest pageable = PageRequest.of(page, size, sort);
+        PageRequest pageable = PageRequest.of(page, size, finalSort);
 
         // nếu kh có điều kiện lọc nào
         if (keyWord.isEmpty() && active == null) {

@@ -51,7 +51,10 @@ public class ProductService {
         Sort sort = direction.equalsIgnoreCase("desc")
         ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
 
-        PageRequest pageable = PageRequest.of(page, size, sort);
+        // 🌟 Luôn luôn ưu tiên displayOrder trước khi sort theo các tiêu chí khác (trừ khi đang sort đặc biệt)
+        Sort finalSort = Sort.by(Sort.Direction.ASC, "displayOrder").and(sort);
+
+        PageRequest pageable = PageRequest.of(page, size, finalSort);
 
         return productRepository.findByDeletedFalse(pageable);
     }
@@ -183,6 +186,7 @@ public class ProductService {
                 .map(product -> {
                     product.setName(newProduct.getName());
                     product.setPrice(newProduct.getPrice());
+                    product.setOldPrice(newProduct.getOldPrice());
                     product.setStock(newProduct.getStock());
                     product.setDescription(newProduct.getDescription());
                     product.setImgUrl(newProduct.getImgUrl());
@@ -215,10 +219,19 @@ public class ProductService {
         Product product = new Product();
         product.setName(dto.getName());
         product.setPrice(dto.getPrice());
+        product.setOldPrice(dto.getOldPrice());
         product.setStock(dto.getStock());
         product.setDescription(dto.getDescription());
         product.setImgUrl(imgUrl);
         product.setSku(dto.getSku());
+
+        product.setGpuModel(dto.getGpuModel());
+        product.setVram(dto.getVram());
+        product.setMemoryType(dto.getMemoryType());
+        product.setCoolingType(dto.getCoolingType());
+        product.setPowerConnectors(dto.getPowerConnectors());
+        product.setRecommendedPsu(dto.getRecommendedPsu());
+        product.setDimension(dto.getDimension());
 
         if (dto.getBrandId() != null) {
             product.setBrand(brandService.getBrandId(dto.getBrandId()));
@@ -237,9 +250,18 @@ public class ProductService {
                 .map(product -> {
                     product.setName(dto.getName());
                     product.setPrice(dto.getPrice());
+                    product.setOldPrice(dto.getOldPrice());
                     product.setStock(dto.getStock());
                     product.setDescription(dto.getDescription());
                     if (dto.getSku() != null) product.setSku(dto.getSku());
+
+                    product.setGpuModel(dto.getGpuModel());
+                    product.setVram(dto.getVram());
+                    product.setMemoryType(dto.getMemoryType());
+                    product.setCoolingType(dto.getCoolingType());
+                    product.setPowerConnectors(dto.getPowerConnectors());
+                    product.setRecommendedPsu(dto.getRecommendedPsu());
+                    product.setDimension(dto.getDimension());
 
                     // Chỉ cập nhật ảnh nếu có file mới
                     if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {

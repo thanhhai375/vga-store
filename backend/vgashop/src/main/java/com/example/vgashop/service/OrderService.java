@@ -35,8 +35,10 @@ import com.example.vgashop.exception.ResourceNotFoundException;
 import com.example.vgashop.repository.CartRepository;
 import com.example.vgashop.repository.OrderItemRepository;
 import com.example.vgashop.repository.OrderRepository;
+import com.example.vgashop.repository.PaymentRepository;
 import com.example.vgashop.repository.ProductRepository;
 import com.example.vgashop.repository.UserRepository;
+import com.example.vgashop.entity.Payment;
 
 @Service
 public class OrderService {
@@ -47,16 +49,18 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final PaymentRepository paymentRepository;
 
     public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
             CartRepository cartRepository, ProductRepository productRepository,
-            UserRepository userRepository, UserService userService) {
+            UserRepository userRepository, UserService userService, PaymentRepository paymentRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.paymentRepository = paymentRepository;
     }
 
     // ===================================
@@ -127,9 +131,13 @@ public class OrderService {
             o.put("id", order.getId());
             o.put("orderCode", order.getOrderCode()); // Thêm cho chắc
             o.put("status", order.getStatus().name());
-            o.put("totalPrice", order.getTotalAmount());
+            o.put("totalAmount", order.getTotalAmount());
             o.put("itemCount", order.getItems() != null ? order.getItems().size() : 0);
             o.put("createdAt", order.getCreatedAt() != null ? order.getCreatedAt().toString() : "");
+            o.put("productIds", order.getItems() != null ? order.getItems().stream()
+                .filter(i -> i.getProduct() != null)
+                .map(i -> i.getProduct().getId())
+                .collect(Collectors.toList()) : new ArrayList<>());
             result.add(o);
         }
         return result;
@@ -222,8 +230,8 @@ public class OrderService {
         Order order = orderRepository.findByIdAndUser_IdAndDeletedFalse(orderId, currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
 
-        if (order.getStatus() != OrderStatus.PENDING) {
-            throw new IllegalArgumentException("Chỉ có thể hủy đơn hàng ở trạng thái PENDING");
+        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.CONFIRMED) {
+            throw new IllegalArgumentException("Chỉ có thể hủy đơn hàng ở trạng thái chờ duyệt hoặc đang xử lý");
         }
 
         // 🌟 Chuyển trạng thái sang Yêu cầu hủy
@@ -283,11 +291,24 @@ public class OrderService {
                         item.getQuantity(),
                         item.getSubtotal()))
                 .collect(Collectors.toList());
+
+        String paymentMethodStr = "Chưa rõ";
+        try {
+            Payment payment = paymentRepository.findByOrder_IdAndDeletedFalse(order.getId()).orElse(null);
+            if (payment != null && payment.getPaymentMethod() != null) {
+                paymentMethodStr = payment.getPaymentMethod().name();
+            }
+        } catch (Exception e) { /* Đơn mới chưa có payment */ }
+
         return new OrderResponse(
                 order.getId(), order.getOrderCode(), order.getTotalAmount(), order.getDiscountAmount(),
                 order.getStatus(), order.getPaymentStatus(), order.getShippingAddress(), order.getPhone(),
                 order.getNote(), order.getCreatedAt(), order.getConfirmedAt(), order.getShippedAt(),
-                order.getDeliveredAt(), itemResponses);
+                order.getDeliveredAt(), itemResponses,
+                order.getFullName() != null && !order.getFullName().trim().isEmpty() ? order.getFullName() : (order.getUser() != null ? order.getUser().getUsername() : "Khách ẩn danh"),
+                order.getUser() != null ? order.getUser().getEmail() : "Không có",
+                paymentMethodStr
+        );
     }
 
     private OrderSummaryResponse convOrderSummaryResponse(Order order) {
