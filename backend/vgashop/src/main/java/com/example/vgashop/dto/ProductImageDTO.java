@@ -18,7 +18,7 @@ public class ProductImageDTO {
 
     private String description;
 
-    // Ảnh có thể null khi update
+    // Image
     private MultipartFile imageFile;
 
     @NotNull(message = "Giá sản phẩm là bắt buộc")
@@ -47,7 +47,6 @@ public class ProductImageDTO {
     private String recommendedPsu;
     private String dimension;
 
-     // Getters and Setters
     public String getName() {
         return name;
     }
@@ -126,3 +125,4 @@ public class ProductImageDTO {
     public void setDimension(String dimension) { this.dimension = dimension; }
 
 }
+

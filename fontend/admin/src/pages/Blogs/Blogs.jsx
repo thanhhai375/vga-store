@@ -27,7 +27,7 @@ const Blogs = () => {
     finally { setLoading(false); }
   };
 
-  // Hàm xử lý URL ảnh thông minh
+  // Process
   const getImageUrl = (url) => {
     if (!url) return null;
     if (url.startsWith('/uploads/')) return `http://localhost:8080${url}`;

@@ -28,7 +28,7 @@ public class UserController {
     }
 
     // ==========================================
-    // API TỪ NHÁNH HEAD (PROFILE CÁ NHÂN FRONTEND)
+
     // ==========================================
 
     @GetMapping("/profile")
@@ -63,10 +63,10 @@ public class UserController {
 
 
     // ==========================================
-    // API TỪ NHÁNH BE (ADMIN DASHBOARD)
+    // Dashboard
     // ==========================================
 
-    // lấy tất cả user có phân trang
+    // Retrieve all
     @GetMapping
     public ApiResponse<Page<User>> getAllUsers(
         @RequestParam(defaultValue = "0") int page,
@@ -78,7 +78,7 @@ public class UserController {
         return ApiResponse.success("Lấy danh sách người dùng thành công", data);
     }
 
-    // tìm kiếm user
+    // Search
     @GetMapping("/search")
     public ApiResponse<Page<User>> search(
         @RequestParam String keyWord,
@@ -89,28 +89,28 @@ public class UserController {
         return ApiResponse.success("Tìm kiếm người dùng thành công", data);
     }
 
-    // lấy 1 user theo id
+    // By ID
     @GetMapping("/{id}")
     public ApiResponse<User> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
         return ApiResponse.success("Lấy thông tin người dùng thành công", user);
     }
 
-    // Tạo mới
+
     @PostMapping
     public ApiResponse<User> create(@Valid @RequestBody UserDTO dto) {
         User saved = userService.createUser(dto);
         return ApiResponse.success("Tạo mới người dùng thành công", saved);
     }
 
-    // cập nhật user
+    // Update existing
     @PutMapping("/{id}")
     public ApiResponse<User> update(@PathVariable Long id, @Valid @RequestBody UserDTO dto) {
         User updated = userService.updateUser(id, dto);
         return ApiResponse.success("Cập nhật user thành công", updated);
     }
 
-    // xóa user
+    // Delete
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteAdmin(@PathVariable Long id) {
         userService.deleteUser(id);

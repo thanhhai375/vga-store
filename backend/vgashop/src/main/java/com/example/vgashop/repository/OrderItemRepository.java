@@ -7,13 +7,22 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.vgashop.entity.Order;
 import com.example.vgashop.entity.OrderItem;
 
+/**
+ * Repository for {@link OrderItem} entity.
+ */
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
-
-    // Lấy tất cả item của một đơn hàng (dùng khi xem chi tiết đơn hàng)
+    /** Returns all non-deleted items belonging to the specified order. */
     List<OrderItem> findByOrder_IdAndDeletedFalse(Long orderId);
 
-    // Kiểm tra xem user có mua sản phẩm này và đơn hàng đã giao thành công chưa
-    boolean existsByOrder_User_IdAndOrder_StatusAndProduct_Id(Long userId, com.example.vgashop.entity.OrderStatus status, Long productId);
-
+    /**
+     * Returns true if the specified user has at least one order item
+     * for the given product in an order with the given status.
+     * Used to verify purchase eligibility before allowing a review.
+     */
+    boolean existsByOrder_User_IdAndOrder_StatusAndProduct_Id(
+        Long userId,
+        com.example.vgashop.entity.OrderStatus status,
+        Long productId
+    );
 }

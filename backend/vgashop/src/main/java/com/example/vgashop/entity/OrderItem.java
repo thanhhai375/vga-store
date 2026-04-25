@@ -36,8 +36,6 @@ public class OrderItem extends BaseEntity {
         this.subtotal = price.multiply(BigDecimal.valueOf(quantity));
     }
 
-    // getter setter
-
     public Integer getQuantity() {
         return quantity;
     }
@@ -73,3 +71,4 @@ public class OrderItem extends BaseEntity {
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
 }
+

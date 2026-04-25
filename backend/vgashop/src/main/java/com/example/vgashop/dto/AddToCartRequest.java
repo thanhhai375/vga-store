@@ -11,7 +11,7 @@ public class AddToCartRequest {
     @Min(value = 1, message= "Số lượng phải lớn hơn hoặc bằng 1")
     private Integer quantity;
 
-    // constructor mặc định
+    // Default
     public AddToCartRequest() {}
 
     public AddToCartRequest(Long productId, Integer quantity) {
@@ -19,7 +19,6 @@ public class AddToCartRequest {
         this.quantity = quantity;
     }
 
-    // getter setter
     public Long getProductId() {
         return productId;
     }
@@ -36,3 +35,4 @@ public class AddToCartRequest {
         this.quantity = quantity;
     }
 }
+

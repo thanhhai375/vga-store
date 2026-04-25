@@ -6,7 +6,7 @@ const initialState = {
   isAuthenticated: !!localStorage.getItem('token'),
   loading: false,
   error: null,
-  isAuthModalOpen: false, // Quản lý popup Đăng nhập toàn cục
+  isAuthModalOpen: false, // Login
 };
 
 const authSlice = createSlice({

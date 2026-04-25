@@ -32,13 +32,13 @@ const Products = () => {
     }
   };
 
-  // Hàm xử lý URL ảnh thông minh: giống ProductCard.jsx ở User
+  // Process
   const getImageUrl = (imgUrl) => {
     if (!imgUrl) return null;
     if (imgUrl.startsWith('/uploads/')) return `http://localhost:8080${imgUrl}`;
-    // Ảnh nằm trong public/images của User Frontend (port 5173)
+    // Image
     if (imgUrl.startsWith('/images/')) return `http://localhost:5173${imgUrl}`;
-    // URL tự do (http:// hoặc https://)
+
     return imgUrl;
   };
 

@@ -3,22 +3,21 @@ package com.example.vgashop.dto;
 import com.example.vgashop.entity.Role;
 import java.time.LocalDateTime;
 
-// Dùng để admin quản lý người dùng, có thể bao gồm thông tin như số lượng người dùng, danh sách người dùng, v.v.
+// User
 public class UserAdminResponse {
 
 
-    private Long userId; // ID người dùng
-    private String username; // Tên đăng nhập
-    private String email; // Email người dùng
-    private String fullName; // Họ tên đầy đủ
-    private String phone; // Số điện thoại
-    private Role role; // Vai trò (USER, ADMIN)
-    private Boolean status; // Trạng thái tài khoản (active/inactive)
-    private Boolean deleted; // Trạng thái xóa tài khoản (true nếu đã bị xóa, false nếu còn hoạt động)
-    private LocalDateTime createdAt; // Thời gian tạo tài khoản
-    private LocalDateTime updatedAt; // Thời gian cập nhật tài khoản cuối cùng
+    private Long userId; // User
+    private String username; // Login
+    private String email; // User
+    private String fullName;
+    private String phone;
+    private Role role;
+    private Boolean status; // Status
+    private Boolean deleted; // Delete
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt; // Update existing
 
-    // Constructor
     public UserAdminResponse() {}
 
     public UserAdminResponse(Long userId, String username, String email, String fullName, String phone, Role role, Boolean status, Boolean deleted, LocalDateTime createdAt, LocalDateTime updatedAt) {
@@ -34,7 +33,6 @@ public class UserAdminResponse {
         this.updatedAt = updatedAt;
     }
 
-     // getters and setters
     public Long getUserId() {
         return userId;
     }
@@ -116,3 +114,4 @@ public class UserAdminResponse {
     }
     
 }
+

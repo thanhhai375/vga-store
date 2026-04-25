@@ -11,67 +11,78 @@ import org.springframework.data.repository.query.Param;
 
 import com.example.vgashop.entity.Product;
 
-public interface  ProductRepository extends JpaRepository<Product, Long> {
+/**
+ * Repository for {@link Product} entity.
+ * Provides derived queries for filtering, searching, soft-delete handling,
+ * and admin dashboard statistics.
+ */
+public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    // tìm kiếm theo tên 
+    /** Returns a paginated list of products whose name contains the given keyword (case-insensitive). */
     Page<Product> findByNameContaining(String keyWord, Pageable pageable);
 
-    // tìm kiếm theo brand
+    /** Returns a paginated list of products belonging to the specified brand name. */
     Page<Product> findByBrand_Name(String keyWord, Pageable pageable);
 
-    // tìm theo brand_id
+    /** Returns a paginated list of products belonging to the specified brand ID. */
     Page<Product> findByBrand_Id(Long brandId, Pageable pageable);
 
-    // tìm nhiều brand (multi select)
+    /** Returns a paginated list of products whose brand ID is in the given list (multi-select filter). */
     Page<Product> findByBrand_IdIn(List<Long> brandIds, Pageable pageable);
 
-    // lọc giá
+    /** Returns a paginated list of products within the specified price range. */
     Page<Product> findByPriceBetween(Double minPrice, Double maxPrice, Pageable pageable);
 
-    // lọc + tìm kiếm
+    /** Returns products matching both a keyword (by name) and a brand name. */
     Page<Product> findByNameContainingAndBrand_Name(String keyWord, String brandName, Pageable pageable);
 
+    /** Returns products matching both a keyword (by name) and a brand ID. */
     Page<Product> findByNameContainingAndBrand_Id(String keyWord, Long brandId, Pageable pageable);
 
-    // tìm + price
+    /** Returns products matching a keyword and within a price range. */
     Page<Product> findByNameContainingAndPriceBetween(String keyWord, Double minPrice, Double maxPrice, Pageable pageable);
 
-    // tìm theo brand + lọc giá
+    /** Returns products in a given brand and within a price range. */
     Page<Product> findByBrand_IdAndPriceBetween(Long brandId, Double minPrice, Double maxPrice, Pageable pageable);
 
-
-    // full tính năng lọc
+    /** Full combined filter: keyword + multiple brand IDs + price range. */
     Page<Product> findByNameContainingAndBrand_IdInAndPriceBetween(String keyWord, List<Long> brandIds, Double minPrice, Double maxPrice, Pageable pageable);
 
-    // Kiểm tra xem đã tồn tại sản phẩm với tên này chưa 
-   
+    /** Returns true if a product with the given name already exists (case-insensitive). */
     boolean existsByNameIgnoreCase(String name);
 
-    // kiểm tra trùng sku
+    /** Returns true if a product with the given SKU already exists (case-insensitive). */
     boolean existsBySkuIgnoreCase(String sku);
 
-    // Lấy tất cả chưa bị xóa
+    /** Returns all non-deleted products, paginated. */
     Page<Product> findByDeletedFalse(Pageable pageable);
 
-    // Lấy theo ID và chưa bị xóa
+    /** Finds a product by ID and soft-delete flag. */
     Optional<Product> findByIdAndDeleted(Long id, boolean deleted);
 
-    // Kiểm tra tồn tại và chưa bị xóa
+    /** Returns true if a non-deleted product with the given ID exists. */
     boolean existsByIdAndDeleted(Long id, boolean deleted);
 
-    // Nếu sau này cần lọc theo brand/category chưa xóa
+    /** Counts non-deleted products associated with the given brand. */
     long countByBrand_IdAndDeletedFalse(Long brandId);
+
+    /** Counts non-deleted products associated with the given category. */
     long countByCategory_IdAndDeletedFalse(Long categoryId);
 
-    // phần admin dashboard
+    /** Returns the total count of non-deleted products (used in admin dashboard). */
     Long countByDeletedFalse();
 
+    /** Returns the count of non-deleted products with stock at or below the given threshold. */
     @Query("SELECT COUNT(p) FROM Product p WHERE p.deleted = false AND p.stock <= :threshold")
     Long countLowStock(@Param("threshold") int threshold);
 
+    /** Finds a non-deleted product by its ID. */
     Optional<Product> findByIdAndDeletedFalse(Long id);
 
-    // Lấy danh sách sản phẩm user đã nhận nhưng chưa đánh giá
+    /**
+     * Returns a distinct list of products that the specified user has received
+     * (via a DELIVERED order) but has not yet submitted a review for.
+     */
     @Query("SELECT DISTINCT p FROM Product p JOIN p.orderItems oi JOIN oi.order o " +
            "WHERE o.user.id = :userId AND o.status = 'DELIVERED' " +
            "AND p.id NOT IN (SELECT r.product.id FROM Review r WHERE r.user.id = :userId)")

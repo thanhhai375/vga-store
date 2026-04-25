@@ -7,29 +7,34 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.vgashop.entity.Brand;
-// import org.springframework.data.domain.Pageable;
 
-public interface  BrandRepository extends JpaRepository<Brand, Long> {
+/**
+ * Repository for {@link Brand} entity.
+ * Supports keyword search, status filtering, and soft-delete-aware queries.
+ */
+public interface BrandRepository extends JpaRepository<Brand, Long> {
 
-    // tìm kiếm theo tên
+    /** Returns paginated brands whose name contains the given keyword. */
     Page<Brand> findByNameContaining(String keyWord, Pageable pageable);
 
-    // Kiểm tra brand tồn tại theo tên (không phân biệt hoa thường) - dùng cho validation
+    /** Returns true if a brand with the given name already exists (case-insensitive). Used for duplicate validation. */
     boolean existsByNameIgnoreCase(String name);
 
-    // Lọc theo status
+    /** Returns paginated brands filtered by active status. */
     Page<Brand> findByStatus(Boolean status, Pageable pageable);
 
-    // Lọc theo tên chứa + status
+    /** Returns paginated brands matching a name keyword and active status. */
     Page<Brand> findByNameContainingIgnoreCaseAndStatus(String keyword, Boolean status, Pageable pageable);
 
-    // Lấy tất cả chưa bị xóa
+    /** Returns all non-deleted brands, paginated. */
     Page<Brand> findByDeletedFalse(Pageable pageable);
 
-    // Lấy theo ID và chưa bị xóa
-    // (dùng trong getById và update)
+    /**
+     * Finds a brand by ID and soft-delete flag.
+     * Used by getById and update operations.
+     */
     Optional<Brand> findByIdAndDeleted(Long id, boolean deleted);
 
-    // Kiểm tra tồn tại và chưa bị xóa
+    /** Returns true if a non-deleted brand with the given ID exists. */
     boolean existsByIdAndDeleted(Long id, boolean deleted);
 }

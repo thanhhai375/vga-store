@@ -4,17 +4,17 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
-// DTO trả về dữ liệu dashboard cho Admin
+// Dashboard
 public class AdminDashboardResponse {
 
-    private Long totalUsers; // Tổng số người dùng
-    private Long totalOrders; // Tổng số đơn hàng
-    private Long todayOrders; // Số đơn hàng hôm nay
-    private BigDecimal totalRevenue; // Tổng doanh thu
-    private BigDecimal todayRevenue; // Doanh thu hôm nay
-    private Long totalProducts; // Tổng số sản phẩm
-    private Long lowStockProducts; // Số sản phẩm sắp hết hàng
-    private LocalDateTime lastUpdated; // thời gian cập nhật dữ liệu cuối cùng
+    private Long totalUsers; // User
+    private Long totalOrders; // Order
+    private Long todayOrders; // Order
+    private BigDecimal totalRevenue; // Total
+    private BigDecimal todayRevenue; // Revenue
+    private Long totalProducts; // Product
+    private Long lowStockProducts; // Product
+    private LocalDateTime lastUpdated; // Update existing
 
     // Constuctor
 
@@ -30,8 +30,6 @@ public class AdminDashboardResponse {
         this.lowStockProducts = lowStockProducts;
         this.lastUpdated = LocalDateTime.now();
     }
-
-    // Getters and Setters
 
     public Long getTotalUsers() {
         return totalUsers;
@@ -98,3 +96,4 @@ public class AdminDashboardResponse {
     }
     
 }
+

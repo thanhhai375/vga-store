@@ -52,7 +52,7 @@ const Shop = () => {
     fetchData();
   }, []);
 
-  // ===== ĐỌC PARAM TỪ URL =====
+
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const brandParam = queryParams.get('brand');
@@ -61,7 +61,7 @@ const Shop = () => {
     const chipsetParam = queryParams.get('chipset');
     const vramParam = queryParams.get('vram');
     const memTypeParam = queryParams.get('memType');
-    // Đọc cả line và series đề phòng trùng lặp
+
     const lineParam = queryParams.get('line') || queryParams.get('series');
     const psuParam = queryParams.get('psu');
     const priceParam = queryParams.get('price');
@@ -253,7 +253,7 @@ const Shop = () => {
             <details className="sidebar-section" open>
               <summary className="sidebar-title">Theo Dòng Sản Phẩm</summary>
               <div className="sidebar-content">
-                {/* ĐÃ BỔ SUNG CÁC DÒNG CHI TIẾT ĐỂ NÓ TICK ĐÚNG */}
+{/* Details */}
                 {['ROG', 'ROG Strix', 'ROG Matrix', 'ROG Astral', 'TUF', 'ProArt', 'Dual', 'Gaming X', 'Ventus', 'AERO', 'iGame'].map(line => (
                   <label key={line} className="filter-checkbox">
                     <input type="checkbox" checked={selectedLines.includes(line)} onChange={() => handleLineChange(line)} />

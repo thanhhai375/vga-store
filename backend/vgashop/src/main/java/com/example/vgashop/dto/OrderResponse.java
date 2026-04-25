@@ -16,23 +16,22 @@ public class OrderResponse {
 
     private  Long orderId;
     private String orderCode;
-    private BigDecimal totalAmount; // tổng tiền đơn hàng
-    private BigDecimal discountAmount; // số tiền giảm giá 
-    private OrderStatus status; // trạng thái đơn hàng 
-    private PaymentStatus paymentStatus; // trạng thái thanh toán
-    private String shippingAddress; // địa chỉ giao hàng
+    private BigDecimal totalAmount; // Order
+    private BigDecimal discountAmount;
+    private OrderStatus status; // Order
+    private PaymentStatus paymentStatus; // Payment
+    private String shippingAddress; // Address
     private String phone;
     private String note;
-    private LocalDateTime createdAt; // thời gian tạo đơn
-    private LocalDateTime confirmedAt; // thời gian xác nhận đơn
-    private LocalDateTime shippedAt; // thời gian giao
-    private LocalDateTime deliveredAt; // thời gian nhận 
-    private List<OrderItemResponse> items; // danh sách sản phẩm trong đơn
-    private String fullName; // Thêm tên người đặt
-    private String email; // Thêm email tài khoản đặt
-    private String paymentMethod; // Phương thức thanh toán
+    private LocalDateTime createdAt;
+    private LocalDateTime confirmedAt;
+    private LocalDateTime shippedAt;
+    private LocalDateTime deliveredAt;
+    private List<OrderItemResponse> items; // Product
+    private String fullName;
+    private String email;
+    private String paymentMethod; // Payment
 
-    // constructor
     public OrderResponse() {}
 
     public OrderResponse(Long orderId, String orderCode, BigDecimal totalAmount, BigDecimal discountAmount,
@@ -89,8 +88,6 @@ public class OrderResponse {
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
-
-    // getter setter
 
     public Long getOrderId() {
         return orderId;
@@ -205,3 +202,4 @@ public class OrderResponse {
     }
     
 }
+

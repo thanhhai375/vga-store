@@ -5,7 +5,7 @@ import { orderService } from '../../services/orderService';
 import axiosClient from '../../api/axiosClient';
 import './TrackOrder.css';
 
-// 🌟 FIX: Map chuẩn trạng thái với Backend
+// Status
 const STATUS_MAP = {
   PENDING: 'Chờ duyệt',
   CONFIRMED: 'Đang xử lý',
@@ -70,7 +70,7 @@ const TrackOrder = () => {
       const items = data?.content || data || [];
       setOrders(Array.isArray(items) ? items : []);
       
-      // Load danh sách pending reviews
+      // List
       try {
         const pendRes = await axiosClient.get('/reviews/pending');
         const pendData = pendRes?.data || pendRes;
@@ -121,12 +121,12 @@ const TrackOrder = () => {
 
     setCancelLoading(true);
     try {
-      // 🌟 GỌI TRỰC TIẾP API ĐỂ ĐẨY LÝ DO XUỐNG BACKEND
+
       await axiosClient.put(`/orders/${cancelModalData.orderId}/cancel?reason=${encodeURIComponent(finalReason)}`);
 
       showToast('Đã gửi yêu cầu hủy đơn hàng thành công!', 'success');
       setCancelModalData({ isOpen: false, orderId: null });
-      loadOrders(); // Tải lại danh sách đơn
+      loadOrders(); // List
     } catch (err) {
       showToast(err?.response?.data?.message || 'Không thể hủy đơn. Vui lòng thử lại.', 'error');
     } finally {
@@ -134,9 +134,9 @@ const TrackOrder = () => {
     }
   };
 
-  // 🌟 FIX: Gọi API để lấy đầy đủ chi tiết (Địa chỉ, Mảng sản phẩm)
+  // Product
   const openOrderDetail = async (orderSummary) => {
-    // Hiện popup ngay với trạng thái loading
+    // Status
     setSelectedOrder({ ...orderSummary, loadingDetails: true });
     try {
       const orderId = orderSummary.orderId || orderSummary.id;
@@ -270,7 +270,6 @@ const TrackOrder = () => {
           </div>
         </div>
 
-        {/* POPUP HỦY ĐƠN */}
         {cancelModalData.isOpen && (
           <div className="order-detail-overlay">
             <div className="cancel-modal-box" onClick={(e) => e.stopPropagation()}>
@@ -301,7 +300,7 @@ const TrackOrder = () => {
           </div>
         )}
 
-        {/* POPUP CHI TIẾT ĐƠN HÀNG */}
+{/* Order */}
         {selectedOrder && !cancelModalData.isOpen && (
           <div className="order-detail-overlay" onClick={() => setSelectedOrder(null)}>
             <div className="order-detail-modal" onClick={(e) => e.stopPropagation()}>

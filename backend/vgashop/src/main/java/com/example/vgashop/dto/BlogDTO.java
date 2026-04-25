@@ -18,7 +18,6 @@ public class BlogDTO {
 
     private String content;
 
-    // Getters and Setters
     public String getTitle() {
         return title;
     }
@@ -54,3 +53,4 @@ public class BlogDTO {
         this.content = content;
     }
 }
+

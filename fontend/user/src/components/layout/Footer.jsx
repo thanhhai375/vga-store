@@ -19,7 +19,6 @@ const Footer = () => {
       <div className="footer-container">
         <div className="footer-main">
 
-          {/* CỘT 1: CHỈ THAY ĐỔI LOGO TẠI ĐÂY */}
           <div className="footer-brand">
             <div className="footer-logo">
               <img src="/images/logo.png" alt="VGA Store Logo" className="footer-logo-img" />
@@ -54,7 +53,6 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* GIỮ NGUYÊN CÁC CỘT CÒN LẠI CỦA BẠN */}
           <div className="footer-col">
             <h4 className="footer-col-title">VỀ CHÚNG TÔI</h4>
             <nav className="footer-nav">
@@ -94,7 +92,6 @@ const Footer = () => {
             </form>
 
             <div className="footer-social">
-              {/* Giữ nguyên toàn bộ social links */}
               <a href="https://facebook.com" target="_blank" rel="noreferrer" title="Facebook">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" /></svg>
               </a>

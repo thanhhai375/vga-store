@@ -9,7 +9,7 @@ public class PaymentRequest {
     @NotNull(message= "Phương thức thanh toán không được để trống")
     private PaymentMethod paymentMethod;
 
-    // getter setter
     public PaymentMethod getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
 }
+

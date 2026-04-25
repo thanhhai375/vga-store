@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
 import './ProductDetail.css';
@@ -30,11 +30,11 @@ const ProductDetail = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [canReview, setCanReview] = useState(false);
 
-  // SỬA LỖI 1: Bọc thép Redux Auth (Chống sập web nếu state.auth chưa tồn tại)
+  // Fix error
   const authState = useSelector(state => state.auth) || {};
   const { user, isAuthenticated } = authState;
 
-  // SỬA LỖI 2: Bọc thép Redux Wishlist
+  // Fix error
   const wishlistItems = useSelector(state => state.wishlist?.wishlistItems || []);
   const isWishlisted = product ? wishlistItems.some(i => i.id === product.id) : false;
 
@@ -65,7 +65,7 @@ const ProductDetail = () => {
           }
         }
 
-        // Khôi phục URL ảnh chuẩn từ CSDL hoặc dùng fallback Asus cực chất
+        // Resolve standard image URL
         const dbImageUrl = pData.imageUrl || pData.imgUrl || pData.img_url || pData.image;
         let formattedImageUrl = dbImageUrl;
         if (dbImageUrl && dbImageUrl.startsWith('/uploads/')) {
@@ -76,10 +76,10 @@ const ProductDetail = () => {
         if (images.length === 0 && fallbackDBImage) images = [fallbackDBImage];
 
         setGallery(images);
-        // Đổi ảnh mặc định thành ảnh bạn đang có
+        // Set default image
         setMainImage(images[0] || '/images/products/gpu_original.png');
 
-        // Load reviews an toàn
+        // Safe load reviews
         try {
           const rev = await axiosClient.get(`/reviews/product/${id}`);
           const revData = rev?.data || rev;
@@ -88,7 +88,7 @@ const ProductDetail = () => {
           setReviews([]);
         }
 
-        // Kiểm tra quyền review
+        // Check review permissions
         if (isAuthenticated) {
           try {
             const canRevRes = await axiosClient.get(`/reviews/can-review/${id}`);
@@ -111,7 +111,7 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id, isAuthenticated]);
 
-  // Auto-switch to reviews tab if URL hash is #reviews
+  // Auto-switch to reviews tab
   useEffect(() => {
     if (location.hash === '#reviews') {
       setActiveTab('reviews');
@@ -207,7 +207,7 @@ const ProductDetail = () => {
     ? (reviews.reduce((s, r) => s + (r.rating || 5), 0) / reviews.length).toFixed(1)
     : '0.0';
 
-  // SỬA LỖI 3: Chống lỗi NaN sập web khi render số lượng sao
+  // Fix error
   const validAvgRating = isNaN(Number(avgRating)) ? 5 : Number(avgRating);
   const starCount = Math.max(1, Math.round(validAvgRating));
 

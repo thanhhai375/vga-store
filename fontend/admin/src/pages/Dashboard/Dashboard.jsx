@@ -11,7 +11,7 @@ import './Dashboard.css';
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + '₫';
 
-// 🌟 Component Thẻ Thống kê (Đã dọn sạch dữ liệu giả)
+// Statistics
 const StatCard = ({ title, value, icon, colorClass }) => (
   <div className="dash-stat-card">
     <div className="dash-stat-header">
@@ -42,12 +42,12 @@ const Dashboard = () => {
   const [loadingTop, setLoadingTop] = useState(true);
   const [loadingChart, setLoadingChart] = useState(true);
 
-  // 1. Tải Dữ liệu Tổng quan
+  // Total
   useEffect(() => {
     const fetchTopData = async () => {
       try {
         const [statsRes, ordersRes] = await Promise.all([
-          axiosClient.get('/admin/dashboard/stats'),       // ✅ đúng endpoint
+          axiosClient.get('/admin/dashboard/stats'),
           axiosClient.get('/admin/orders', { params: { page: 0, size: 8, sortBy: 'createdAt', direction: 'desc', status: 'PENDING' } }),
         ]);
         const statsData = statsRes?.data?.data || statsRes?.data || statsRes;
@@ -61,7 +61,7 @@ const Dashboard = () => {
     fetchTopData();
   }, []);
 
-  // 2. Tải Dữ liệu Biểu đồ (Dùng Data Thật 100%)
+
   useEffect(() => {
     const fetchCharts = async () => {
       setLoadingChart(true);
@@ -83,7 +83,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* 🌟 4 THẺ THỐNG KÊ (KHÔNG CÒN DATA GIẢ) */}
+{/* Statistics */}
       <div className="dash-stats-grid">
         <StatCard
           title="Tổng đơn hàng"

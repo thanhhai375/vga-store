@@ -29,7 +29,7 @@ public class ProductService {
         this.categoryService = categoryService;
     }
 
-    // lấy tất cả có phân trang
+    // Retrieve all
     // public Page<Product> getAllProducts(Pageable pageable) {
     //     return productRepository.findAll(pageable);
     // }
@@ -51,7 +51,7 @@ public class ProductService {
         Sort sort = direction.equalsIgnoreCase("desc")
         ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
 
-        // 🌟 Luôn luôn ưu tiên displayOrder trước khi sort theo các tiêu chí khác (trừ khi đang sort đặc biệt)
+
         Sort finalSort = Sort.by(Sort.Direction.ASC, "displayOrder").and(sort);
 
         PageRequest pageable = PageRequest.of(page, size, finalSort);
@@ -59,8 +59,8 @@ public class ProductService {
         return productRepository.findByDeletedFalse(pageable);
     }
 
-    // lấy 1 sp theo id
-    // nếu kh thì thấy Id trả về ResourceNotFoundException
+    // By ID
+
     public Product getProductById(Long id) {
         return productRepository.findByIdAndDeleted(id, false)
                 .orElseThrow(() -> 
@@ -68,7 +68,7 @@ public class ProductService {
                 );
     }
 
-    // tìm kiếm 
+    // Search
     public Page<Product> searchProducts(String keyWord, Pageable pageable) {
         if (keyWord == null || keyWord.trim().isEmpty()) {
             return productRepository.findAll(pageable);
@@ -76,17 +76,17 @@ public class ProductService {
         return productRepository.findByNameContaining(keyWord, pageable);
     }
 
-    // lọc brand
+
     public Page<Product> filterByBrand(String brand) {
         return productRepository.findByBrand_Name(brand, Pageable.unpaged());
     }
 
-    // lọc + tìm kiếm
+    // Search
     public Page<Product> searchAndFilter(String keyWord, String brand, Pageable pageable) {
         return productRepository.findByNameContainingAndBrand_Name(keyWord, brand, pageable);
     }
 
-    // lọc sản phẩm
+    // Product
     public Page<Product> filterProducts(
         String keyWord,
         List<Long> brandId,
@@ -98,7 +98,7 @@ public class ProductService {
         String direction
     ) {
 
-        // xử lý giá trị null/dèault
+        // Process
 
         // if (keyWord == null) {
         //     keyWord = "";
@@ -136,37 +136,37 @@ public class ProductService {
         return productRepository.findByNameContainingAndBrand_IdInAndPriceBetween(keyWord, brandId, minPrice, maxPrice, pageable);
     }
 
-    // tạo mới
+
     public Product creatProduct(Product product) {
         if (productRepository.existsByNameIgnoreCase(product.getName())) {
             throw new DuplicateResourceException("Sản phẩm với tên '" + product.getName() + "' đã tồn tại!");
         }
 
-        // 2. Kiểm tra SKU bị trùng (nếu có nhập SKU)
+        // Validation
         if (product.getSku() != null && !product.getSku().trim().isEmpty()) {
             if (productRepository.existsBySkuIgnoreCase(product.getSku().trim())) {
                 throw new DuplicateResourceException("Sku '" + product.getSku() + "' đã tồn tại!");
             }
         }
 
-        // kiểm tra giá hợp lệ
+        // Validation
         if (product.getPrice() == null || product.getPrice().compareTo(java.math.BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Giá sản phẩm phải lớn hơn 0");
         }
 
-        // kiểm tra stock hợp lệ
+        // Validation
         if (product.getStock() == null || product.getStock() < 0) {
             throw new IllegalArgumentException("Số lượng tồn kho không thể âm!");
         }
 
-        // kiểm tra tên sản phẩm kh được để trống
+        // Validation
         if (product.getName() == null || product.getName().isEmpty()) {
             throw new IllegalArgumentException("Tên sản phẩm không để trống!");
         }
         return productRepository.save(product);
     }
 
-    // cập nhật
+    // Update existing
     public Product updateProduct(Long id, Product newProduct) {
         // Product product = productRepository.findById(id).orElse(null);
 
@@ -198,7 +198,7 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("không tìm thấy sản phẩm với ID " + id));
     }
 
-    // xóa sản phẩm
+    // Delete
     public void deleteProduct(Long id) {
         if (!productRepository.existsByIdAndDeleted(id, false)) {
             throw new ResourceNotFoundException("Không tìm thấy sản phẩm với ID " + id);
@@ -211,9 +211,9 @@ public class ProductService {
         productRepository.save(product);
     }
 
-    // tạo sản phẩm kèm upload ảnh
+    // Product
     public Product createProductWithImage(ProductImageDTO dto) {
-        // upload ảnh và lấy URL
+        // Image
         String imgUrl = uploadImageFile(dto.getImageFile());
 
         Product product = new Product();
@@ -244,7 +244,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    // cập nhật sản phẩm (tùy chọn có ảnh mới)
+    // Update existing
     public Product updateProductWithImage(Long id, ProductImageDTO dto) {
         return productRepository.findByIdAndDeleted(id, false)
                 .map(product -> {
@@ -263,7 +263,7 @@ public class ProductService {
                     product.setRecommendedPsu(dto.getRecommendedPsu());
                     product.setDimension(dto.getDimension());
 
-                    // Chỉ cập nhật ảnh nếu có file mới
+                    // Update existing
                     if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
                         String imgUrl = uploadImageFile(dto.getImageFile());
                         product.setImgUrl(imgUrl);
@@ -281,9 +281,9 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm ID: " + id));
     }
 
-    // method hỗ trọ upload ảnh
+    // Image
     private String uploadImageFile(MultipartFile file) {
-        // logic lưu file vào thư mục uploads và trả về URL truy cập
+
         if (file == null || file.isEmpty()) {
             throw new RuntimeException("File ảnh không được để trống!");
         }
@@ -292,22 +292,22 @@ public class ProductService {
             String uplaodDir = "uploads/products/";
             java.nio.file.Path uploadPath = java.nio.file.Paths.get(uplaodDir);
 
-            // tạo thư mục nếu chưa tồn tại
+
             if (!java.nio.file.Files.exists(uploadPath)) {
                 java.nio.file.Files.createDirectories(uploadPath);
             }
 
-            //tạo tên file unique để tránh trùng lặp
+
             String originalFileName = file.getOriginalFilename();
             String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
             String fileName = System.currentTimeMillis() + "_" + originalFileName;
 
             java.nio.file.Path filePath = uploadPath.resolve(fileName);
 
-            // luu file vào thư mục
+
             file.transferTo(filePath.toFile());
 
-            return "/uploads/products/" + fileName; // URL truy cập ảnh
+            return "/uploads/products/" + fileName; // Image
         } catch (Exception e) {
             throw new RuntimeException("Không thể upload file ảnh: " + e.getMessage(), e);
         }

@@ -19,7 +19,7 @@ const BlogForm = () => {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
 
-  // Hàm xử lý URL ảnh thông minh
+  // Process
   const getImageUrl = (url) => {
     if (!url) return null;
     if (url.startsWith('/uploads/')) return `http://localhost:8080${url}`;
@@ -31,7 +31,7 @@ const BlogForm = () => {
   useEffect(() => {
     if (isEdit) {
       blogService.getById(id).then(res => {
-        // axiosClient unwrap 1 lớp: res = { success, message, data: Blog }
+
         const b = res.data || res;
         if (!b || !b.title) {
           toastError('Không tìm thấy bài viết');
@@ -45,7 +45,7 @@ const BlogForm = () => {
           author: b.author || ''
         });
         setContent(b.content || '');
-        // Đọc field thumbnail (từ backend Blog entity)
+
         const thumbUrl = b.thumbnail || b.image;
         if (thumbUrl) setPreview(getImageUrl(thumbUrl) || thumbUrl);
         setLoading(false);

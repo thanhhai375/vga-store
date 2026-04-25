@@ -32,7 +32,7 @@ public class ReviewController {
     @Autowired private BlogRepository blogRepository;
     @Autowired private OrderItemRepository orderItemRepository;
 
-    // Chuyển Review entity → Map đơn giản để tránh JSON circular reference
+
     private Map<String, Object> toDto(Review r) {
         Map<String, Object> dto = new LinkedHashMap<>();
         dto.put("id", r.getId());
@@ -40,7 +40,7 @@ public class ReviewController {
         dto.put("comment", r.getComment());
         dto.put("createdAt", r.getCreatedAt());
 
-        // Tên hiển thị: ưu tiên user thật, fallback guestName
+
         String displayName = r.getGuestName();
         if (r.getUser() != null) {
             String fn = r.getUser().getFullName();
@@ -49,11 +49,11 @@ public class ReviewController {
         }
         dto.put("guestName", displayName != null ? displayName : "Khách hàng");
         
-        // Thêm avatar để frontend hiển thị (Avatar Google hoặc Default)
+
         dto.put("avatar", (r.getUser() != null && r.getUser().getAvatar() != null) 
                           ? r.getUser().getAvatar() : null);
 
-        // User tối giản
+
         if (r.getUser() != null) {
             Map<String, Object> u = new LinkedHashMap<>();
             u.put("id", r.getUser().getId());
@@ -64,7 +64,7 @@ public class ReviewController {
             dto.put("user", null);
         }
 
-        // Product tối giản
+
         if (r.getProduct() != null) {
             Map<String, Object> p = new LinkedHashMap<>();
             p.put("id", r.getProduct().getId());
@@ -109,11 +109,11 @@ public class ReviewController {
         User user = userRepository.findByUsername(principal.getName()).orElse(null);
         if (user == null) return ResponseEntity.ok(false);
         
-        // Kiểm tra xem đã mua và nhận hàng chưa
+        // Validation
         boolean hasPurchased = orderItemRepository.existsByOrder_User_IdAndOrder_StatusAndProduct_Id(
             user.getId(), OrderStatus.DELIVERED, productId
         );
-        // Kiểm tra xem đã review chưa
+        // Validation
         boolean hasReviewed = reviewRepository.existsByUser_IdAndProduct_Id(user.getId(), productId);
         
         return ResponseEntity.ok(hasPurchased && !hasReviewed);

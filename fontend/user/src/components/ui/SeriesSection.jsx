@@ -6,21 +6,21 @@ const seriesData = [
   {
     id: 1,
     name: "ROG MATRIX",
-    tagline: "Tản Nhiệt Vô Cực", // Đã dịch từ "Infinity Loop Cooling"
+    tagline: "Tản Nhiệt Vô Cực",
     img: "https://dlcdnwebimgs.asus.com/gain/DC190BF7-5FB1-4C95-9E01-1E7B7B2206FF/w750/h470/fwebp",
     filterParam: "ROG Matrix"
   },
   {
     id: 2,
     name: "ROG ASTRAL",
-    tagline: "Tiên Phong Công Nghệ", // Đã dịch từ "The Next Frontier"
+    tagline: "Tiên Phong Công Nghệ",
     img: "https://dlcdnwebimgs.asus.com/gain/91DFD65E-42E7-45E1-91A5-2376F4E6889E/w750/h470/fwebp",
     filterParam: "ROG Astral"
   },
   {
     id: 3,
     name: "ROG STRIX",
-    tagline: "Thống Lĩnh Cuộc Chơi", // Đã dịch từ "Take Flight"
+    tagline: "Thống Lĩnh Cuộc Chơi",
     img: "https://dlcdnwebimgs.asus.com/gain/5DEF33D2-B9E4-4983-BE85-F93C4E4AD5FC/w750/h470/fwebp",
     filterParam: "ROG Strix"
   },
@@ -33,7 +33,7 @@ const SeriesSection = () => {
         <div className="series-header-center">
           <h1 className="series-huge-title">CARD ĐỒ HỌA</h1>
 
-          {/* ĐÃ XÓA THẺ <h2> CHỨA CHỮ "CARD ĐỒ HỌA" BỊ LẶP LẠI Ở ĐÂY */}
+{/* Delete */}
 
           <Link to="/products" className="series-link-red">XEM TẤT CẢ CARD ĐỒ HỌA ›</Link>
         </div>

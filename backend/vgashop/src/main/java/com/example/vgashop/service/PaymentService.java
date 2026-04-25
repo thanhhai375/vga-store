@@ -41,7 +41,7 @@ public class PaymentService {
         this.userService = userService;
     }
 
-    // Tạo thành toán cho đơn hàng
+    // Order
     @Transactional
     public PaymentResponse createPayment(Long orderId, PaymentRequest request) {
         User user = userService.getCurrentUser();
@@ -61,10 +61,10 @@ public class PaymentService {
         String transactionCode = "PAY-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase();
         payment.setTransactionCode(transactionCode);
 
-        // 🌟 SỬA LOCALHOST THÀNH 5173 CỦA TRANG USER
+
         String returnUrl = "http://localhost:5173/payment/vnpay-callback";
 
-        // xử lý theo từng phương thức thanh toán
+        // Process
         switch (request.getPaymentMethod()) {
             case COD:
                 payment.setNote("Thanh toán khi nhận hàng (COD)");
@@ -79,7 +79,7 @@ public class PaymentService {
             case VNPAY:
                 payment.setPaymentUrl(VNPayUtils.createPaymentUrl(order, transactionCode, returnUrl));
                 payment.setNote("Thanh toán qua VNPay");
-                break; // 🌟 BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ KHÔNG BỊ VĂNG SANG MOMO
+                break; // Required
 
             case MOMO:
                 payment.setPaymentUrl(MomoUtils.createPaymentUrl(order, transactionCode, returnUrl));
@@ -90,7 +90,7 @@ public class PaymentService {
         return convertToPaymentResponse(savedPayment);
     }
 
-    // cập nhật trang thái thanh toán (WEBHOOK / ADMIN )
+    // Update existing
     @Transactional
     public PaymentResponse updatePaymentStatus(Long paymentId, PaymentStatus newStatus, String transactionCode) {
         Payment payment = paymentRepository.findById(paymentId)
@@ -100,13 +100,13 @@ public class PaymentService {
 
         if (newStatus == PaymentStatus.SUCCESS) {
             payment.setPaidAt(LocalDateTime.now());
-            // cập nhập trạng thái đơn hàng thành confirmed
+            // Order
             Order order = payment.getOrder();
             order.setStatus(OrderStatus.CONFIRMED);
             orderRepository.save(order);
         }
 
-        // cập nhật transaction code nếu có
+        // Update existing
         if (transactionCode != null && !transactionCode.isEmpty()) {
             payment.setTransactionCode(transactionCode);
         }
@@ -115,7 +115,7 @@ public class PaymentService {
         return convertToPaymentResponse(saved);
     }
 
-    // Lấy thanh toán theo đơn hàng
+    // Order
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByOrderId(Long orderId) {
         User currentUser = userService.getCurrentUser();
@@ -126,7 +126,7 @@ public class PaymentService {
         return convertToPaymentResponse(payment);
     }
 
-    // Lọc theo trạng thái thanh toán
+    // Payment
     @Transactional(readOnly = true)
     public Page<PaymentSummaryResponse> getPaymentsByStatus(PaymentStatus status, int size, int page, String sortBy,
             String direction) {
@@ -138,7 +138,7 @@ public class PaymentService {
         return payments.map(this::convertToPaymentSummaryResponse);
     }
 
-    // lấy chi tiết thanh toán theo id
+    // By ID
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentById(Long paymentId) {
 
@@ -148,7 +148,7 @@ public class PaymentService {
         return convertToPaymentResponse(payment);
     }
 
-    // Lấy danh sách thanh toán của user
+    // Payment
     @Transactional(readOnly = true)
     public Page<PaymentSummaryResponse> getMyPayments(int size, int page, String sortBy, String direction) {
         User currentUser = userService.getCurrentUser();
@@ -161,7 +161,7 @@ public class PaymentService {
         return payments.map(this::convertToPaymentSummaryResponse);
     }
 
-    // ADMIN: lấy tất cả thanh toán
+    // Retrieve all
     @Transactional(readOnly = true)
     public Page<PaymentSummaryResponse> getAllPayments(int size, int page, String sortBy, String direction) {
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();

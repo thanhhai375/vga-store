@@ -59,7 +59,7 @@ const Settings = () => {
       </div>
 
       <div className="settings-grid">
-        {/* Cột trái: Form cấu hình */}
+{/* Configuration */}
         <div className="card settings-card">
           <div className="card-header">
             <h2 className="card-title">Cấu hình Thanh toán QR</h2>
@@ -104,7 +104,6 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* Cột phải: Preview QR */}
         <div className="card settings-preview-card">
           <div className="card-header">
             <h2 className="card-title">Preview VietQR</h2>

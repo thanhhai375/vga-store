@@ -24,7 +24,7 @@ const Checkout = () => {
     note: ''
   });
 
-  // 🌟 KHỐI STATE XỬ LÝ ĐỊA CHỈ API VIỆT NAM
+  // Process
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
@@ -41,7 +41,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 🌟 KHỐI SỔ ĐỊA CHỈ TỪ PROFILE
+  // Address
   const [userAddresses, setUserAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState('new');
   const [selectedSavedAddress, setSelectedSavedAddress] = useState(null);
@@ -52,7 +52,7 @@ const Checkout = () => {
         .then(res => {
           if (res?.data?.addresses && res.data.addresses.length > 0) {
             setUserAddresses(res.data.addresses);
-            // Auto chọn địa chỉ mặc định nếu có
+            // Default
             const defaultAddr = res.data.addresses.find(a => a.isDefault) || res.data.addresses[0];
             handleSelectSavedAddress(defaultAddr);
           }
@@ -84,7 +84,7 @@ const Checkout = () => {
     bankId: ''
   });
 
-  // 🌟 GỌI API LẤY DANH SÁCH 63 TỈNH THÀNH (Open API)
+  // List
   useEffect(() => {
     axios.get('https://provinces.open-api.vn/api/p/')
       .then(res => setProvinces(res.data))
@@ -119,7 +119,7 @@ const Checkout = () => {
     setAddressData({ ...addressData, ward: name });
   };
 
-  // 🌟 LOGIC KHÓA HỎA TỐC: Chỉ mở khi khách chọn Tỉnh là Hồ Chí Minh
+
   const currentProvinceStr = selectedSavedAddress ? selectedSavedAddress.detailedAddress : addressData.province;
   const canExpress = currentProvinceStr && (currentProvinceStr.toLowerCase().includes('hồ chí minh') || currentProvinceStr.toLowerCase().includes('ho chi minh'));
 
@@ -140,7 +140,7 @@ const Checkout = () => {
     axiosClient.get('/settings/public')
       .then(res => {
         const data = res.data || res || {};
-        // 🌟 Tự động tìm kiếm key bất kể viết hoa hay viết thường
+        // Search
         const getVal = (key) => data[key] || data[key.toLowerCase()] || data[key.toUpperCase()] || '';
 
         setBankInfo({
@@ -159,18 +159,18 @@ const Checkout = () => {
     setCustomerInfo({ ...customerInfo, [e.target.name]: e.target.value });
   };
 
-  // 🌟 LOGIC ĐẶT HÀNG ĐÃ ĐƯỢC FIX LỖI BÓC VỎ DỮ LIỆU ĐỂ LẤY ORDER CODE & VNPAY
+  // Error handling
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (checkoutItems.length === 0) return;
 
-    // Hàm hiển thị lỗi và cuộn lên
+    // Error handling
     const showError = (msg) => {
       setError(msg);
       window.scrollTo({ top: 100, behavior: 'smooth' });
     };
 
-    // Gộp địa chỉ chuẩn trước khi gửi xuống Backend
+    // Address
     let fullShippingAddress = '';
     if (selectedSavedAddress) {
       fullShippingAddress = selectedSavedAddress.detailedAddress;
@@ -206,7 +206,7 @@ const Checkout = () => {
         fullName: customerInfo.fullName,
         phone: customerInfo.phone,
         address: fullShippingAddress,
-        shippingAddress: fullShippingAddress, // Thêm biến này để chắc chắn Backend nhận được địa chỉ
+        shippingAddress: fullShippingAddress, // Address
         note: customerInfo.note || '',
         totalPrice: finalTotal,
         totalAmount: finalTotal,
@@ -217,17 +217,17 @@ const Checkout = () => {
         }))
       };
 
-      // Gọi API tạo đơn hàng
+      // Order
       const orderRes = await orderService.createOrder(orderPayload);
 
-      // 🌟 Giải mã dữ liệu an toàn (tránh lỗi undefined)
+      // Error handling
       const orderData = orderRes?.data?.data || orderRes?.data || orderRes || {};
       const orderId = orderData.orderId || orderData.id;
       const orderCode = orderData.orderCode || orderData.id || 'N/A';
 
       setCreatedOrderCode(orderCode);
 
-      // Gọi API lấy link thanh toán
+      // Payment
       let fetchedPaymentUrl = null;
       if (orderId) {
         try {
@@ -239,7 +239,7 @@ const Checkout = () => {
         }
       }
 
-      // Xóa Giỏ hàng
+      // Delete
       if (!buyNowItem) {
         dispatch(clearCart());
         if (isAuthenticated) {
@@ -249,11 +249,11 @@ const Checkout = () => {
         }
       }
 
-      // 🌟 Xử lý chuyển hướng VNPay lập tức
+      // Process
       if (paymentMethod === 'VNPAY') {
         if (fetchedPaymentUrl) {
           window.location.href = fetchedPaymentUrl;
-          return; // Đã chuyển hướng thì không hiện popup nữa
+          return;
         } else {
           showError('Lỗi lấy Link VNPay, vui lòng thử lại hoặc chọn thanh toán khác.');
           setLoading(false);
@@ -313,7 +313,7 @@ const Checkout = () => {
                   <h3>Thông tin giao hàng</h3>
                 </div>
 
-                {/* SỔ ĐỊA CHỈ */}
+{/* Address */}
                 {isAuthenticated && userAddresses.length > 0 && (
                   <div className="saved-addresses-section">
                     <label className="section-sub-label">Sổ địa chỉ của bạn</label>
@@ -343,7 +343,7 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                {/* 🌟 CHỈ HIỆN KHI CHỌN "THÊM ĐỊA CHỈ MỚI" */}
+{/* Address */}
                 {selectedAddressId === 'new' && (
                   <>
                     <div className="address-selectors form-grid">
