@@ -2,12 +2,12 @@ package com.example.vgashop.entity;
 
 public enum PaymentStatus {
     UNPAID, PAID, 
-    REFUNDED, // đã hoàn tiền
+    REFUNDED, // hon tin
 
     // pAYMENT
 
-    PENDING, // ĐANG CHỜ THANH TOÁN
-    SUCCESS, // thành toán thành công
-    FAILED, // thanh toán thất bại
+    PENDING, // ANG CH THANH TON
+    SUCCESS, // thnh ton thnh cng
+    FAILED, // thanh ton tht bi
     
 }

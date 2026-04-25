@@ -5,7 +5,7 @@ import './HelpChoose.css';
 const HelpChoose = () => {
   const navigate = useNavigate();
 
-  // Lưu trữ các lựa chọn của người dùng
+  // Lu tr cc la chn ca ngi dng
   const [filters, setFilters] = useState({
     brand: '',
     chipsetBrand: '',
@@ -22,7 +22,7 @@ const HelpChoose = () => {
   };
 
   const handleSearch = () => {
-    // Gom các tham số lại và bắn sang trang /shop
+    // Gom cc tham s li v bn sang trang /shop
     const params = new URLSearchParams();
     if (filters.brand) params.append('brand', filters.brand);
     if (filters.chipsetBrand) params.append('chipsetBrand', filters.chipsetBrand);
@@ -33,7 +33,7 @@ const HelpChoose = () => {
     if (filters.psu) params.append('psu', filters.psu);
     if (filters.price) params.append('price', filters.price);
 
-    // Chuyển hướng sang trang Shop kèm theo URL parameters
+    // Chuyn hng sang trang Shop km theo URL parameters
     navigate(`/shop?${params.toString()}`);
   };
 

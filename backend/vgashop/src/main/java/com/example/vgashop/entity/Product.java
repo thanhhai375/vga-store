@@ -3,7 +3,7 @@ package com.example.vgashop.entity;
 import java.math.BigDecimal;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // 🌟 Thêm thư viện này
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // Thm th vin ny
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -73,7 +73,7 @@ public class Product extends BaseEntity {
     @Column(name = "dimension", length = 150)
     private String dimension;
 
-    // 🌟 KHÓA CHẶT 2 LỚP TỪ PRODUCT VỀ BRAND/CATEGORY
+    // KHA CHT 2 LP T PRODUCT V BRAND/CATEGORY
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "brand_id", nullable = false)
     @JsonIgnoreProperties("products")
@@ -251,7 +251,7 @@ public class Product extends BaseEntity {
         this.status = status;
     }
 
-    // 🌟 KHÓA CHẶT Ở GETTER CỦA CART VÀ ORDER
+    // KHA CHT  GETTER CA CART V ORDER
     @JsonIgnore
     public List<CartItem> getCartItems() {
         return cartItems;

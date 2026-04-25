@@ -11,7 +11,7 @@ import org.apache.tomcat.util.buf.UEncoder;
 import com.example.vgashop.entity.Order;
 
 
-// Utility class hỗ trợ tạo chữ ký và URL thanh toán Momo
+// Utility class h tr to ch k v URL thanh ton Momo
 public class MomoUtils {
 
     public static String hmacSHA256(String key, String data) {
@@ -32,19 +32,19 @@ public class MomoUtils {
         }
     }
 
-    // tạo URl thanh toán Momo (sandbox)
+    // to URl thanh ton Momo (sandbox)
     public static String createPaymentUrl(Order order, String transactionCode, String returnUrl) {
-        String partnerCode = "Your Momo Partner Code"; // Mã đối tác của bạn tại Momo
-        String accessKey = "Your Momo Access Key"; // Access key của bạn tại Momo
-        String secretKey = "Your Momo Secret Key"; // Secret key của bạn tại Momo
+        String partnerCode = "Your Momo Partner Code"; // M i tc ca bn ti Momo
+        String accessKey = "Your Momo Access Key"; // Access key ca bn ti Momo
+        String secretKey = "Your Momo Secret Key"; // Secret key ca bn ti Momo
 
-        String requestId = transactionCode; // Mã giao dịch duy nhất
-        String amount = order.getTotalAmount().toString(); // Số tiền thanh toán
-        String orderInfo = "Thanh toán đơn hàng" + order.getOrderCode(); // Thông tin đơn hàng
-        String redirectUrl = returnUrl; // URL khách hàng sẽ được chuyển đến sau khi thanh toán
-        String ipnUrl = "http://localhost:8080/api/payment/momo/ipn"; // URL nhận thông báo thanh toán từ Momo (có thể để tạm là localhost, cần thay bằng URL thật khi triển khai)
-        String requestType = "captureWallet"; // Loại yêu cầu (captureWallet cho thanh toán qua ví Momo)
-        String extraData = ""; // Dữ liệu bổ sung (nếu có)
+        String requestId = transactionCode; // M giao dch duy nht
+        String amount = order.getTotalAmount().toString(); // S tin thanh ton
+        String orderInfo = "Thanh toán đơn hàng" + order.getOrderCode(); // Thng tin n hng
+        String redirectUrl = returnUrl; // URL khch hng s c chuyn n sau khi thanh ton
+        String ipnUrl = "http:// localhost:8080/api/payment/momo/ipn"; // URL nhn thng bo thanh ton t Momo (c th  tm l localhost, cn thay bng URL tht khi trin khai)
+        String requestType = "captureWallet"; // Loi yu cu (captureWallet cho thanh ton qua v Momo)
+        String extraData = ""; // D liu b sung (nu c)
 
         String rawSignature = "accessKey=" + accessKey +
                 "&amount=" + amount +
@@ -59,7 +59,7 @@ public class MomoUtils {
 
         String signature = hmacSHA256(secretKey, rawSignature);
 
-        // trả về URl để frontend có thể redirect khach hàng đến Momo (thực tế thường gọi Post đến API Momo để lấy URL thanh toán, nhưng ở đây để đơn giản chúng ta sẽ tạo URL trực tiếp)
+        // tr v URl  frontend c th redirect khach hng n Momo (thc t thng gi Post n API Momo  ly URL thanh ton, nhng  y  n gin chng ta s to URL trc tip)
         return "https://test-payment.momo.vn/v2/gateway/api/create?" +
                 "partnerCode=" + partnerCode +
                 "&orderId=" + transactionCode +
@@ -70,12 +70,12 @@ public class MomoUtils {
     // VERIFY SIGNATURE cho Momo Callback
     public static boolean verifySignature(Map<String, Object> params, String secretKey) {
         try {
-            String receivedSignature = String.valueOf(params.get("signature")); // Chữ ký nhận được từ Momo
+            String receivedSignature = String.valueOf(params.get("signature")); // Ch k nhn c t Momo
             if (receivedSignature == null || receivedSignature.isEmpty()) {
-                return false; // Nếu không có chữ ký, trả về false
+                return false; // Nu khng c ch k, tr v false
             }
 
-            // tạo chuỗi raw data để tạo chữ ký từ các tham số nhận được (trừ chữ ký)
+            // to chui raw data  to ch k t cc tham s nhn c (tr ch k)
             String rawSignature = "accessKey=" + params.get("accessKey") +
                     "&amount=" + params.get("amount") +
                     "&extraData=" + params.get("extraData") +
@@ -91,7 +91,7 @@ public class MomoUtils {
             return calculatedSignature.equals(receivedSignature);
             
         } catch (Exception e) {
-            return false; // Nếu có lỗi trong quá trình xác thực, trả về false
+            return false; // Nu c li trong qu trnh xc thc, tr v false
         }
     }
 }

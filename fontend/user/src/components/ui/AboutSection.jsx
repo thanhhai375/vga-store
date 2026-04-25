@@ -5,7 +5,7 @@ const AboutSection = () => {
   return (
     <section className="about-section">
       <div className="container about-container">
-        {/* CỘT TRÁI: TEXT & STATS (Compact) */}
+{/* CT TRI: TEXT & STATS (Compact) */}
         <div className="about-text-content">
           <div className="about-header">
             <h2 className="section-title">Why Choose VGA STORE?</h2>
@@ -30,7 +30,7 @@ const AboutSection = () => {
           </div>
         </div>
 
-        {/* CỘT PHẢI: ẢNH (Phóng to vừa phải, Bo góc) */}
+{/* CT PHI: NH (Phng to va phi, Bo gc) */}
         <div className="about-image-wrapper">
           <img
             src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=600&auto=format&fit=crop"

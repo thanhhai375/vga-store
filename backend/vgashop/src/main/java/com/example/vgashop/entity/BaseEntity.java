@@ -10,7 +10,7 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
-// lớp chung cho tất cả Entity Hỗ trợ Soft Delete và Audit (createdAt, updatedAt)
+// lp chung cho tt c Entity H tr Soft Delete v Audit (createdAt, updatedAt)
 @MappedSuperclass
 public abstract class BaseEntity {
     @Id

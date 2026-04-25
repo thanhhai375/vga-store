@@ -9,18 +9,18 @@ const FALLBACK_THUMBNAILS = [
   '/images/blog/blog-asus-rog-rtx4090.jpg',
 ];
 
-// Xử lý URL ảnh thông minh: ưu tiên thumbnail từ DB
+// X l URL nh thng minh: u tin thumbnail t DB
 const processImageUrl = (blog, index) => {
   const thumb = blog.thumbnail || blog.image || blog.imgUrl;
   if (thumb) {
-    // Ảnh từ Upload backend
+    // nh t Upload backend
     if (thumb.startsWith('/uploads/')) return `http://localhost:8080${thumb}`;
-    // Ảnh tịnh trong public user
-    if (thumb.startsWith('/images/')) return thumb; // Relative, React dev server tự serve
+    // nh tnh trong public user
+    if (thumb.startsWith('/images/')) return thumb; // Relative, React dev server t serve
     if (thumb.startsWith('http')) return thumb;
     return thumb;
   }
-  // Fallback khi DB không có ảnh
+  // Fallback khi DB khng c nh
   return FALLBACK_THUMBNAILS[index % FALLBACK_THUMBNAILS.length];
 };
 

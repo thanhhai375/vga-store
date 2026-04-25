@@ -15,7 +15,7 @@ const BestSellers = () => {
   useEffect(() => {
     productService.getAll()
       .then(data => {
-        // Sắp xếp lượt bán giảm dần
+        // Sp xp lt bn gim dn
         const sortedProducts = data.sort((a, b) => (b.sold || b.sales || 0) - (a.sold || a.sales || 0));
         setProducts(sortedProducts.slice(0, 4));
       })
@@ -33,7 +33,7 @@ const BestSellers = () => {
 
         <div className="bs-grid">
           {products.map((p) => {
-            // ĐÃ NÂNG CẤP: Dò quét TẤT CẢ các tên biến chứa link ảnh mà Backend có thể trả về!
+            // NNG CP: D qut TT C cc tn bin cha link nh m Backend c th tr v!
             const dbImageUrl =
               p.imgUrl ||
               p.img_url ||
@@ -42,26 +42,26 @@ const BestSellers = () => {
               p.image ||
               (p.images && p.images.length > 0 && p.images[0]?.url);
 
-            // Đường dẫn ảnh mặc định (Chính là tấm ảnh nền tím bạn đang thấy)
+            // ng dn nh mc nh (Chnh l tm nh nn tm bn ang thy)
             const fallbackImage = "/images/products/gpu_original.png";
 
-            // Chốt link cuối cùng
+            // Cht link cui cng
             const finalImageUrl = dbImageUrl || fallbackImage;
 
             return (
               <div
                 key={p.id}
                 className="asus-corner-card"
-                // Đảm bảo click vào sẽ sang đúng trang chi tiết sản phẩm (dùng /products hay /shop tùy Route của bạn)
+                // m bo click vo s sang ng trang chi tit sn phm (dng /products hay /shop ty Route ca bn)
                 onClick={() => navigate(`/product/${p.id}`)}
               >
                 <div className="bs-img-box">
                   <img
                     src={finalImageUrl}
                     alt={p.name}
-                    // TUYỆT CHIÊU Ở ĐÂY: Nếu ảnh từ DB bị lỗi 404, tự động đắp ảnh fallback vào!
+                    // TUYT CHIU Y: Nu nh t DB b li 404, t ng p nh fallback vo!
                     onError={(e) => {
-                      e.target.onerror = null; // Chống lặp vô hạn
+                      e.target.onerror = null; // Chng lp v hn
                       e.target.src = fallbackImage;
                     }}
                   />

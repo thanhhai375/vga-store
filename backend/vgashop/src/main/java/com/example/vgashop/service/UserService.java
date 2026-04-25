@@ -34,7 +34,7 @@ public class UserService {
     }
 
     // ==========================================
-    // MODULE: PROFILE API (TỪ NHÁNH HEAD)
+    // MODULE: PROFILE API (T NHNH HEAD)
     // ==========================================
     public UserProfileResponse getUserProfile(String username) {
         User user = userRepository.findByUsername(username)
@@ -79,7 +79,7 @@ public class UserService {
         address.setPhone(dto.getPhone());
         address.setDetailedAddress(dto.getDetailedAddress());
         
-        // Nếu là địa chỉ đầu tiên hoặc được đánh dấu default
+        // Nu l a ch u tin hoc c nh du default
         if (dto.getIsDefault() != null && dto.getIsDefault() || user.getAddresses().isEmpty()) {
             user.getAddresses().forEach(a -> a.setIsDefault(false));
             address.setIsDefault(true);
@@ -119,7 +119,7 @@ public class UserService {
     }
 
     // ==========================================
-    // MODULE: ADMIN / BE API (TỪ NHÁNH BE)
+    // MODULE: ADMIN / BE API (T NHNH BE)
     // ==========================================
     
     public Page<User> getAllUsers(int page, int size, String sortBy, String direction) {

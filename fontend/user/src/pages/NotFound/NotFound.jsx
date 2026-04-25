@@ -8,7 +8,7 @@ const NotFound = () => {
       <div className="notfound-bg-glow"></div>
 
       <div className="notfound-content">
-        {/* Số 404 to bự */}
+{/* S 404 to b */}
         <div className="notfound-code">
           <span className="code-4 left">4</span>
           <div className="code-0-wrapper">

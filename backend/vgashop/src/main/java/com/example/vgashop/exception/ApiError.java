@@ -8,39 +8,39 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * Class đại diện cho thông tin lỗi trả về cho Client
- * Format response lỗi thống nhất cho toàn bộ API
+* Class i din cho thng tin li tr v cho Client
+* Format response li thng nht cho ton b API
  */
 
-// Đây là lớp dùng chung để format response lỗi thống nhất cho toàn bộ API.
-// Mọi exception sẽ được GlobalExceptionHandler chuyển thành đối tượng này.
+// y l lp dng chung  format response li thng nht cho ton b API.
+// Mi exception s c GlobalExceptionHandler chuyn thnh i tng ny.
 
-@JsonInclude(JsonInclude.Include.NON_NULL)   // Không trả về các field null trong JSON
+@JsonInclude(JsonInclude.Include.NON_NULL)   // Khng tr v cc field null trong JSON
 
 public class ApiError {
 
-    private int status; // mã http
-    private String error; // tên lỗi là gì
-    private String message; // báo lỗi chi tiết 
+    private int status; // m http
+    private String error; // tn li l g
+    private String message; // bo li chi tit
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime timestamp;   // Thời gian xảy ra lỗi
+    private LocalDateTime timestamp;   // Thi gian xy ra li
 
-    // consu=tuctor mặc định dùng khi cần tạo 1 đối tượng rồi set field sau
+    // consu=tuctor mc nh dng khi cn to 1 i tng ri set field sau
     public ApiError() {
         this.timestamp = LocalDateTime.now();
     }
 
-    // constuctor này chỉ dùng khi cần status và message
+    // constuctor ny ch dng khi cn status v message
     public ApiError(int status, String message) {
         this.status = status;
         this.message = message;
-        // tự động lấy tên lỗi 
+        // t ng ly tn li
         this.error = HttpStatus.valueOf(status).getReasonPhrase();
         this.timestamp = LocalDateTime.now();
     }
 
-    // constuctor đầy đủ linh hoạt
+    // constuctor y  linh hot
     public ApiError(int status, String error, String message) {
         this.status = status;
         this.error = error;

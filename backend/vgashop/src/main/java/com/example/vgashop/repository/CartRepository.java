@@ -8,9 +8,9 @@ import com.example.vgashop.entity.Cart;
 
 public interface  CartRepository extends JpaRepository<Cart, Long> {
 
-    Optional<Cart> findByUser_IdAndDeletedFalse(Long userId); // tìm giỏ hàng của user, chỉ lấy giỏ hàng chưa bị xóa
+    Optional<Cart> findByUser_IdAndDeletedFalse(Long userId); // tm gi hng ca user, ch ly gi hng cha b xa
 
-     // Kiểm tra tồn tại giỏ hàng của user chưa bị xóa
+     // Kim tra tn ti gi hng ca user cha b xa
     boolean existsByUser_IdAndDeletedFalse(Long userId);
 
 }

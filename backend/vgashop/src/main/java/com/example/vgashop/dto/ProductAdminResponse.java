@@ -3,17 +3,17 @@ package com.example.vgashop.dto;
 import java.math.BigDecimal;
 
 
-// Dùng để admin quản lý sản phẩm, có thể bao gồm thông tin như số lượng sản phẩm, danh sách sản phẩm, v.v.
+// Dng  admin qun l sn phm, c th bao gm thng tin nh s lng sn phm, danh sch sn phm, v.v.
 public class ProductAdminResponse {
 
-    private Long productId; // ID sản phẩm
-    private String name; // Tên sản phẩm
-    private BigDecimal price; // Giá sản phẩm
-    private Integer stock; // Số lượng tồn kho
-    private String brandName; // Tên thương hiệu
-    private String categoryName; // Tên danh mục
-    private Boolean status; // Trạng thái sản phẩm (active/inactive)
-    private String imgUrl; // URL hình ảnh sản phẩm
+    private Long productId; // ID sn phm
+    private String name; // Tn sn phm
+    private BigDecimal price; // Gi sn phm
+    private Integer stock; // S lng tn kho
+    private String brandName; // Tn thng hiu
+    private String categoryName; // Tn danh mc
+    private Boolean status; // Trng thi sn phm (active/inactive)
+    private String imgUrl; // URL hnh nh sn phm
 
     public ProductAdminResponse(Long productId, String name, BigDecimal price, Integer stock, String brandName,
             String categoryName, Boolean status, String imgUrl) {

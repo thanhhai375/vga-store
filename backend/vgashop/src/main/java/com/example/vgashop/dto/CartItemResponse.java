@@ -2,19 +2,19 @@ package com.example.vgashop.dto;
 
 import java.math.BigDecimal;
 
-// thể hiện mỗi item trong giỏ hàng khi trả về cho client, có thể thêm các trường khác nếu cần
+// th hin mi item trong gi hng khi tr v cho client, c th thm cc trng khc nu cn
 public class CartItemResponse {
 
     private Long cartItemId; 
     private Long productId;
     private String productName;
-    // image url có thể lấy từ product entity hoặc từ một service riêng nếu cần xử lý thêm
+    // image url c th ly t product entity hoc t mt service ring nu cn x l thm
     private String productImage;
-    private BigDecimal price; // giá tại thời điểm thêm vào giỏ hàng, có thể khác với giá hiện tại của product nếu sau này có thay đổi giá
+    private BigDecimal price; // gi ti thi im thm vo gi hng, c th khc vi gi hin ti ca product nu sau ny c thay i gi
     private Integer quantity;
-    private BigDecimal subtotal; // tổng tiền của item này (quantity * price), có thể tính lại mỗi khi thay đổi quantity hoặc price
+    private BigDecimal subtotal; // tng tin ca item ny (quantity * price), c th tnh li mi khi thay i quantity hoc price
 
-    // constructor mặc định
+    // constructor mc nh
     public CartItemResponse() {}
 
     public CartItemResponse(Long cartItemId, Long productId, String productName, String productImage, BigDecimal price, Integer quantity, BigDecimal subtotal) {

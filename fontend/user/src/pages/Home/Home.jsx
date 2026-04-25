@@ -3,7 +3,7 @@ import HeroSection from './HeroSection';
 import SeriesSection from '../../components/ui/SeriesSection';
 import HelpChoose from '../../components/ui/HelpChoose';
 import BestSellers from '../../components/ui/BestSellers';
-// 1. IMPORT COMPONENT PHỤ KIỆN ĐỘNG VÀO ĐÂY
+// 1. IMPORT COMPONENT PH KIN NG VO Y
 import AccessoriesSection from '../../components/ui/AccessoriesSection';
 import './Home.css';
 
@@ -18,7 +18,7 @@ const Home = () => {
 
       <BestSellers />
 
-      {/* 2. GỌI COMPONENT VỪA TẠO Ở ĐÂY (Nó đã thay thế toàn bộ code cứng cũ) */}
+{/* 2. GI COMPONENT VA TO Y (N thay th ton b code cng c) */}
       <AccessoriesSection />
 
     </div>

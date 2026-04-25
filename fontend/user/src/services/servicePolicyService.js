@@ -1,7 +1,7 @@
 import axiosClient from '../api/axiosClient';
 
 const servicePolicyService = {
-  // Lấy tất cả chính sách dịch vụ từ BE
+  // Ly tt c chnh sch dch v t BE
   getAll: async () => {
     try {
       const res = await axiosClient.get('/service-policies');

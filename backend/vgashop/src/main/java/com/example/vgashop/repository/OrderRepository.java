@@ -17,36 +17,36 @@ import com.example.vgashop.entity.OrderStatus;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    // tìm đơn hàng theo user và chưa bị xóa
+    // tm n hng theo user v cha b xa
     Page<Order> findByUser_IdAndDeletedFalse(Long userId, Pageable pageable);
 
-    // tìm tất cả đơn hàng của user theo trạng thái
+    // tm tt c n hng ca user theo trng thi
     Page<Order> findByUser_IdAndStatusAndDeletedFalse(Long userId, OrderStatus status, Pageable pageable);
 
-    // tìm đơn hàng theo mã đơn hàng
+    // tm n hng theo m n hng
     Optional<Order> findByOrderCodeAndDeletedFalse(String orderCode);
 
-    // tìm đơn hàng theo id và user (đảm bảo user chỉ xem đơn hàng của mình)
+    // tm n hng theo id v user (m bo user ch xem n hng ca mnh)
     Optional<Order> findByIdAndUser_IdAndDeletedFalse(Long id, Long userId);
 
-    // Admin: tìm đơn hàng theo id và chi bị xóa 
+    // Admin: tm n hng theo id v chi b xa
     Optional<Order> findByIdAndDeletedFalse(Long id);
 
-    // Admin: Lấy tất cả đơn hàng (có phần trang)
+    // Admin: Ly tt c n hng (c phn trang)
     Page<Order> findByDeletedFalse(Pageable pageable);
 
-    // Admin: lọc theo trạng thái
+    // Admin: lc theo trng thi
     Page<Order> findByStatusAndDeletedFalse(OrderStatus status, Pageable pageable);
 
-    // kiểm tra đơn hàng có tồn tại và ch bị xóa
+    // kim tra n hng c tn ti v ch b xa
     boolean existsByIdAndDeletedFalse(Long id);
 
-    // phần admin dashboard
+    // Admin dashboard statistics
     long countByDeletedFalse();
 
     long countByCreatedAtAfterAndDeletedFalse(LocalDateTime dateTime);
 
-    // Đếm số đơn hàng hôm nay (từ 00:00:00 đến hiện tại)
+    // m s n hng hm nay (t 00:00:00 n hin ti)
     @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt >= :startOfDay")
     long countTodayOrders(@Param("startOfDay") LocalDateTime startOfDay);
 

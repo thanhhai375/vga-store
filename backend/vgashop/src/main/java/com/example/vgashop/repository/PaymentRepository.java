@@ -16,24 +16,24 @@ import com.example.vgashop.entity.PaymentStatus;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    // Tìm thanh toán theo order
+    // Tm thanh ton theo order
     Optional<Payment> findByOrder_IdAndDeletedFalse(Long orderId);
 
-    // tìm tất cả thanh toán của User
+    // tm tt c thanh ton ca User
     Page<Payment> findByOrder_User_IdAndDeletedFalse(Long userId, Pageable pageable);
 
-    // ADMIn: Lấy tất cả thanh toán
+    // ADMIn: Ly tt c thanh ton
     Page<Payment> findByDeletedFalse(Pageable pageable);
 
-    // Lọc theo trạng thái thanh toán
+    // Lc theo trng thi thanh ton
     Page<Payment> findByPaymentStatusAndDeletedFalse(PaymentStatus status, Pageable pageable);
 
-    // kiểm tra tồn tại
+    // kim tra tn ti
     boolean existsByOrder_IdAndDeletedFalse(Long orderId);
 
     Optional<Payment> findByTransactionCodeAndDeletedFalse(String transactionCode);
 
-    // phần admin dashboard
+    // Admin dashboard statistics
     @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.deleted = false")
     BigDecimal findTotalRevenue();
 

@@ -1,13 +1,13 @@
 import axiosClient from '../api/axiosClient';
 
 export const orderService = {
-  // Tạo đơn hàng mới
+  // To n hng mi
   createOrder: async (orderData) => {
     const response = await axiosClient.post('/orders', orderData);
     return response?.data || response;
   },
 
-  // Tạo thanh toán cho đơn hàng (gọi sau createOrder)
+  // To thanh ton cho n hng (gi sau createOrder)
   createPayment: async (orderId, paymentMethod) => {
     const response = await axiosClient.post(`/payments/orders/${orderId}`, {
       paymentMethod // 'COD' | 'VNPAY' | 'MOMO' | 'BANK_TRANSFER'
@@ -15,7 +15,7 @@ export const orderService = {
     return response?.data || response;
   },
 
-  // Lấy danh sách đơn hàng của user hiện tại
+  // Ly danh sch n hng ca user hin ti
   getMyOrders: async () => {
     try {
       const response = await axiosClient.get('/orders/my');
@@ -26,7 +26,7 @@ export const orderService = {
     }
   },
 
-  // Lấy chi tiết 1 đơn hàng
+  // Ly chi tit 1 n hng
   getOrderById: async (id) => {
     try {
       const response = await axiosClient.get(`/orders/${id}`);
@@ -37,7 +37,7 @@ export const orderService = {
     }
   },
 
-  // Hủy đơn hàng (user chỉ được hủy khi status = PENDING)
+  // Hy n hng (user ch c hy khi status = PENDING)
   cancelOrder: async (orderId) => {
     const response = await axiosClient.put(`/orders/${orderId}/cancel`);
     return response?.data || response;

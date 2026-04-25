@@ -44,7 +44,7 @@ public class ProductDTO {
     // Constuctor
     public ProductDTO() {}
 
-    // getter và setter
+    // getter v setter
     public Long getId() {
         return id;
     }

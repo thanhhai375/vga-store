@@ -21,7 +21,7 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    // lấy tất cả
+    // ly tt c
     public Page<Category> getAllCategories(Pageable pageable) {
         return  categoryRepository.findByDeletedFalse(pageable);
     }
@@ -31,13 +31,13 @@ public class CategoryService {
     }
 
     // get by id
-    // nếu kh tìm thấy thì trả về ResourceNotFoundException
+    // nu kh tm thy th tr v ResourceNotFoundException
     public Category getCategoryById(Long id) {
         return categoryRepository.findByIdAndDeleted(id, false)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục với ID " + id));
     }
 
-    // tìm kiếm 
+    // tm kim
     public Page<Category> searchCategory(String keyWord, Pageable pageable) {
         if (keyWord == null || keyWord.trim().isEmpty()) {
             return getAllCategories(pageable);
@@ -45,7 +45,7 @@ public class CategoryService {
         return categoryRepository.findByNameContaining(keyWord.trim(), pageable);
     }
 
-    // Lọc danh sách theo tên + status
+    // Lc danh sch theo tn + status
     public Page<Category> filterCategories(String keyWord, Boolean active, int page, int size, String sortBy, String direction) {
         keyWord = (keyWord == null) ? "" : keyWord.trim();
 
@@ -56,28 +56,28 @@ public class CategoryService {
 
         PageRequest pageable = PageRequest.of(page, size, finalSort);
 
-        // nếu kh có điều kiện lọc nào
+        // nu kh c iu kin lc no
         if (keyWord.isEmpty() && active == null) {
             return categoryRepository.findAll(pageable);
         }
 
-        // chỉ lọc theo status
+        // ch lc theo status
         if (keyWord.isEmpty()) {
             return categoryRepository.findByActive(active, pageable);
         }
 
-        // chỉ lọc theo tên
+        // ch lc theo tn
         if (active == null) {
             return categoryRepository.findByNameContaining(keyWord, pageable);
         }
 
-        // lọc kết hợp tên + status
+        // lc kt hp tn + status
         return categoryRepository.findByNameContainingIgnoreCaseAndActive(keyWord, active, pageable);
     }
 
 
-    // tạo mới
-    // trả về DuplicateResourceException nếu tên đã tồn tại
+    // to mi
+    // tr v DuplicateResourceException nu tn  tn ti
     public Category createCategory(Category category) {
         if (categoryRepository.existsByNameIgnoreCase(category.getName())) {
             throw new DuplicateResourceException("Tên danh mục '" + category.getName() + "' đã tồn tại!");
@@ -85,13 +85,13 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    // cập nhật
-    // nếu kh tìm thấy Id thì trả về ResourceNotFoundException
-    // nếu tên mới bị trùng vói danh mục khác thì trả về DuplicateResourceException
+    // cp nht
+    // nu kh tm thy Id th tr v ResourceNotFoundException
+    // nu tn mi b trng vi danh mc khc th tr v DuplicateResourceException
     public Category updateCategory(Long id, Category newCategory) {
         return categoryRepository.findByIdAndDeleted(id, false)
                 .map(category -> {
-                    // Check trùng tên nếu đổi tên
+                    // Check trng tn nu i tn
                     if (!category.getName().equalsIgnoreCase(newCategory.getName()) &&
                         categoryRepository.existsByNameIgnoreCase(newCategory.getName())) {
                         throw new DuplicateResourceException("Tên danh mục '" + newCategory.getName() + "' đã tồn tại!");
@@ -106,8 +106,8 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục với ID " + id));
     }
 
-    // xóa 
-    // nếu kh tìm thấy id trả về ResourceNotFoundException
+    // xa
+    // nu kh tm thy id tr v ResourceNotFoundException
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsByIdAndDeleted(id, false)) {
             throw new ResourceNotFoundException("Không tìm thấy danh mục có ID " + id);

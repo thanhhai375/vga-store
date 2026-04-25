@@ -36,7 +36,7 @@ public class Order extends BaseEntity {
     private User user;
 
     @Column(nullable = false)
-    private String orderCode; // mã đơn hàng
+    private String orderCode; // m n hng
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
@@ -70,7 +70,7 @@ public class Order extends BaseEntity {
         this.createdAt = LocalDateTime.now();
     }
 
-    // constuctor mặc định
+    // constuctor mc nh
     public Order() {
     };
 

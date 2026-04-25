@@ -27,7 +27,7 @@ const Blog = () => {
     fetchBlogs();
   }, []);
 
-  // ── Filter + Search ────────────────────────────────────────────
+  // Filter + Search
   const filtered = useMemo(() => {
     let posts = [...blogs];
     if (activeCategory !== 'Tất cả') {
@@ -47,24 +47,24 @@ const Blog = () => {
   const visiblePosts = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
 
-  // ── Hero post (featured & most views)
+  // Hero post (featured & most views)
   const heroPost = [...blogs]
     .filter((p) => p.featured)
     .sort((a, b) => (b.views || 0) - (a.views || 0))[0];
 
-  // ── Sidebar trending (top 5 by views)
+  // Sidebar trending (top 5 by views)
   const trending = [...blogs].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
 
   if (loading) {
     return <div className="blog-page" style={{ paddingTop: '120px', textAlign: 'center', color: '#555' }}>Đang tải bài viết...</div>;
   }
 
-  // Dò ảnh cho Bài nổi bật
+  // D nh cho Bi ni bt
   const heroBgImage = heroPost ? (heroPost.thumbnail || heroPost.imgUrl || heroPost.image || '/images/products/gpu_original.png') : '';
 
   return (
     <div className="blog-page">
-      {/* ── PAGE HERO ─────────────────────────────────────────── */}
+{/* PAGE HERO */}
       {heroPost && activeCategory === 'Tất cả' && !searchQuery && (
         <Link to={`/blog/${heroPost.id}`} className="blog-hero-banner">
           <div
@@ -89,10 +89,10 @@ const Blog = () => {
         </Link>
       )}
 
-      {/* ── MAIN CONTENT ──────────────────────────────────────── */}
+{/* MAIN CONTENT */}
       <div className="blog-main-wrapper container">
         <div className="blog-layout">
-          {/* ── LEFT: Posts ──────────────────────────────────── */}
+{/* LEFT: Posts */}
           <div className="blog-content-col">
             {/* Filter + Search */}
             <div className="blog-filter-bar">
@@ -170,7 +170,7 @@ const Blog = () => {
             )}
           </div>
 
-          {/* ── RIGHT: Sidebar (ĐÃ XÓA KHỐI TƯ VẤN) ──────────────────────────────── */}
+{/* RIGHT: Sidebar ( XA KHI T VN) */}
           <aside className="blog-sidebar">
             {/* Trending */}
             <div className="blog-sidebar-widget">
@@ -237,9 +237,9 @@ const Blog = () => {
   );
 };
 
-// ── BlogCard Component ─────────────────────────────────────────────────────
+// BlogCard Component
 function BlogCard({ post }) {
-  // Dò ảnh thông minh cho card bài viết
+  // D nh thng minh cho card bi vit
   const cardImage = post.thumbnail || post.imgUrl || post.image || '/images/products/gpu_original.png';
 
   return (

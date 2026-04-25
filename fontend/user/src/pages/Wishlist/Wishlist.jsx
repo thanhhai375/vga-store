@@ -18,7 +18,7 @@ const Wishlist = () => {
       <div className="wishlist-layout">
         <div className="wishlist-header">
           <h1 className="wishlist-title">
-            {/* ICON TRÁI TIM ĐỎ CHUẨN */}
+{/* ICON TRI TIM CHUN */}
             <svg width="28" height="28" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
@@ -35,7 +35,7 @@ const Wishlist = () => {
         {wishlistItems.length === 0 ? (
           <div className="wishlist-empty">
             <div className="empty-heart-icon">
-              {/* ICON TRÁI TIM RỖNG THANH LỊCH CHO TRẠNG THÁI TRỐNG */}
+{/* ICON TRI TIM RNG THANH LCH CHO TRNG THI TRNG */}
               <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
               </svg>
@@ -48,13 +48,13 @@ const Wishlist = () => {
           <div className="wishlist-grid">
             {wishlistItems.map(item => {
 
-              // 🌟 NÂNG CẤP DÒ ẢNH: Gọi đúng tên biến imgUrl từ Database của bạn
+              // NNG CP D NH: Gi ng tn bin imgUrl t Database ca bn
               const cardImage = item.imgUrl || item.img || item.thumbnail || '/images/products/gpu_original.png';
 
               return (
                 <div key={item.id} className="wishlist-card">
 
-                  {/* ICON NÚT XÓA */}
+{/* ICON NT XA */}
                   <button
                     className="btn-remove-wish"
                     onClick={() => dispatch(removeFromWishlist(item.id))}
@@ -79,7 +79,7 @@ const Wishlist = () => {
 
                     <div className="wish-actions">
 
-                      {/* ICON GIỎ HÀNG */}
+{/* ICON GI HNG */}
                       <button
                         className="btn-add-to-cart-wish"
                         onClick={() => {

@@ -30,11 +30,11 @@ const ProductDetail = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [canReview, setCanReview] = useState(false);
 
-  // SỬA LỖI 1: Bọc thép Redux Auth (Chống sập web nếu state.auth chưa tồn tại)
+  // Fix 1: bọc thép redux auth (chống sập web nếu state.auth chưa tồn tại)
   const authState = useSelector(state => state.auth) || {};
   const { user, isAuthenticated } = authState;
 
-  // SỬA LỖI 2: Bọc thép Redux Wishlist
+  // Fix 2: bọc thép redux wishlist
   const wishlistItems = useSelector(state => state.wishlist?.wishlistItems || []);
   const isWishlisted = product ? wishlistItems.some(i => i.id === product.id) : false;
 
@@ -44,7 +44,7 @@ const ProductDetail = () => {
         setLoading(true);
         setError(null);
         const apiResponse = await axiosClient.get(`/products/${id}`);
-        // Xử lý an toàn dữ liệu từ axios
+        // X l an ton d liu t axios
         const pData = apiResponse?.data || apiResponse;
 
         if (!pData || !pData.id) {
@@ -65,7 +65,7 @@ const ProductDetail = () => {
           }
         }
 
-        // Khôi phục URL ảnh chuẩn từ CSDL hoặc dùng fallback Asus cực chất
+        // Resolve image URL từ csdl hoặc dùng fallback asus cực chất
         const dbImageUrl = pData.imageUrl || pData.imgUrl || pData.img_url || pData.image;
         let formattedImageUrl = dbImageUrl;
         if (dbImageUrl && dbImageUrl.startsWith('/uploads/')) {
@@ -76,10 +76,10 @@ const ProductDetail = () => {
         if (images.length === 0 && fallbackDBImage) images = [fallbackDBImage];
 
         setGallery(images);
-        // Đổi ảnh mặc định thành ảnh bạn đang có
+        // Set default image thành ảnh bạn đang có
         setMainImage(images[0] || '/images/products/gpu_original.png');
 
-        // Load reviews an toàn
+        // Fetch reviews with error handling
         try {
           const rev = await axiosClient.get(`/reviews/product/${id}`);
           const revData = rev?.data || rev;
@@ -88,7 +88,7 @@ const ProductDetail = () => {
           setReviews([]);
         }
 
-        // Kiểm tra quyền review
+        // Check if the user is allowed to review
         if (isAuthenticated) {
           try {
             const canRevRes = await axiosClient.get(`/reviews/can-review/${id}`);
@@ -115,7 +115,7 @@ const ProductDetail = () => {
   useEffect(() => {
     if (location.hash === '#reviews') {
       setActiveTab('reviews');
-      // Dùng timeout nhỏ để chờ component render xong rồi mới scroll
+      // Dng timeout nh ch component render xong ri mi scroll
       setTimeout(() => {
         if (reviewsSectionRef.current) {
           reviewsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -170,7 +170,7 @@ const ProductDetail = () => {
     if (!newComment.trim()) return;
     setSubmitting(true);
     try {
-      // userId có thể nằm ở user.id (mới) hoặc user.userId (cũ - AuthResponse)
+      // userId c th nm user.id (mi) hoc user.userId (c - AuthResponse)
       const userId = user?.id || user?.userId || null;
       const displayName = isAuthenticated && user
         ? (user.fullName || user.username || 'Người dùng')
@@ -207,7 +207,7 @@ const ProductDetail = () => {
     ? (reviews.reduce((s, r) => s + (r.rating || 5), 0) / reviews.length).toFixed(1)
     : '0.0';
 
-  // SỬA LỖI 3: Chống lỗi NaN sập web khi render số lượng sao
+  // Fix 3: chống lỗi nan sập web khi render số lượng sao
   const validAvgRating = isNaN(Number(avgRating)) ? 5 : Number(avgRating);
   const starCount = Math.max(1, Math.round(validAvgRating));
 
@@ -232,7 +232,7 @@ const ProductDetail = () => {
   return (
     <div className="product-detail-page">
 
-      {/* ── HERO: ẢNH + GIÁ ─────────────────────────────────── */}
+{/* HERO: NH + GI */}
       <div className="detail-hero">
         <div className="container">
           <button className="btn-back" onClick={() => navigate('/products')} style={{ marginBottom: '20px', cursor: 'pointer' }}>
@@ -240,7 +240,7 @@ const ProductDetail = () => {
           </button>
 
           <div className="detail-grid">
-            {/* CỘT TRÁI: ẢNH */}
+{/* CT TRI: NH */}
             <div className="detail-gallery">
               <div className="main-image-box">
                 <img
@@ -265,7 +265,7 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* CỘT PHẢI: THÔNG TIN */}
+{/* CT PHI: THNG TIN */}
             <div className="detail-info">
               <div className="brand-tag">
                 {product.category?.name || 'Card Đồ Họa'} • {product.brand?.name || 'VGA'}
@@ -333,7 +333,7 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* ── TABS ─────────────────────────────────────────────── */}
+{/* TABS */}
       <div className="detail-tabs-section">
         <div className="container">
           <div className="tab-headers">
@@ -425,7 +425,7 @@ const ProductDetail = () => {
                         {r.avatar ? (
                           <img src={r.avatar} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} onError={(e) => { e.target.onerror = null; e.target.src = 'https://ui-avatars.com/api/?name=' + (r.guestName || 'U') + '&background=random'; }} />
                         ) : (
-                          <img src={'https://ui-avatars.com/api/?name=' + (r.user?.fullName || r.user?.username || r.guestName || 'Khách hàng') + '&background=random'} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                          <img src={'https:// ui-avatars.com/api/?name=' + (r.user?.fullName || r.user?.username || r.guestName || 'Khch hng') + '&background=random'} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                         )}
                       </div>
                       <div className="review-body">
@@ -451,7 +451,7 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* ── SẢN PHẨM KHÁC ────────────────────────────────── */}
+{/* SN PHM KHC */}
       <div className="related-section">
         <div className="container">
           <h2 className="related-title">Sản Phẩm Tương Tự</h2>
@@ -459,7 +459,7 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* POPUP THÊM VÀO GIỎ */}
+{/* POPUP THM VO GI */}
       {showPopup && (
         <div className="custom-popup-overlay" onClick={() => setShowPopup(false)}>
           <div className="custom-popup-content" onClick={(e) => e.stopPropagation()}>

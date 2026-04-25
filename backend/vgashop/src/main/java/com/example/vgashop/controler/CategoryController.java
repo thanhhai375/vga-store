@@ -31,7 +31,7 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    // lấy tất cả có phân trang + sort
+    // ly tt c c phn trang + sort
     @GetMapping
     public ApiResponse<Page<Category>> getAll(
         @RequestParam(defaultValue= "0")
@@ -51,7 +51,7 @@ public class CategoryController {
          return ApiResponse.success("Lấy danh sách danh mục thành công!", data);
     }
 
-    // lấy danh mục đang active
+    // ly danh mc ang active
     @GetMapping("/active")
     public ApiResponse<Page<Category>> getActive(
         @RequestParam(defaultValue= "0")
@@ -65,7 +65,7 @@ public class CategoryController {
         return ApiResponse.success("Lấy danh mục đang active thành công", data);
     }
 
-    // tìm kiếm 
+    // tm kim
     @GetMapping("/search")
     public ApiResponse<Page<Category>> searchCategorys(
         @RequestParam String keyWord,
@@ -78,7 +78,7 @@ public class CategoryController {
         return ApiResponse.success("Tìm kiếm danh mục thành công", data);
     }
 
-    // lọc 
+    // lc
     @GetMapping("/filter")
     public ApiResponse<Page<Category>> filterCategories(
             @RequestParam(required = false) String keyword,
@@ -92,14 +92,14 @@ public class CategoryController {
         return ApiResponse.success("Lọc danh mục thành công", data);
     }
 
-    // lấy 1 danh mục theo id
+    // ly 1 danh mc theo id
     @GetMapping("/{id}")
     public ApiResponse<Category> getById(@PathVariable Long id) {
         Category category = categoryService.getCategoryById(id);
         return ApiResponse.success("Lấy danh mục thành công", category);
     }
 
-    // tạo mới
+    // to mi
     // @PostMapping
     // public ResponseEntity<Category> create(@RequestBody Category category) {
     //     return ResponseEntity.ok(categoryService.createCategory(category));
@@ -109,7 +109,7 @@ public class CategoryController {
     public ApiResponse<Category> create(
             @Valid @RequestBody CategoryDTO dto) {    
 
-        // Chuyển DTO → Entity trước khi gọi service
+        // Chuyn DTO  Entity trc khi gi service
         Category category = new Category();
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
@@ -119,13 +119,13 @@ public class CategoryController {
         return ApiResponse.success("Tạo danh mục thành công", save);
     }
 
-    // cập nhật
+    // cp nht
     // @PutMapping("/{id}")
     // public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody Category newCategory) {
     //     return ResponseEntity.ok(categoryService.updateCategory(id, newCategory));
     // }
 
-    // cập nhật mới dùng DTO
+    // cp nht mi dng DTO
     @PutMapping("/{id}")
     public ApiResponse<Category> update(@PathVariable Long id, @Valid @RequestBody CategoryDTO dto) {
         Category category = new Category();
@@ -138,7 +138,7 @@ public class CategoryController {
     }
 
 
-    // xóa
+    // xa
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         categoryService.deleteCategory(id);

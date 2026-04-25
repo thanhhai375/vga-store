@@ -15,7 +15,7 @@ import com.example.vgashop.repository.ApiResponse;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // RESOURCE NOT FOUND (Xử lý khi không tìm thấy resource (404))
+    // RESOURCE NOT FOUND (X l khi khng tm thy resource (404))
 
     // @ExceptionHandler(
     //     ResourceNotFoundException.class
@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
     //     );
     // }
 
-    // dùng API response
+    // dng API response
     @ExceptionHandler(
         ResourceNotFoundException.class
     )
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // DUPLICATE RESOURCE (Xử lý khi dữ liệu bị trùng (409 Conflict))
+    // DUPLICATE RESOURCE (X l khi d liu b trng (409 Conflict))
     // @ExceptionHandler(
     //     DuplicateResourceException.class
     // )
@@ -52,14 +52,14 @@ public class GlobalExceptionHandler {
     //     return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     // }
 
-     // dùng API Response
+     // dng API Response
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ApiResponse<Object>> handleDuplicateResource(DuplicateResourceException ex) {
         ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
-     // VALIDATION ERROR (Xử lý lỗi validation (@Valid + @NotBlank, @Size...))
+     // VALIDATION ERROR (X l li validation (@Valid + @NotBlank, @Size...))
     //  @ExceptionHandler(MethodArgumentNotValidException.class)
     //  public ResponseEntity<Object> handleValidation(MethodArgumentNotValidException ex) {
     //     Map<String, String> errors = new HashMap<>();
@@ -70,25 +70,25 @@ public class GlobalExceptionHandler {
     //                 errors.put(error.getField(), error.getDefaultMessage())
     //              );
         
-    //     // tạo ApiError để trả format thống nhất 
+    // // to ApiError  tr format thng nht
     //     ApiError apiError = new ApiError(
     //         HttpStatus.BAD_REQUEST.value(),
     //         "Validation Failed",
-    //         "Dữ liệu không hợp lệ!"
+    // "D liu khng hp l!"
     //     );
 
-    //     // tạo báo lỗi chi tiết
+    // // to bo li chi tit
     //     Map<String, Object> response = new HashMap<>();
     //     response.put("Status", apiError.getStatus());
     //     response.put("error", apiError.getError());
     //     response.put("message", apiError.getMessage());
     //     response.put("timestamp", apiError.getTimestamp());
-    //     response.put("errors", errors); // chi tiết từng field lỗi
+    // response.put("errors", errors); // chi tit tng field li
     //     // return new ResponseEntity<> (errors, HttpStatus.BAD_REQUEST);
     //     return new ResponseEntity<> (response, HttpStatus.BAD_REQUEST);
     // }
 
-    // dùng API Response
+    // dng API Response
     @ExceptionHandler(MethodArgumentNotValidException.class)
      public ResponseEntity<ApiResponse<Object>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -99,7 +99,7 @@ public class GlobalExceptionHandler {
                     errors.put(error.getField(), error.getDefaultMessage())
                  );
         
-        // tạo ApiError để trả format thống nhất 
+        // to ApiError  tr format thng nht
         ApiResponse<Object> response = new ApiResponse<>(
             false,
             "Dữ liệu không hợp lệ",
@@ -108,22 +108,22 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<> (response, HttpStatus.BAD_REQUEST);
     }
 
-    // GENERAL ERROR (Xử lý tất cả các exception còn lại (500))
+    // GENERAL ERROR (X l tt c cc exception cn li (500))
     // @ExceptionHandler(Exception.class)
     // public ResponseEntity<ApiError> handleGeneral(Exception ex) {
     //     ApiError error = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error",
-    //             "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!");
+    // " xy ra li h thng. Vui lng th li sau!");
 
-    //     // // Chỉ log lỗi thật, không trả stack trace về client
+    // // // Ch log li tht, khng tr stack trace v client
     //     ex.printStackTrace();
     //     return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     // }
 
-    // dùng API Response
+    // dng API Response
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneral(Exception ex) {
         ApiResponse<Object> response = ApiResponse.error("Đã xảy ra lỗi hệ thống vui lòng thử lại!");
-        // // Chỉ log lỗi thật, không trả stack trace về client
+        // // Ch log li tht, khng tr stack trace v client
         ex.printStackTrace();
         ApiError error = new ApiError(
         HttpStatus.INTERNAL_SERVER_ERROR.value(), 

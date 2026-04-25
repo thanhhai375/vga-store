@@ -25,7 +25,7 @@ public class UserDTO {
 
     private String role; // ADMIN, STAFF, USER
 
-    // getter và setter
+    // getter v setter
     public String getUsername() {
         return username;
     }

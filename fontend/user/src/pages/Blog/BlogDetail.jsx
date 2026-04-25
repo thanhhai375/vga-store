@@ -76,7 +76,7 @@ const BlogDetail = () => {
     );
   }
 
-  // Parse content blocks từ JSON
+  // Parse content blocks t JSON
   let contentBlocks = [];
   try {
     contentBlocks = JSON.parse(post.content);
@@ -89,12 +89,12 @@ const BlogDetail = () => {
 
   const publishDate = post.createdAt || post.publishedDate;
 
-  // 🌟 NÂNG CẤP DÒ ẢNH: Bắt mọi trường hợp biến ảnh từ Backend
+  // NNG CP D NH: Bt mi trng hp bin nh t Backend
   const heroBgImage = post.thumbnail || post.imgUrl || post.imageUrl || post.image || '/images/products/gpu_original.png';
 
   return (
     <div className="blog-detail-page">
-      {/* ── Hero ─────────────────────────────────────────────── */}
+{/* Hero */}
       <div
         className="bd-hero"
         style={{ backgroundImage: `url("${heroBgImage}")` }}
@@ -118,7 +118,7 @@ const BlogDetail = () => {
       </div>
 
       <div className="bd-container container">
-        {/* ── Nội dung bài viết ────────────────────────────── */}
+{/* Ni dung bi vit */}
         <article className="bd-main">
           <div className="bd-excerpt">{post.excerpt}</div>
 
@@ -173,7 +173,7 @@ const BlogDetail = () => {
           </div>
         </article>
 
-        {/* ── Bình luận ───────────────────────────────────── */}
+{/* Bnh lun */}
         <div className="bd-comments-section">
           <h3>💬 Bình luận ({comments.length})</h3>
 

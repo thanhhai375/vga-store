@@ -62,7 +62,7 @@ public class Brand extends BaseEntity {
         this.name = name;
     }
 
-    // 🌟 QUAN TRỌNG NHẤT LÀ CHỖ NÀY: PHẢI CHẶN Ở GETTER
+    // QUAN TRNG NHT L CH NY: PHI CHN  GETTER
     @JsonIgnore
     public List<Product> getProducts() {
         return products;

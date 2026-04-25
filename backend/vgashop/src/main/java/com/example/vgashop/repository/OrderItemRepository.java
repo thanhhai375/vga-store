@@ -10,10 +10,10 @@ import com.example.vgashop.entity.OrderItem;
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
 
-    // Lấy tất cả item của một đơn hàng (dùng khi xem chi tiết đơn hàng)
+    // Retrieve all items belonging to an order (dùng khi xem chi tiết đơn hàng)
     List<OrderItem> findByOrder_IdAndDeletedFalse(Long orderId);
 
-    // Kiểm tra xem user có mua sản phẩm này và đơn hàng đã giao thành công chưa
+    // Check if user has purchased this product in a delivered order và đơn hàng đã giao thành công chưa
     boolean existsByOrder_User_IdAndOrder_StatusAndProduct_Id(Long userId, com.example.vgashop.entity.OrderStatus status, Long productId);
 
 }

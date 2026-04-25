@@ -52,7 +52,7 @@ public class BrandController {
         return ApiResponse.success("Lấy danh sách thương hiệu thành công", data);
     }
 
-    // lọc 
+    // lc
     @GetMapping("/filter")
     public ApiResponse<Page<Brand>> filterBrands(
         @RequestParam(required = false) String keyword,
@@ -66,13 +66,13 @@ public class BrandController {
     return ApiResponse.success("Lọc thương hiệu thành công", data);
 }
 
-    // lấy tất cả kh phân trang
+    // ly tt c kh phn trang
     public ApiResponse<List<Brand>> getAllBrandNoPage() {
         List<Brand> data = brandService.getAllNoPage();
         return ApiResponse.success("Lấy tất cả thương hiệu thành công", data);
     }
 
-    // lấy 1 brand 
+    // ly 1 brand
     @GetMapping("/{id}")
     public ApiResponse<Brand> getBrandById(@PathVariable Long id) {
         // return brandService.getBrandId(id)
@@ -83,7 +83,7 @@ public class BrandController {
         return ApiResponse.success("Lấy thương hiệu thành công", brand);
     }
 
-    // tìm kiếm
+    // tm kim
     @GetMapping("/search")
     public ApiResponse<Page<Brand>> search(
         @RequestParam String keyWord,
@@ -98,7 +98,7 @@ public class BrandController {
        return ApiResponse.success("Tìm kiếm thương hiệu thành công", data);
     }
 
-    // tạo mới 
+    // to mi
     // @PostMapping
     // public Brand create(
     //     @RequestBody Brand brand
@@ -117,7 +117,7 @@ public class BrandController {
         return ApiResponse.success("Tạo thương hiệu thành công", saved);
     }
 
-    // cập nhật
+    // cp nht
     // @PutMapping("/{id}")
     // public Brand update(@PathVariable Long id, @RequestBody Brand brand) {
     //     return brandService.updateBrand(id, brand);
@@ -130,31 +130,31 @@ public class BrandController {
         return ApiResponse.success("Cập nhật thương hiệu thành công", updated);
     }
 
-    // xóa
+    // xa
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         brandService.deleteBrand(id);
         return ApiResponse.message("Xóa thương hiệu thành công");
     }
 
-    // CONVERT DTO → ENTITY
+    // CONVERT DTO  ENTITY
     private Brand convertDtoToEntity(BrandDTO dto) {
         Brand brand = new Brand();
         brand.setName(dto.getName());
         brand.setDescription(dto.getDescription());
         brand.setStatus(dto.getStatus() != null ? dto.getStatus() : true);
 
-        // xủ lý slug
+        // x l slug
         if (dto.getSlug() != null && !dto.getSlug().trim().isEmpty()) {
             brand.setSlug(dto.getSlug().trim().toLowerCase());
         } else {
-            // tự sinh slug từ tên nếu người dùng không truyên
+            // t sinh slug t tn nu ngi dng khng truyn
             brand.setSlug(generateSlug(dto.getName()));
         }
         return brand;
     }
 
-    // Hàm tự sinh slug
+    // Hm t sinh slug
     private String generateSlug(String name) {
         if (name == null || name.trim().isEmpty()) {
             return "";
@@ -162,8 +162,8 @@ public class BrandController {
 
         return name.toLowerCase()
                    .trim()
-                   .replaceAll("\\s+", "-") // khoảng trắng thành -
-                   .replaceAll("[^a-z0-9-]", ""); // bỏ ký tự đặc biệt
+                   .replaceAll("\\s+", "-") // khong trng thnh -
+                   .replaceAll("[^a-z0-9-]", ""); // b k t c bit
     }
 }
 

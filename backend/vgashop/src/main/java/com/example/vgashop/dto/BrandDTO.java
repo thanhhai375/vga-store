@@ -19,7 +19,7 @@ public class BrandDTO {
 
     private Boolean status = true;
 
-    // Slug dùng cho SEO và URL thân thiện (rất quan trọng)
+    // Slug dng cho SEO v URL thn thin (rt quan trng)
     @Size(max = 150, message = "Slug không được vượt quá 150 ký tự")
     private String slug;
 
