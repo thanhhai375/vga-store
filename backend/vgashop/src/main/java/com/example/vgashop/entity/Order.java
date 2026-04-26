@@ -21,49 +21,48 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name= "orders")
+@Table(name = "orders")
 public class Order extends BaseEntity {
 
-
     @Enumerated(EnumType.STRING)
-    @Column(name= "status", nullable= false)
+    @Column(name = "status", nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
 
-    @Column(name= "full_name", length= 150)
+    @Column(name = "full_name", length = 150)
     private String fullName;
 
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name= "user_id", nullable= false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false)
-    private String orderCode; // mã đơn hàng 
+    private String orderCode; // Order
 
-    @Column(nullable= false, precision= 12, scale= 2)
+    @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(precision= 12, scale= 2)
+    @Column(precision = 12, scale = 2)
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable= false)
+    @Column(nullable = false)
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
-    
-    @Column(nullable= false, length= 255)
+
+    @Column(nullable = false, length = 255)
     private String shippingAddress;
 
-    @Column(length= 15)
+    @Column(length = 15)
     private String phone;
 
-    @Column(columnDefinition= "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String note;
 
     private LocalDateTime createdAt;
-    private LocalDateTime confirmedAt; // 
+    private LocalDateTime confirmedAt; //
     private LocalDateTime shippedAt;
     private LocalDateTime deliveredAt;
 
-    @OneToMany(mappedBy= "order", cascade= CascadeType.ALL, orphanRemoval= true, fetch= FetchType.LAZY)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> items = new ArrayList<>();
 
     @PrePersist
@@ -71,9 +70,8 @@ public class Order extends BaseEntity {
         this.createdAt = LocalDateTime.now();
     }
 
-
-    // constuctor mặc định
-    public Order() {};
+    public Order() {
+    };
 
     // method
     public void calculateTotal() {
@@ -82,7 +80,6 @@ public class Order extends BaseEntity {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    // getter setter
     public OrderStatus getStatus() {
         return status;
     }
@@ -91,23 +88,53 @@ public class Order extends BaseEntity {
         this.status = status;
     }
 
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
+    public String getFullName() {
+        return fullName;
+    }
 
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
 
-    public String getAddress() { return shippingAddress; }
-    public void setAddress(String address) { this.shippingAddress = address; }
+    public String getPhone() {
+        return phone;
+    }
 
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public String getAddress() {
+        return shippingAddress;
+    }
 
-    public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public void setAddress(String address) {
+        this.shippingAddress = address;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
 
     public BigDecimal getDiscountAmount() {
         return discountAmount;
@@ -173,14 +200,18 @@ public class Order extends BaseEntity {
         this.orderCode = orderCode;
     }
 
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-    
+
+    public void setTotalPrice(BigDecimal valueOf) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setTotalPrice'");
+    }
+
 }
+

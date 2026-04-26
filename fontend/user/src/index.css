@@ -73,3 +73,8 @@ button {
   50% { box-shadow: 0 0 20px var(--accent-color); }
   100% { box-shadow: 0 0 5px var(--accent-color); }
 }
+
+/* ===== FIX SWEETALERT2 POPUP ===== */
+.swal2-container {
+  z-index: 99999 !important;
+}

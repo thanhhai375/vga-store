@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Settings as SettingsIcon, Save } from 'lucide-react';
 import settingService from '../../services/settingService';
+import { toastSuccess, toastError } from '../../utils/alertUtils';
 import './Settings.css';
 
 const Settings = () => {
@@ -35,9 +36,9 @@ const Settings = () => {
     setSaving(true);
     try {
       await settingService.updateSettings(settings);
-      alert('Lưu cài đặt thành công!');
+      toastSuccess('Lưu cài đặt thành công!');
     } catch (err) {
-      alert('Lưu cài đặt thất bại!');
+      toastError('Lưu cài đặt thất bại!');
     } finally {
       setSaving(false);
     }
@@ -58,7 +59,7 @@ const Settings = () => {
       </div>
 
       <div className="settings-grid">
-        {/* Cột trái: Form cấu hình */}
+{/* Configuration */}
         <div className="card settings-card">
           <div className="card-header">
             <h2 className="card-title">Cấu hình Thanh toán QR</h2>
@@ -103,7 +104,6 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* Cột phải: Preview QR */}
         <div className="card settings-preview-card">
           <div className="card-header">
             <h2 className="card-title">Preview VietQR</h2>

@@ -128,3 +128,53 @@
   color: #d8282e;
   margin-left: 8px;
 }
+
+/* ===== BADGE MỚI & ROW HIGHLIGHT (Orders page) ===== */
+.badge-new {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 7px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  animation: badgePop 0.4s ease;
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0.5); opacity: 0; }
+  80% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.row-new-order {
+  background: linear-gradient(90deg, #fffbeb 0%, #ffffff 100%) !important;
+  border-left: 3px solid #f59e0b !important;
+}
+
+/* Nút In Đơn Hàng */
+.btn-print {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-print:hover {
+  background: linear-gradient(135deg, #4338ca, #4f46e5);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.3);
+}

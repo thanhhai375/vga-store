@@ -15,7 +15,6 @@ public class PaymentSummaryResponse {
     private PaymentStatus paymentStatus;
     private LocalDateTime createdAt;
 
-    // constructor
     public PaymentSummaryResponse() {}
 
     public PaymentSummaryResponse(Long paymentId, String orderCode, BigDecimal amount, PaymentMethod paymentMethod,
@@ -79,3 +78,4 @@ public class PaymentSummaryResponse {
     }
     
 }
+

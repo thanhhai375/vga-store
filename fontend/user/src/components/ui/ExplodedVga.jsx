@@ -22,7 +22,6 @@ const ExplodedVga = () => {
 
   return (
     <section className="evga-section" ref={ref}>
-      {/* ── Title + Toggle ── */}
       <div className={`evga-top container ${visible ? 'visible' : ''}`}>
         <div className="evga-top-left">
           <span className="evga-eyebrow">PREMIUM ENGINEERING</span>
@@ -49,7 +48,6 @@ const ExplodedVga = () => {
         </div>
       </div>
 
-      {/* ── Full-width image, NO extra labels ── */}
       <div className={`evga-img-wrap ${visible ? 'visible' : ''}`}>
         <img
           key={mode}
@@ -59,7 +57,6 @@ const ExplodedVga = () => {
         />
       </div>
 
-      {/* ── Spec bar below image ── */}
       <div className={`evga-specbar container ${visible ? 'visible' : ''}`}>
         {SPECS.map(s => (
           <div className="evga-spec" key={s.label} style={{ '--sc': s.color }}>

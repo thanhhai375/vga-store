@@ -12,43 +12,39 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * Format response lỗi thống nhất cho toàn bộ API
  */
 
-// Đây là lớp dùng chung để format response lỗi thống nhất cho toàn bộ API.
-// Mọi exception sẽ được GlobalExceptionHandler chuyển thành đối tượng này.
+// Error handling
 
-@JsonInclude(JsonInclude.Include.NON_NULL)   // Không trả về các field null trong JSON
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 
 public class ApiError {
 
-    private int status; // mã http
-    private String error; // tên lỗi là gì
-    private String message; // báo lỗi chi tiết 
+    private int status;
+    private String error; // Error handling
+    private String message; // Error handling
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime timestamp;   // Thời gian xảy ra lỗi
+    private LocalDateTime timestamp;   // Error handling
 
-    // consu=tuctor mặc định dùng khi cần tạo 1 đối tượng rồi set field sau
+    // Default
     public ApiError() {
         this.timestamp = LocalDateTime.now();
     }
 
-    // constuctor này chỉ dùng khi cần status và message
     public ApiError(int status, String message) {
         this.status = status;
         this.message = message;
-        // tự động lấy tên lỗi 
+        // Error handling
         this.error = HttpStatus.valueOf(status).getReasonPhrase();
         this.timestamp = LocalDateTime.now();
     }
 
-    // constuctor đầy đủ linh hoạt
     public ApiError(int status, String error, String message) {
         this.status = status;
         this.error = error;
         this.message = message;
         this.timestamp = LocalDateTime.now();
     }
-
-    // getter setter
 
     public int getStatus() {
         return status;
@@ -83,3 +79,4 @@ public class ApiError {
     }
     
 }
+

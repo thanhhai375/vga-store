@@ -27,7 +27,7 @@ public class CartItem extends BaseEntity {
     @JoinColumn(name= "product_id", nullable= false)
     private Product product;
 
-    // tạo biến subtotal để lưu tổng tiền của item này (quantity * product price), có thể tính lại mỗi khi thay đổi quantity hoặc product
+    // Total
     @Column(name= "subtotal", precision= 12, scale= 2)
     private BigDecimal subtotal;
 
@@ -38,7 +38,7 @@ public class CartItem extends BaseEntity {
             this.subtotal = BigDecimal.ZERO;
         }
     }
-    // getter setter
+
     public Integer getQuantity() {
         return quantity;
     }
@@ -69,3 +69,4 @@ public class CartItem extends BaseEntity {
         this.subtotal = subtotal;
     }
 }
+

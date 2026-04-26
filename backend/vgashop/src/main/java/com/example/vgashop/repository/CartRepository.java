@@ -1,16 +1,18 @@
 package com.example.vgashop.repository;
 
-
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.vgashop.entity.Cart;
 
-public interface  CartRepository extends JpaRepository<Cart, Long> {
+/**
+ * Repository for {@link Cart} entity.
+ */
+public interface CartRepository extends JpaRepository<Cart, Long> {
 
-    Optional<Cart> findByUser_IdAndDeletedFalse(Long userId); // tìm giỏ hàng của user, chỉ lấy giỏ hàng chưa bị xóa
+    /** Returns the active (non-deleted) cart for the given user. */
+    Optional<Cart> findByUser_IdAndDeletedFalse(Long userId);
 
-     // Kiểm tra tồn tại giỏ hàng của user chưa bị xóa
+    /** Returns true if the given user has an active (non-deleted) cart. */
     boolean existsByUser_IdAndDeletedFalse(Long userId);
-
 }

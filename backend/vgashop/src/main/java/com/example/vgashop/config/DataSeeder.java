@@ -5,6 +5,7 @@ import com.example.vgashop.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -20,13 +21,19 @@ public class DataSeeder {
             BlogRepository blogRepository,
             ReviewRepository reviewRepository,
             ServicePolicyRepository servicePolicyRepository,
-            SystemSettingRepository systemSettingRepository) {
+            SystemSettingRepository systemSettingRepository,
+            JdbcTemplate jdbcTemplate) {
 
         return args -> {
 
-            // Xóa dữ liệu rác cũ
-            reviewRepository.deleteAll();
-            blogRepository.deleteAll();
+            // Delete
+
+            // Error handling
+            try {
+                jdbcTemplate.execute("ALTER TABLE reviews ALTER COLUMN user_id DROP NOT NULL");
+            } catch (Exception e) {
+                System.out.println("Cột user_id trong reviews đã cho phép Null hoặc CSDL không hỗ trợ lệnh này.");
+            }
 
             // Seed Settings
             if (systemSettingRepository.count() == 0) {
@@ -35,7 +42,7 @@ public class DataSeeder {
                 systemSettingRepository.save(SystemSetting.builder().settingKey("BANK_ACC_NAME").settingValue("CONG TY VGA STORE").description("Tên chủ tài khoản").build());
             }
 
-            // ── CHỈ SEED nếu bảng TRỐNG ─────────────────────────────────────
+
             if (blogRepository.count() == 0) {
                 Blog b1 = new Blog();
                 b1.setTitle("Lo Dien Dong Card AMD Radeon RX 8000 Series Sap Ra Mat");

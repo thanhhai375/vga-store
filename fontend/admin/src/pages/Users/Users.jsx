@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Lock, Unlock, Trash2 } from 'lucide-react';
 import userService from '../../services/userService';
+import { toastSuccess, toastError, confirmDelete } from '../../utils/alertUtils';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newUser, setNewUser] = useState({ username: '', password: '', email: '', fullName: '', role: 'USER' });
+  const [adding, setAdding] = useState(false);
   const SIZE = 10;
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await userService.getAll({ page, size: SIZE, search });
+      const res = await userService.getAll({ page, size: SIZE, search, role: roleFilter });
       const data = res.data || res;
       if (data.content) { setUsers(data.content); setTotal(data.totalPages || 1); }
       else if (Array.isArray(data)) { setUsers(data); setTotal(1); }
@@ -21,34 +26,62 @@ const Users = () => {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchUsers(); }, [page, search]);
+  useEffect(() => { fetchUsers(); }, [page, search, roleFilter]);
 
   const handleToggle = async (id) => {
     try { await userService.toggleStatus(id); fetchUsers(); }
-    catch { alert('Thao tác thất bại!'); }
+    catch { toastError('Thao tác thất bại!'); }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Xác nhận xóa người dùng?')) return;
-    try { await userService.delete(id); fetchUsers(); }
-    catch { alert('Xóa thất bại!'); }
+    const isConfirmed = await confirmDelete('Hành động này sẽ xóa người dùng vĩnh viễn khỏi hệ thống!', 'Xác nhận xóa người dùng?');
+    if (!isConfirmed) return;
+    try { await userService.delete(id); fetchUsers(); toastSuccess('Xóa người dùng thành công!'); }
+    catch { toastError('Xóa thất bại!'); }
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    setAdding(true);
+    try {
+      await userService.create(newUser);
+      toastSuccess('Đã thêm người dùng thành công!');
+      setShowAddModal(false);
+      setNewUser({ username: '', password: '', email: '', fullName: '', role: 'USER' });
+      fetchUsers();
+    } catch (err) {
+      toastError(err?.response?.data?.message || 'Có lỗi xảy ra khi thêm người dùng!');
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
     <div>
-      <div className="page-header">
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="page-title">Người dùng</h1>
           <p className="page-subtitle">Quản lý tài khoản hệ thống</p>
         </div>
+        <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>+ Thêm người dùng</button>
       </div>
 
       <div className="card">
-        <div className="toolbar">
-          <div className="search-bar">
+        <div className="toolbar" style={{ display: 'flex', gap: '16px' }}>
+          <div className="search-bar" style={{ flex: 1 }}>
             <Search size={16} color="var(--text-muted)" />
             <input type="text" placeholder="Tìm tài khoản..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
           </div>
+          <select 
+            className="form-control" 
+            style={{ width: '200px', backgroundColor: 'var(--bg-card)' }}
+            value={roleFilter} 
+            onChange={e => { setRoleFilter(e.target.value); setPage(0); }}
+          >
+            <option value="">Tất cả vai trò</option>
+            <option value="ADMIN">Quản trị viên (Admin)</option>
+            <option value="USER">Người dùng (User)</option>
+          </select>
         </div>
 
         {loading ? <div className="spinner"></div> : (
@@ -56,7 +89,7 @@ const Users = () => {
             <table>
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th>STT</th>
                   <th>Tên đăng nhập</th>
                   <th>Email</th>
                   <th>Họ tên</th>
@@ -68,9 +101,9 @@ const Users = () => {
               <tbody>
                 {users.length === 0 ? (
                   <tr><td colSpan="7" style={{textAlign:'center', padding:'40px', color:'var(--text-muted)'}}>Không có người dùng</td></tr>
-                ) : users.map(u => (
+                ) : users.map((u, index) => (
                   <tr key={u.id}>
-                    <td>#{u.id}</td>
+                    <td>{page * SIZE + index + 1}</td>
                     <td style={{fontWeight: 600, color: 'var(--text-primary)'}}>{u.username}</td>
                     <td>{u.email}</td>
                     <td>{u.fullName || '--'}</td>
@@ -109,6 +142,43 @@ const Users = () => {
           </div>
         )}
       </div>
+      
+      {showAddModal && (
+        <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999}}>
+          <div className="card" style={{width: 400, padding: 24, position: 'relative'}}>
+            <h2 style={{marginTop: 0, marginBottom: 20}}>Thêm Người Dùng Mới</h2>
+            <form onSubmit={handleAddUser} style={{display: 'flex', flexDirection: 'column', gap: 16}}>
+              <div className="form-group">
+                <label>Tên đăng nhập *</label>
+                <input className="form-control" required value={newUser.username} onChange={e => setNewUser({...newUser, username: e.target.value})} placeholder="Username" />
+              </div>
+              <div className="form-group">
+                <label>Mật khẩu *</label>
+                <input className="form-control" type="password" required value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} placeholder="Mật khẩu" />
+              </div>
+              <div className="form-group">
+                <label>Email *</label>
+                <input className="form-control" type="email" required value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} placeholder="Email" />
+              </div>
+              <div className="form-group">
+                <label>Họ tên</label>
+                <input className="form-control" value={newUser.fullName} onChange={e => setNewUser({...newUser, fullName: e.target.value})} placeholder="Họ và tên" />
+              </div>
+              <div className="form-group">
+                <label>Vai trò *</label>
+                <select className="form-control" value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})}>
+                  <option value="USER">Người dùng (USER)</option>
+                  <option value="ADMIN">Quản trị viên (ADMIN)</option>
+                </select>
+              </div>
+              <div style={{display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 10}}>
+                <button type="button" className="btn btn-ghost" onClick={() => setShowAddModal(false)}>Hủy</button>
+                <button type="submit" className="btn btn-primary" disabled={adding}>{adding ? 'Đang thêm...' : 'Lưu tài khoản'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

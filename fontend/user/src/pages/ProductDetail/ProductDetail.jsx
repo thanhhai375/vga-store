@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+﻿import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
 import './ProductDetail.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCartDb } from '../../redux/cartSlice';
 import { toggleWishlist } from '../../redux/wishlistSlice';
 import RelatedProducts from './RelatedProducts';
+import { toastError } from '../../utils/alertUtils';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
+  const reviewsSectionRef = useRef(null);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,12 +28,13 @@ const ProductDetail = () => {
   const [submitting, setSubmitting] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [canReview, setCanReview] = useState(false);
 
-  // SỬA LỖI 1: Bọc thép Redux Auth (Chống sập web nếu state.auth chưa tồn tại)
+  // Fix error
   const authState = useSelector(state => state.auth) || {};
   const { user, isAuthenticated } = authState;
 
-  // SỬA LỖI 2: Bọc thép Redux Wishlist
+  // Fix error
   const wishlistItems = useSelector(state => state.wishlist?.wishlistItems || []);
   const isWishlisted = product ? wishlistItems.some(i => i.id === product.id) : false;
 
@@ -61,15 +65,21 @@ const ProductDetail = () => {
           }
         }
 
-        // Quét tìm mọi trường hợp link ảnh có thể xảy ra
-        const fallbackDBImage = pData.imageUrl || pData.imgUrl || pData.img_url || pData.image;
+        // Resolve standard image URL
+        const dbImageUrl = pData.imageUrl || pData.imgUrl || pData.img_url || pData.image;
+        let formattedImageUrl = dbImageUrl;
+        if (dbImageUrl && dbImageUrl.startsWith('/uploads/')) {
+          formattedImageUrl = `http://localhost:8080${dbImageUrl}`;
+        }
+        
+        const fallbackDBImage = formattedImageUrl || '/images/products/gpu_original.png';
         if (images.length === 0 && fallbackDBImage) images = [fallbackDBImage];
 
         setGallery(images);
-        // Đổi ảnh mặc định thành ảnh bạn đang có
+        // Set default image
         setMainImage(images[0] || '/images/products/gpu_original.png');
 
-        // Load reviews an toàn
+        // Safe load reviews
         try {
           const rev = await axiosClient.get(`/reviews/product/${id}`);
           const revData = rev?.data || rev;
@@ -77,6 +87,19 @@ const ProductDetail = () => {
         } catch {
           setReviews([]);
         }
+
+        // Check review permissions
+        if (isAuthenticated) {
+          try {
+            const canRevRes = await axiosClient.get(`/reviews/can-review/${id}`);
+            const canRevData = canRevRes?.data !== undefined ? canRevRes.data : canRevRes;
+            setCanReview(canRevData === true || canRevData?.data === true);
+          } catch (err) {
+            console.error("Lỗi kiểm tra quyền đánh giá:", err);
+            setCanReview(false);
+          }
+        }
+
       } catch (err) {
         console.error(err);
         setError('Không thể tải thông tin sản phẩm.');
@@ -86,7 +109,20 @@ const ProductDetail = () => {
       }
     };
     fetchProduct();
-  }, [id]);
+  }, [id, isAuthenticated]);
+
+  // Auto-switch to reviews tab
+  useEffect(() => {
+    if (location.hash === '#reviews') {
+      setActiveTab('reviews');
+      // Dùng timeout nhỏ để chờ component render xong rồi mới scroll
+      setTimeout(() => {
+        if (reviewsSectionRef.current) {
+          reviewsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 600);
+    }
+  }, [location.hash, id]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -134,27 +170,34 @@ const ProductDetail = () => {
     if (!newComment.trim()) return;
     setSubmitting(true);
     try {
+      // userId có thể nằm ở user.id (mới) hoặc user.userId (cũ - AuthResponse)
+      const userId = user?.id || user?.userId || null;
+      const displayName = isAuthenticated && user
+        ? (user.fullName || user.username || 'Người dùng')
+        : (guestName?.trim() || 'Khách hàng');
+
       const rev = {
         product: { id: parseInt(id) },
         comment: newComment,
         rating: newRating,
-        guestName: isAuthenticated && user ? (user.fullName || user.username) : (guestName || 'Khách hàng')
+        guestName: displayName
       };
-      
-      if (isAuthenticated && user && user.id) {
-        rev.user = { id: user.id };
+
+      if (isAuthenticated && userId) {
+        rev.user = { id: userId };
       }
 
       const saved = await axiosClient.post('/reviews', rev);
+      // axiosClient interceptor unwrap: saved IS the Map DTO already
       const savedData = saved?.data || saved;
       setReviews(prev => [savedData, ...prev]);
+      toastSuccess('Đăng đánh giá thành công!');
       setNewComment('');
       setGuestName('');
       setNewRating(5);
     } catch (err) {
       console.error('Lỗi đăng review:', err);
-      // Hiển thị toast hoặc alert
-      alert('Có lỗi khi gửi đánh giá. Vui lòng thử lại.');
+      toastError('Có lỗi khi gửi đánh giá. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }
@@ -164,7 +207,7 @@ const ProductDetail = () => {
     ? (reviews.reduce((s, r) => s + (r.rating || 5), 0) / reviews.length).toFixed(1)
     : '0.0';
 
-  // SỬA LỖI 3: Chống lỗi NaN sập web khi render số lượng sao
+  // Fix error
   const validAvgRating = isNaN(Number(avgRating)) ? 5 : Number(avgRating);
   const starCount = Math.max(1, Math.round(validAvgRating));
 
@@ -245,10 +288,16 @@ const ProductDetail = () => {
                 <span className="current-price">
                   {new Intl.NumberFormat('vi-VN').format(product.price || 0)}đ
                 </span>
-                <span className="old-price">
-                  {new Intl.NumberFormat('vi-VN').format(Math.round((product.price || 0) * 1.1))}đ
-                </span>
-                <span className="discount-badge">-9%</span>
+                {product.oldPrice > product.price && (
+                  <>
+                    <span className="old-price">
+                      {new Intl.NumberFormat('vi-VN').format(product.oldPrice)}đ
+                    </span>
+                    <span className="discount-badge">
+                      -{Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}%
+                    </span>
+                  </>
+                )}
               </div>
 
               <div className="policy-box">
@@ -328,7 +377,7 @@ const ProductDetail = () => {
             )}
 
             {activeTab === 'reviews' && (
-              <div className="reviews-section">
+              <div className="reviews-section" ref={reviewsSectionRef}>
                 <div className="review-summary">
                   <div className="avg-big">{avgRating}</div>
                   <div>
@@ -337,47 +386,53 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                <form className="review-form" onSubmit={handlePostReview}>
-                  <h4>✍️ Viết đánh giá của bạn</h4>
-                  <div className="rating-picker">
-                    {[1, 2, 3, 4, 5].map(n => (
-                      <button key={n} type="button" className={`star-btn ${n <= newRating ? 'active' : ''}`} onClick={() => setNewRating(n)}>⭐</button>
-                    ))}
-                    <span>{newRating}/5 sao</span>
-                  </div>
+                {canReview ? (
+                  <form className="review-form" onSubmit={handlePostReview}>
+                    <h4>✍️ Viết đánh giá của bạn</h4>
+                    <div className="rating-picker">
+                      {[1, 2, 3, 4, 5].map(n => (
+                        <button key={n} type="button" className={`star-btn ${n <= newRating ? 'active' : ''}`} onClick={() => setNewRating(n)}>⭐</button>
+                      ))}
+                      <span>{newRating}/5 sao</span>
+                    </div>
 
-                  {!isAuthenticated && (
-                    <input
-                      type="text"
-                      placeholder="Tên của bạn (để trống sẽ là 'Khách hàng')"
-                      value={guestName}
-                      onChange={e => setGuestName(e.target.value)}
-                      className="reviewer-name-input"
-                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #ddd', borderRadius: '6px', marginBottom: '10px', fontSize: '14px', boxSizing: 'border-box', background: '#fafafa' }}
+                    <textarea
+                      placeholder="Nhận xét của bạn về sản phẩm này..."
+                      rows="4"
+                      value={newComment}
+                      onChange={e => setNewComment(e.target.value)}
+                      required
                     />
-                  )}
-
-                  <textarea
-                    placeholder="Nhận xét của bạn về sản phẩm này..."
-                    rows="4"
-                    value={newComment}
-                    onChange={e => setNewComment(e.target.value)}
-                    required
-                  />
-                  <button type="submit" className="btn-submit-review" disabled={submitting}>
-                    {submitting ? 'ĐANG GỬI...' : 'GỬI ĐÁNH GIÁ'}
-                  </button>
-                </form>
+                    <button type="submit" className="btn-submit-review" disabled={submitting}>
+                      {submitting ? 'ĐANG GỬI...' : 'GỬI ĐÁNH GIÁ'}
+                    </button>
+                  </form>
+                ) : (
+                  <div className="review-form-disabled" style={{ padding: '20px', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', textAlign: 'center', marginBottom: '20px' }}>
+                    <p style={{ color: '#64748b', margin: 0, fontSize: '15px' }}>
+                      <span style={{ fontSize: '20px', display: 'block', marginBottom: '8px' }}>🔒</span>
+                      Chỉ khách hàng đã mua và nhận sản phẩm này mới có quyền đánh giá.
+                    </p>
+                  </div>
+                )}
 
                 <div className="reviews-list">
                   {reviews.length === 0 ? (
                     <p className="no-reviews">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
                   ) : reviews.map((r, i) => (
                     <div key={i} className="review-item">
-                      <div className="review-avatar">👤</div>
+                      <div className="review-avatar">
+                        {r.avatar ? (
+                          <img src={r.avatar} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} onError={(e) => { e.target.onerror = null; e.target.src = 'https://ui-avatars.com/api/?name=' + (r.guestName || 'U') + '&background=random'; }} />
+                        ) : (
+                          <img src={'https://ui-avatars.com/api/?name=' + (r.user?.fullName || r.user?.username || r.guestName || 'Khách hàng') + '&background=random'} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        )}
+                      </div>
                       <div className="review-body">
                         <div className="review-header">
-                          <strong>{r.guestName || r.user?.username || 'Khách hàng'}</strong>
+                          <strong>
+                            {r.user?.fullName || r.user?.username || r.guestName || 'Khách hàng'}
+                          </strong>
                           <span className="review-stars">
                             {'⭐'.repeat(Math.max(1, Math.round(Number(r.rating || 5))))}
                           </span>

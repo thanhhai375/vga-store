@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, ArrowUp } from 'lucide-react';
 import brandService from '../../services/brandService';
+import axiosClient from '../../api/axiosClient';
+import { toastSuccess, toastError, confirmDelete } from '../../utils/alertUtils';
 
 const Brands = () => {
   const [items, setItems] = useState([]);
@@ -14,7 +16,8 @@ const Brands = () => {
     try {
       const res = await brandService.getAll();
       const data = res.data || res;
-      setItems(Array.isArray(data) ? data : data.content || []);
+      const arr = Array.isArray(data) ? data : data.content || [];
+      setItems(arr);
     } catch { setItems([]); }
     finally { setLoading(false); }
   };
@@ -28,15 +31,27 @@ const Brands = () => {
     try {
       if (editId) await brandService.update(editId, form);
       else await brandService.create(form);
+      setForm({ name: '', description: '' });
       setShowModal(false);
       fetch();
-    } catch { alert('Lưu thất bại!'); }
+    } catch { toastError('Lưu thất bại!'); }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Xác nhận xóa thương hiệu?')) return;
-    try { await brandService.delete(id); fetch(); }
-    catch { alert('Xóa thất bại!'); }
+    const isConfirmed = await confirmDelete('Thương hiệu này sẽ bị loại bỏ khỏi danh sách.', 'Xác nhận xóa thương hiệu?');
+    if (!isConfirmed) return;
+    try { await brandService.delete(id); fetch(); toastSuccess('Xóa thành công!'); }
+    catch { toastError('Xóa thất bại!'); }
+  };
+
+  const handlePinToTop = async (id) => {
+    try {
+      await axiosClient.put(`/admin/pin-top/brand/${id}`);
+      fetch();
+      toastSuccess('Đã đẩy thương hiệu lên đầu bảng!');
+    } catch (e) {
+      toastError('Không thể đẩy lên đầu!');
+    }
   };
 
   return (
@@ -55,17 +70,20 @@ const Brands = () => {
         {loading ? <div className="spinner"></div> : (
           <div className="table-wrapper">
             <table>
-              <thead><tr><th>ID</th><th>Tên thương hiệu</th><th>Mô tả</th><th>Hành động</th></tr></thead>
+              <thead><tr><th>STT</th><th>Tên thương hiệu</th><th>Mô tả</th><th>Hành động</th></tr></thead>
               <tbody>
                 {items.length === 0 ? (
                   <tr><td colSpan="4" style={{textAlign:'center', padding:'40px', color:'var(--text-muted)'}}>Chưa có thương hiệu</td></tr>
-                ) : items.map(item => (
+                ) : items.map((item, index) => (
                   <tr key={item.id}>
-                    <td>#{item.id}</td>
+                    <td>{index + 1}</td>
                     <td style={{fontWeight:600, color:'var(--text-primary)'}}>{item.name}</td>
                     <td>{item.description || '--'}</td>
                     <td>
                       <div className="action-btns">
+                        <button className="btn btn-ghost btn-sm" onClick={() => handlePinToTop(item.id)} title="Đẩy lên đầu trang">
+                          <ArrowUp size={14} />
+                        </button>
                         <button className="btn btn-ghost btn-sm" onClick={() => openEdit(item)}><Edit2 size={14} /> Sửa</button>
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}><Trash2 size={14} /> Xóa</button>
                       </div>

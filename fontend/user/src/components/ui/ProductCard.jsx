@@ -3,9 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCartDb } from "../../redux/cartSlice";
 import { toggleWishlist } from "../../redux/wishlistSlice";
+import { toggleCompare } from "../../redux/compareSlice";
 import "./ProductCard.css";
 
-// TỐI ƯU HIỆU NĂNG: Khởi tạo bộ format tiền tệ ở ngoài Component
+// Initialization
 const currencyFormatter = new Intl.NumberFormat("vi-VN");
 
 const ProductCard = ({ product }) => {
@@ -15,12 +16,15 @@ const ProductCard = ({ product }) => {
   const [imgError, setImgError] = useState(false);
   const isAuthenticated = useSelector(state => state.auth?.isAuthenticated);
 
-  // 1. CHUYỂN TẤT CẢ HOOKS LÊN ĐẦU
-  // Kiểm tra sản phẩm này có trong wishlist không
+  // Retrieve all
+  // Validation
   const wishlistItems = useSelector(state => state.wishlist?.wishlistItems || []);
   const isWishlisted = product ? wishlistItems.some(item => item.id === product.id) : false;
 
-  // BẢO VỆ CHỐNG SẬP: Nếu API chưa tải xong product, không render gì cả
+  const compareItems = useSelector(state => state.compare?.compareItems || []);
+  const isCompared = product ? compareItems.some(item => item.id === product.id) : false;
+
+
   if (!product) return null;
 
   const handleToggleWishlist = (e) => {
@@ -40,10 +44,13 @@ const ProductCard = ({ product }) => {
   };
 
   const currentPrice = Number(product.price || 0);
-  const oldPrice = currentPrice * 1.1;
-  const discountPercent = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
+  const oldPrice = Number(product.oldPrice || 0);
+  let discountPercent = 0;
+  if (oldPrice > currentPrice) {
+    discountPercent = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
+  }
 
-  // 1. LẤY LINK ẢNH THÔNG MINH (Bao trọn mọi trường hợp từ API Backend của bạn)
+  // Image
   const dbImageUrl =
     product.imageUrl ||
     product.imgUrl ||
@@ -51,9 +58,15 @@ const ProductCard = ({ product }) => {
     product.image ||
     (product.images && product.images.length > 0 && product.images[0]?.url);
 
-  // 2. CHỐT HẠ: Dùng ảnh gốc cực xịn của Asus làm phòng hờ nếu DB lỗi
+  // Process
+  let formattedImageUrl = dbImageUrl;
+  if (dbImageUrl && dbImageUrl.startsWith('/uploads/')) {
+    formattedImageUrl = `http://localhost:8080${dbImageUrl}`;
+  }
+
+  // Error handling
   const fallbackImage = '/images/products/gpu_original.png';
-  const finalImageUrl = (imgError || !dbImageUrl) ? fallbackImage : dbImageUrl;
+  const finalImageUrl = (imgError || !formattedImageUrl) ? fallbackImage : formattedImageUrl;
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
@@ -77,14 +90,11 @@ const ProductCard = ({ product }) => {
 
   return (
     <>
-      {/* LƯU Ý: Chỗ này mình để /products/${product.id}.
-          Nếu cấu hình Route chi tiết của bạn là /product (không có s) hoặc /shop thì bạn tự sửa lại chữ s này nha */}
+
       <Link to={`/product/${product.id}`} className="product-card">
 
-        {/* Badge động từ product.badge */}
         {product.badge && <div className="card-badge-hot">{product.badge}</div>}
 
-        {/* Nút Wishlist ❤️ */}
         <button
           className={`btn-wishlist ${isWishlisted ? 'wishlisted' : ''}`}
           onClick={handleToggleWishlist}
@@ -93,14 +103,22 @@ const ProductCard = ({ product }) => {
           {isWishlisted ? '❤️' : '🤍'}
         </button>
 
+        <button
+          className={`btn-wishlist ${isCompared ? 'wishlisted' : ''}`}
+          style={{ top: '60px' }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); dispatch(toggleCompare(product)); }}
+          title={isCompared ? 'Xóa khỏi so sánh' : 'Thêm vào so sánh'}
+        >
+          ⚖️
+        </button>
+
         <div className="card-image-wrapper">
-          {/* Dùng onError với State để chống sập web */}
           <img
             src={finalImageUrl}
             alt={product.name}
             className="card-image"
             onError={() => {
-              if (!imgError) setImgError(true); // Chỉ đổi state 1 lần duy nhất, ngắt vòng lặp
+              if (!imgError) setImgError(true);
             }}
           />
         </div>
@@ -109,19 +127,26 @@ const ProductCard = ({ product }) => {
           <h3 className="card-name" title={product.name}>{product.name}</h3>
 
           <div className="card-price-area">
-            <div className="old-price-group">
-              <span className="old-price">{formatPrice(oldPrice)}</span>
-            </div>
+            {oldPrice > currentPrice && (
+              <div className="old-price-group">
+                <span className="old-price">{formatPrice(oldPrice)}</span>
+              </div>
+            )}
             <div className="new-price-group">
               <span className="new-price">{formatPrice(currentPrice)}</span>
-              <span className="discount-percent">-{discountPercent}%</span>
+              {discountPercent > 0 && <span className="discount-percent">-{discountPercent}%</span>}
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-            <div className="card-rating">
-              <span className="stars">⭐ 0.0</span>
-              <span className="review-count">(0 đánh giá)</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '10px' }}>
+            <div className="card-rating" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px', marginTop: 0 }}>
+              <span className="stars" style={{ color: '#fbbf24' }}>
+                {'⭐'.repeat(Math.max(1, Math.round(Number(product.averageRating || 5))))} 
+                <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>
+                  {(product.averageRating || 5.0).toFixed(1)}
+                </span>
+              </span>
+              <span className="review-count">({product.reviewCount || 0} đánh giá)</span>
             </div>
 
             <button
@@ -134,7 +159,7 @@ const ProductCard = ({ product }) => {
         </div>
       </Link>
 
-      {/* POPUP GIỎ HÀNG */}
+{/* Cart */}
       {showPopup && (
         <div className="custom-popup-overlay" onClick={() => setShowPopup(false)}>
           <div className="custom-popup-content" onClick={(e) => e.stopPropagation()}>

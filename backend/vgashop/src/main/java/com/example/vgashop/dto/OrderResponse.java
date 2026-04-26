@@ -16,20 +16,22 @@ public class OrderResponse {
 
     private  Long orderId;
     private String orderCode;
-    private BigDecimal totalAmount; // tổng tiền đơn hàng
-    private BigDecimal discountAmount; // số tiền giảm giá 
-    private OrderStatus status; // trạng thái đơn hàng 
-    private PaymentStatus paymentStatus; // trạng thái thanh toán
-    private String shippingAddress; // địa chỉ giao hàng
+    private BigDecimal totalAmount; // Order
+    private BigDecimal discountAmount;
+    private OrderStatus status; // Order
+    private PaymentStatus paymentStatus; // Payment
+    private String shippingAddress; // Address
     private String phone;
     private String note;
-    private LocalDateTime createdAt; // thời gian tạo đơn
-    private LocalDateTime confirmedAt; // thời gian xác nhận đơn
-    private LocalDateTime shippedAt; // thời gian giao
-    private LocalDateTime deliveredAt; // thời gian nhận 
-    private List<OrderItemResponse> items; // danh sách sản phẩm trong đơn
+    private LocalDateTime createdAt;
+    private LocalDateTime confirmedAt;
+    private LocalDateTime shippedAt;
+    private LocalDateTime deliveredAt;
+    private List<OrderItemResponse> items; // Product
+    private String fullName;
+    private String email;
+    private String paymentMethod; // Payment
 
-    // constructor
     public OrderResponse() {}
 
     public OrderResponse(Long orderId, String orderCode, BigDecimal totalAmount, BigDecimal discountAmount,
@@ -52,7 +54,40 @@ public class OrderResponse {
         this.items = items;
     }
 
-    // getter setter
+    public OrderResponse(Long orderId, String orderCode, BigDecimal totalAmount, BigDecimal discountAmount,
+            OrderStatus status, PaymentStatus paymentStatus, String shippingAddress, String phone, String note,
+            LocalDateTime createdAt, LocalDateTime confirmedAt, LocalDateTime shippedAt, LocalDateTime deliveredAt,
+            List<OrderItemResponse> items, String fullName, String email, String paymentMethod) {
+        this(orderId, orderCode, totalAmount, discountAmount, status, paymentStatus, shippingAddress, phone, note,
+                createdAt, confirmedAt, shippedAt, deliveredAt, items);
+        this.fullName = fullName;
+        this.email = email;
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
 
     public Long getOrderId() {
         return orderId;
@@ -167,3 +202,4 @@ public class OrderResponse {
     }
     
 }
+

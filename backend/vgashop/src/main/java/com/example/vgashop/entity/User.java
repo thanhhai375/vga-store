@@ -2,6 +2,7 @@ package com.example.vgashop.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,7 +17,7 @@ import com.example.vgashop.entity.Role;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
-@Entity // đánh dấu là bảng trong DB
+@Entity
 @Table(name="users")
 public class User extends BaseEntity {
 
@@ -24,7 +25,7 @@ public class User extends BaseEntity {
     private String username;
 
     @Column(name = "password", nullable=false, length=255)
-    private String password; // sẽ mã hóa BCrypt
+    private String password;
 
     @Column(name = "full_name", length = 100)
     private String fullName;
@@ -47,12 +48,14 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Boolean status = true;
 
+    @JsonIgnore
     @OneToMany(mappedBy= "user", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private List<Order> orders;
 
+    @JsonIgnore
     @OneToOne(mappedBy= "user", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private Cart cart;
-    // Constructor
+
     public User() {}
 
     @Column(name = "phone", length = 20)
@@ -64,9 +67,10 @@ public class User extends BaseEntity {
     @Column(name = "dob")
     private java.time.LocalDate dob;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UserAddress> addresses;
-    // getter và setter
+
 
     public String getUsername() {
         return username;
@@ -161,3 +165,4 @@ public class User extends BaseEntity {
     public void setAddresses(List<UserAddress> addresses) { this.addresses = addresses; }
 
 }
+

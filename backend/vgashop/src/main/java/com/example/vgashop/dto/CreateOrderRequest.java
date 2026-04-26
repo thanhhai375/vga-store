@@ -17,7 +17,6 @@ public class CreateOrderRequest {
     @Size(max= 500, message= "Ghi chú không được vượt quá 500 ký tự")
     private String note;
 
-    // getter setter
     public String getShippingAddress() {
         return shippingAddress;
     }
@@ -43,3 +42,4 @@ public class CreateOrderRequest {
     }
     
 }
+

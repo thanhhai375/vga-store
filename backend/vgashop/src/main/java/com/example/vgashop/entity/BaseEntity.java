@@ -10,7 +10,7 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
-// lớp chung cho tất cả Entity Hỗ trợ Soft Delete và Audit (createdAt, updatedAt)
+// Retrieve all
 @MappedSuperclass
 public abstract class BaseEntity {
     @Id
@@ -25,6 +25,9 @@ public abstract class BaseEntity {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "display_order", columnDefinition = "integer default 0")
+    private Integer displayOrder = 0;
 
     @PrePersist
     protected void onCreate() {
@@ -46,4 +49,7 @@ public abstract class BaseEntity {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+
+    public Integer getDisplayOrder() { return displayOrder; }
+    public void setDisplayOrder(Integer displayOrder) { this.displayOrder = displayOrder; }
 }

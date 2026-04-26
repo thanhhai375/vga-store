@@ -8,13 +8,11 @@ public class CategoryDTO {
 
     private Long id;
 
-    @NotBlank (
-        message = "category name is requỉed"
-    )
+    @NotBlank(message = "Category name is required")
     @Size(
-        min= 2,
+        min = 2,
         max = 200,
-        message= "Category name must be between 2 and 100 charactes"
+        message = "Category name must be between 2 and 200 characters"
     )
     private String name;
 
@@ -27,8 +25,6 @@ public class CategoryDTO {
     private boolean active = true;
 
     CategoryDTO() {}
-
-    // Getter setter
 
     public Long getId() {
         return id;
@@ -62,3 +58,4 @@ public class CategoryDTO {
         this.active = active;
     }
 }
+

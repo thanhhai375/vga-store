@@ -27,10 +27,10 @@ public class OrderController {
     }
 
     // ===================================
-    // API TỪ NHÁNH HEAD (GỌI TỪ FRONTEND MỚI CỦA PROFILE)
+
     // ===================================
 
-    /** Đặt hàng trực tiếp không qua Cart — yêu cầu đăng nhập (JWT) */
+/* Login */
     @PostMapping
     public ResponseEntity<?> placeOrder(@Valid @RequestBody OrderRequest req, Authentication authentication) {
         try {
@@ -42,7 +42,7 @@ public class OrderController {
         }
     }
 
-    /** Lịch sử đơn hàng của user dùng cho Profile Page */
+/* Order */
     @GetMapping("/my")
     public ResponseEntity<?> getMyOrdersList(Authentication authentication) {
         try {
@@ -54,17 +54,17 @@ public class OrderController {
     }
 
     // ===================================
-    // API TỪ NHÁNH BE (CART CHECKOUT, ADMIN, CHI TIẾT)
+    // Details
     // ===================================
 
-    // USER: tạo đơn hàng tự giỏ hàng (checkout)
+    // Cart
     @PostMapping("/checkout")
     public ApiResponse<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest request) {
         OrderResponse order = orderService.createOrderFromCart(request);
         return ApiResponse.success("Tạo đơn hàng thành công", order);
     }
 
-    // USER: Lấy ds đơn hàng (phân trang cho hệ thống cũ/mobile)
+    // Order
     @GetMapping
     public ApiResponse<Page<OrderSummaryResponse>> getMyOrdersPage(
             @RequestParam(defaultValue = "0") int page,
@@ -75,7 +75,7 @@ public class OrderController {
         return ApiResponse.success("Lấy danh sách đơn hàng thành công", orders);
     }
 
-    // USER: xem chi tiết đơn hàng
+    // Order
     @GetMapping("/{orderId}")
     public ApiResponse<OrderResponse> getOrderById(@PathVariable Long orderId) {
         OrderResponse order = orderService.getOrderById(orderId);
@@ -84,11 +84,11 @@ public class OrderController {
 
     @PutMapping("/{id}/cancel")
     public ResponseEntity<?> cancelOrder(@PathVariable Long id, @RequestParam(required = false) String reason) {
-        // Truyền reason xuống Service
+
         return ResponseEntity.ok(orderService.cancelOrder(id, reason));
     }
 
-    // Adim: lấy tất cả đơn hàng
+    // Retrieve all
     @GetMapping("/admin/all")
     public ApiResponse<Page<OrderSummaryResponse>> getAllOrders(
             @RequestParam(defaultValue = "0") int page,
@@ -99,7 +99,7 @@ public class OrderController {
         return ApiResponse.success("Lấy tất cả đơn hàng thành công", orders);
     }
 
-    // ADmin: cập nhật trạng thái đơn hàng
+    // Update existing
     @PutMapping("/admin/{orderId}/status")
     public ApiResponse<OrderResponse> updateOrderStatus(@PathVariable Long orderId,
             @Valid @RequestBody OrderStatusUpdateRequest request) {

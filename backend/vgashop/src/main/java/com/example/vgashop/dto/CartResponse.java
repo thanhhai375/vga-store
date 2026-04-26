@@ -4,17 +4,17 @@ import java.math.BigDecimal;
 import java.util.List;
 
 
-// trả về cho frontend thông tin của giỏ hàng, có thể thêm các trường khác nếu cần
+// Cart
 public class CartResponse {
 
     private Long cartId;
-    private BigDecimal totalAmount; // tổng tiền của giỏ hàng, có thể tính lại mỗi khi thay đổi cart item
-    // tổng sán phẩm trong giỏ hàng kh phải số item
+    private BigDecimal totalAmount; // Cart
+    // Cart
     private Integer totalItems;
-    private List<CartItemResponse> items; // danh sách các item trong giỏ hàng, có thể map từ CartItem entity sang CartItemResponse DTO
+    private List<CartItemResponse> items; // Cart
 
 
-    // constructor mặc định
+    // Default
     public CartResponse() {}
 
     public CartResponse(Long cartId, BigDecimal totalAmount, Integer totalItems, List<CartItemResponse> items) {
@@ -24,7 +24,6 @@ public class CartResponse {
         this.items = items;
     }
 
-    // getter setter
     public Long getCartId() {
         return cartId;
     }
@@ -57,3 +56,4 @@ public class CartResponse {
         this.items = items;
     }
 }
+

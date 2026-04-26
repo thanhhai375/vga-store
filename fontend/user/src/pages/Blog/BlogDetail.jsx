@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { blogService } from '../../services/blogService';
 import axiosClient from '../../api/axiosClient';
+import { toastError, toastSuccess } from '../../utils/alertUtils';
 import './BlogDetail.css';
 
 const BlogDetail = () => {
@@ -51,7 +52,7 @@ const BlogDetail = () => {
       setNewRating(5);
     } catch (error) {
       console.error('Lỗi đăng bình luận:', error);
-      alert('Có lỗi khi gửi bình luận. Vui lòng thử lại!');
+      toastError('Có lỗi khi gửi bình luận. Vui lòng thử lại!');
     } finally {
       setIsSubmitting(false);
     }
@@ -75,7 +76,7 @@ const BlogDetail = () => {
     );
   }
 
-  // Parse content blocks từ JSON
+
   let contentBlocks = [];
   try {
     contentBlocks = JSON.parse(post.content);
@@ -88,12 +89,11 @@ const BlogDetail = () => {
 
   const publishDate = post.createdAt || post.publishedDate;
 
-  // 🌟 NÂNG CẤP DÒ ẢNH: Bắt mọi trường hợp biến ảnh từ Backend
+  // Image
   const heroBgImage = post.thumbnail || post.imgUrl || post.imageUrl || post.image || '/images/products/gpu_original.png';
 
   return (
     <div className="blog-detail-page">
-      {/* ── Hero ─────────────────────────────────────────────── */}
       <div
         className="bd-hero"
         style={{ backgroundImage: `url("${heroBgImage}")` }}
@@ -117,7 +117,6 @@ const BlogDetail = () => {
       </div>
 
       <div className="bd-container container">
-        {/* ── Nội dung bài viết ────────────────────────────── */}
         <article className="bd-main">
           <div className="bd-excerpt">{post.excerpt}</div>
 
@@ -162,20 +161,17 @@ const BlogDetail = () => {
             })}
           </div>
 
-          <div className="bd-share">
-            <span>Chia sẻ bài viết:</span>
-            <div className="bd-share-icons">
-              <button onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`)}>
-                📘 Facebook
-              </button>
-              <button onClick={() => navigator.clipboard.writeText(window.location.href).then(() => alert('Đã copy link!'))}>
-                🔗 Copy Link
+          <div className="blog-share">
+            <span className="share-text">Chia sẻ bài viết này:</span>
+            <div className="share-links">
+              <button onClick={() => navigator.clipboard.writeText(window.location.href).then(() => toastSuccess('Đã copy link!'))}>
+                Sao chép liên kết
               </button>
             </div>
           </div>
         </article>
 
-        {/* ── Bình luận ───────────────────────────────────── */}
+{/* Comment */}
         <div className="bd-comments-section">
           <h3>💬 Bình luận ({comments.length})</h3>
 

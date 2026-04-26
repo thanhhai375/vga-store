@@ -3,13 +3,15 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, ComposedChart
 } from 'recharts';
-import { Package, ShoppingBag, DollarSign, Activity } from 'lucide-react';
+import { Package, ShoppingBag, DollarSign, Activity, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
+import { isOrderNew } from '../../utils/orderNewUtils';
 import './Dashboard.css';
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + '₫';
 
-// 🌟 Component Thẻ Thống kê (Đã dọn sạch dữ liệu giả)
+// Statistics
 const StatCard = ({ title, value, icon, colorClass }) => (
   <div className="dash-stat-card">
     <div className="dash-stat-header">
@@ -30,6 +32,7 @@ const STATUS_MAP = {
 };
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
 
@@ -39,24 +42,26 @@ const Dashboard = () => {
   const [loadingTop, setLoadingTop] = useState(true);
   const [loadingChart, setLoadingChart] = useState(true);
 
-  // 1. Tải Dữ liệu Tổng quan (Dùng Data Thật 100%)
+  // Total
   useEffect(() => {
     const fetchTopData = async () => {
       try {
         const [statsRes, ordersRes] = await Promise.all([
           axiosClient.get('/admin/dashboard/stats'),
-          axiosClient.get('/admin/orders?page=0&size=5'),
+          axiosClient.get('/admin/orders', { params: { page: 0, size: 8, sortBy: 'createdAt', direction: 'desc', status: 'PENDING' } }),
         ]);
-        setStats(statsRes.data?.data || statsRes.data || statsRes);
-        const ordersData = ordersRes.data?.data || ordersRes.data || ordersRes;
-        setRecentOrders(Array.isArray(ordersData) ? ordersData.slice(0, 5) : ordersData.content?.slice(0, 5) || []);
-      } catch (err) { console.error(err); }
+        const statsData = statsRes?.data?.data || statsRes?.data || statsRes;
+        setStats(statsData);
+        const ordersData = ordersRes?.data?.data || ordersRes?.data || ordersRes;
+        const list = Array.isArray(ordersData) ? ordersData : (ordersData.content || []);
+        setRecentOrders(list.slice(0, 8));
+      } catch (err) { console.error('Dashboard stats error:', err); }
       finally { setLoadingTop(false); }
     };
     fetchTopData();
   }, []);
 
-  // 2. Tải Dữ liệu Biểu đồ (Dùng Data Thật 100%)
+
   useEffect(() => {
     const fetchCharts = async () => {
       setLoadingChart(true);
@@ -78,7 +83,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* 🌟 4 THẺ THỐNG KÊ (KHÔNG CÒN DATA GIẢ) */}
+{/* Statistics */}
       <div className="dash-stats-grid">
         <StatCard
           title="Tổng đơn hàng"
@@ -186,8 +191,10 @@ const Dashboard = () => {
 
       <div className="dash-recent-orders">
         <div className="recent-header">
-          <h3>Đơn hàng mới nhất (Cần xử lý)</h3>
-          <a href="/orders" className="view-all-link">Xem tất cả ›</a>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Clock size={22} color="#f59e0b" /> Đơn hàng chờ xử lý
+          </h3>
+          <a href="/orders" className="view-all-link" onClick={(e) => { e.preventDefault(); navigate('/orders'); }}>Xem tất cả ›</a>
         </div>
 
         {loadingTop ? (
@@ -209,9 +216,19 @@ const Dashboard = () => {
               <tbody>
                 {recentOrders.map(o => {
                   const st = STATUS_MAP[o.status] || { label: o.status, cls: 'badge-secondary' };
+                  const isNew = isOrderNew(o.orderId || o.id);
                   return (
-                    <tr key={o.orderId || o.id}>
-                      <td className="fw-500">{o.orderCode || `#${o.orderId || o.id}`}</td>
+                    <tr 
+                      key={o.orderId || o.id} 
+                      className={isNew ? 'row-new-order' : ''}
+                      onClick={() => navigate('/orders')}
+                      style={{ cursor: 'pointer' }}
+                      title="Nhấn để xem quản lý đơn hàng"
+                    >
+                      <td className="fw-500">
+                        {o.orderCode || `#${o.orderId || o.id}`}
+                        {isNew && <span className="badge-new">MỚI</span>}
+                      </td>
                       <td>{o.fullName || o.user?.username || '--'}</td>
                       <td className="text-muted">{o.createdAt ? new Date(o.createdAt).toLocaleDateString('vi-VN') : '--'}</td>
                       <td><span className={`status-dot ${st.cls}`}>{st.label}</span></td>

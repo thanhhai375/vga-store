@@ -5,7 +5,7 @@ import { orderService } from '../../services/orderService';
 import axiosClient from '../../api/axiosClient';
 import './TrackOrder.css';
 
-// 🌟 FIX: Map chuẩn trạng thái với Backend
+// Status
 const STATUS_MAP = {
   PENDING: 'Chờ duyệt',
   CONFIRMED: 'Đang xử lý',
@@ -41,6 +41,7 @@ const TrackOrder = () => {
   const { isAuthenticated } = useSelector((state) => state.auth) || {};
 
   const [orders, setOrders] = useState([]);
+  const [pendingReviews, setPendingReviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,6 +69,15 @@ const TrackOrder = () => {
       const data = res?.data?.data || res?.data || res;
       const items = data?.content || data || [];
       setOrders(Array.isArray(items) ? items : []);
+      
+      // List
+      try {
+        const pendRes = await axiosClient.get('/reviews/pending');
+        const pendData = pendRes?.data || pendRes;
+        setPendingReviews(Array.isArray(pendData) ? pendData.map(p => p.id) : []);
+      } catch (err) {
+        console.error("Lỗi lấy pending reviews:", err);
+      }
     } catch {
       setOrders([]);
     } finally {
@@ -111,12 +121,12 @@ const TrackOrder = () => {
 
     setCancelLoading(true);
     try {
-      // 🌟 GỌI TRỰC TIẾP API ĐỂ ĐẨY LÝ DO XUỐNG BACKEND
+
       await axiosClient.put(`/orders/${cancelModalData.orderId}/cancel?reason=${encodeURIComponent(finalReason)}`);
 
       showToast('Đã gửi yêu cầu hủy đơn hàng thành công!', 'success');
       setCancelModalData({ isOpen: false, orderId: null });
-      loadOrders(); // Tải lại danh sách đơn
+      loadOrders(); // List
     } catch (err) {
       showToast(err?.response?.data?.message || 'Không thể hủy đơn. Vui lòng thử lại.', 'error');
     } finally {
@@ -124,9 +134,9 @@ const TrackOrder = () => {
     }
   };
 
-  // 🌟 FIX: Gọi API để lấy đầy đủ chi tiết (Địa chỉ, Mảng sản phẩm)
+  // Product
   const openOrderDetail = async (orderSummary) => {
-    // Hiện popup ngay với trạng thái loading
+    // Status
     setSelectedOrder({ ...orderSummary, loadingDetails: true });
     try {
       const orderId = orderSummary.orderId || orderSummary.id;
@@ -227,18 +237,27 @@ const TrackOrder = () => {
                       <tr key={order.orderId || order.id} onClick={() => openOrderDetail(order)} className="clickable-row">
                         <td><strong className="order-id-link">{order.orderCode || `#${order.orderId}`}</strong></td>
                         <td>{formatDate(order.createdAt)}</td>
-                        <td><span className="order-price">{formatPrice(order.totalAmount)}</span></td>
+                        <td><span className="order-price">{formatPrice(order.totalAmount || order.totalPrice)}</span></td>
                         <td style={{ textAlign: 'center' }}>
                           <span className={`status-badge ${getStatusClass(order.status)}`}>
                             {getStatusLabel(order.status)}
                           </span>
                         </td>
                         <td style={{ textAlign: 'center' }}>
-                          {order.status === 'PENDING' ? (
+                          {['PENDING', 'CONFIRMED'].includes(order.status) ? (
                             <button onClick={(e) => openCancelModal(order.orderId || order.id, e)} className="btn-cancel-sm">
                               Hủy đơn
                             </button>
-                          ) : <span style={{ fontSize: '12px', color: '#888' }}>-</span>}
+                          ) : order.status === 'DELIVERED' && order.productIds && order.productIds.some(id => pendingReviews.includes(id)) ? (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); openOrderDetail(order); }} 
+                              style={{ background: '#f59e0b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                            >
+                              ⭐ Đánh giá
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '12px', color: '#888' }}>-</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -251,7 +270,6 @@ const TrackOrder = () => {
           </div>
         </div>
 
-        {/* POPUP HỦY ĐƠN */}
         {cancelModalData.isOpen && (
           <div className="order-detail-overlay">
             <div className="cancel-modal-box" onClick={(e) => e.stopPropagation()}>
@@ -282,7 +300,7 @@ const TrackOrder = () => {
           </div>
         )}
 
-        {/* POPUP CHI TIẾT ĐƠN HÀNG */}
+{/* Order */}
         {selectedOrder && !cancelModalData.isOpen && (
           <div className="order-detail-overlay" onClick={() => setSelectedOrder(null)}>
             <div className="order-detail-modal" onClick={(e) => e.stopPropagation()}>
@@ -307,16 +325,39 @@ const TrackOrder = () => {
                       <p><strong>Khách hàng:</strong> {selectedOrder.fullName || 'N/A'}</p>
                       <p><strong>Điện thoại:</strong> {selectedOrder.phone || 'N/A'}</p>
                       <p><strong>Địa chỉ:</strong> {selectedOrder.shippingAddress || 'N/A'}</p>
-                      {selectedOrder.note && <p><strong>Ghi chú:</strong> {selectedOrder.note}</p>}
+                      <p style={{ marginTop: '8px' }}><strong>Thanh toán:</strong>{' '}
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '2px 10px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          background: selectedOrder.paymentMethod === 'COD' ? '#fef3c7' : selectedOrder.paymentMethod === 'VNPAY' ? '#dbeafe' : selectedOrder.paymentMethod === 'MOMO' ? '#fce7f3' : '#f3f4f6',
+                          color: selectedOrder.paymentMethod === 'COD' ? '#92400e' : selectedOrder.paymentMethod === 'VNPAY' ? '#1e40af' : selectedOrder.paymentMethod === 'MOMO' ? '#9d174d' : '#374151',
+                        }}>
+                          {selectedOrder.paymentMethod === 'COD' ? '💵 Tiền mặt (COD)' : selectedOrder.paymentMethod === 'VNPAY' ? '🏦 VNPay' : selectedOrder.paymentMethod === 'MOMO' ? '💜 MoMo' : selectedOrder.paymentMethod || 'Chưa rõ'}
+                        </span>
+                      </p>
+                      {selectedOrder.note && <p style={{ marginTop: '8px' }}><strong>Ghi chú:</strong> {selectedOrder.note}</p>}
                     </div>
                     <div className="detail-items-box">
                       <h4>Sản phẩm đã đặt</h4>
                       {selectedOrder.items && selectedOrder.items.length > 0 ? (
                         <ul className="detail-item-list">
                           {selectedOrder.items.map((item, idx) => (
-                            <li key={idx}>
-                              <div className="item-name">{item.productName || item.name} <b>x{item.quantity || item.cartQuantity}</b></div>
-                              <div className="item-price">{formatPrice((item.price || 0) * (item.quantity || item.cartQuantity || 1))}</div>
+                            <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <div className="item-name">{item.productName || item.name} <b>x{item.quantity || item.cartQuantity}</b></div>
+                                <div className="item-price">{formatPrice((item.price || 0) * (item.quantity || item.cartQuantity || 1))}</div>
+                              </div>
+                              {selectedOrder.status === 'DELIVERED' && pendingReviews.includes(item.productId || item.id) && (
+                                <Link 
+                                  to={`/product/${item.productId || item.id}#reviews`} 
+                                  style={{ background: '#f59e0b', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}
+                                >
+                                  ⭐ Đánh giá ngay
+                                </Link>
+                              )}
                             </li>
                           ))}
                         </ul>
@@ -329,7 +370,7 @@ const TrackOrder = () => {
                   </>
                 )}
 
-                {selectedOrder.status === 'PENDING' && (
+                {['PENDING', 'CONFIRMED'].includes(selectedOrder.status) && (
                   <button className="btn-cancel-lg" onClick={(e) => openCancelModal(selectedOrder.orderId || selectedOrder.id, e)}>
                     Yêu cầu hủy đơn hàng
                   </button>

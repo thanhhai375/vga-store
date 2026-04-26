@@ -13,6 +13,9 @@ import BlogDetail from './pages/Blog/BlogDetail';
 import Wishlist from './pages/Wishlist/Wishlist';
 import Profile from './pages/Profile/Profile';
 import NotFound from './pages/NotFound/NotFound';
+import CompareBar from './components/ui/CompareBar';
+import CompareModal from './components/ui/CompareModal';
+import AIChatWidget from './components/ui/AIChatWidget';
 
 function App() {
   return (
@@ -37,6 +40,9 @@ function App() {
         </Routes>
 
         <Footer />
+        <CompareBar />
+        <CompareModal />
+        <AIChatWidget />
       </div>
     </BrowserRouter>
   );

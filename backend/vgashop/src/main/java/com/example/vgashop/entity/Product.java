@@ -3,7 +3,7 @@ package com.example.vgashop.entity;
 import java.math.BigDecimal;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // 🌟 Thêm thư viện này
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,6 +30,9 @@ public class Product extends BaseEntity {
 
     @Column(name = "price", nullable = false)
     private BigDecimal price;
+
+    @Column(name = "old_price")
+    private BigDecimal oldPrice;
 
     @Column(name = "stock", nullable = false)
     private Integer stock;
@@ -70,7 +73,7 @@ public class Product extends BaseEntity {
     @Column(name = "dimension", length = 150)
     private String dimension;
 
-    // 🌟 KHÓA CHẶT 2 LỚP TỪ PRODUCT VỀ BRAND/CATEGORY
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "brand_id", nullable = false)
     @JsonIgnoreProperties("products")
@@ -89,7 +92,12 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
 
-    // Getter setter
+    @org.hibernate.annotations.Formula("(SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = id)")
+    private Integer reviewCount;
+
+    @org.hibernate.annotations.Formula("(SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.product_id = id)")
+    private Double averageRating;
+
     public Long getId() {
         return id;
     }
@@ -112,6 +120,14 @@ public class Product extends BaseEntity {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public BigDecimal getOldPrice() {
+        return oldPrice;
+    }
+
+    public void setOldPrice(BigDecimal oldPrice) {
+        this.oldPrice = oldPrice;
     }
 
     public Integer getStock() {
@@ -234,7 +250,7 @@ public class Product extends BaseEntity {
         this.status = status;
     }
 
-    // 🌟 KHÓA CHẶT Ở GETTER CỦA CART VÀ ORDER
+
     @JsonIgnore
     public List<CartItem> getCartItems() {
         return cartItems;
@@ -252,4 +268,21 @@ public class Product extends BaseEntity {
     public void setOrderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
     }
+
+    public Integer getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(Integer reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
 }
+

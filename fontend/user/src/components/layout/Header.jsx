@@ -3,23 +3,25 @@ import { NavLink, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/authSlice';
 import AuthModal from '../AuthModal/AuthModal';
+import axiosClient from '../../api/axiosClient';
 import './Header.css';
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
 
-  // State điều khiển Dropdown Menu của User
+
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
 
   const cartTotalQuantity = useSelector((state) => state.cart.cartTotalQuantity);
   const wishlistCount = useSelector((state) => state.wishlist.wishlistItems.length);
+  const [pendingReviews, setPendingReviews] = useState(0);
 
-  // Thêm lấy isAuthModalOpen từ redux
+
   const { isAuthenticated, user, isAuthModalOpen } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
-  // Thêm function đóng auth modal
+
   const handleCloseAuthModal = () => {
     import('../../redux/authSlice').then(({ closeAuthModal }) => {
       dispatch(closeAuthModal());
@@ -38,16 +40,23 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Thêm: Tự động tải giỏ hàng từ cơ sở dữ liệu nếu đã đăng nhập
+  // Login
   useEffect(() => {
     if (isAuthenticated) {
       import('../../redux/cartSlice').then(({ fetchCart }) => {
         dispatch(fetchCart());
       });
+      // Order
+      axiosClient.get('/reviews/pending').then(res => {
+        const data = res?.data || res;
+        setPendingReviews(Array.isArray(data) ? data.length : 0);
+      }).catch(err => console.error("Lỗi lấy pending reviews:", err));
+    } else {
+      setPendingReviews(0);
     }
   }, [isAuthenticated, dispatch]);
 
-  // Đóng menu khi click ra ngoài
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
@@ -90,7 +99,7 @@ const Header = () => {
         </nav>
 
         <div className="header-actions">
-          <Link to="/track-order" className="nav-action-item" title="Theo dõi đơn hàng">
+          <Link to="/track-order" className="cart-icon nav-action-item" title="Theo dõi đơn hàng">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
@@ -98,6 +107,9 @@ const Header = () => {
               <line x1="16" y1="17" x2="8" y2="17" />
               <polyline points="10 9 9 9 8 9" />
             </svg>
+            {pendingReviews > 0 && (
+              <span className="cart-badge" style={{ background: '#f59e0b', right: '-5px', top: '-5px' }}>{pendingReviews}</span>
+            )}
           </Link>
 
           <Link to="/wishlist" className="cart-icon" title="Yêu thích">
@@ -109,18 +121,15 @@ const Header = () => {
             )}
           </Link>
 
-          {/* 🌟 NÂNG CẤP MENU NGƯỜI DÙNG Ở ĐÂY */}
+{/* User */}
           {isAuthenticated ? (
             <div className="user-logged-in-wrapper" ref={userMenuRef}>
-              {/* Nút Avatar để click */}
               <div className="user-avatar-trigger" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
                 <img src={user?.picture || '/default-avatar.png'} alt="Avatar" className="user-avatar-img" />
               </div>
 
-              {/* Dropdown Menu thả xuống */}
               {isUserMenuOpen && (
                 <div className="user-dropdown-menu">
-                  {/* Khối thông tin cơ bản */}
                   <div className="dropdown-user-header">
                     <img src={user?.picture || '/default-avatar.png'} alt="Avatar" />
                     <div className="dropdown-user-info">
@@ -131,7 +140,6 @@ const Header = () => {
 
                   <div className="dropdown-divider"></div>
 
-                  {/* Các menu chức năng */}
                   <Link to="/profile" className="dropdown-item" onClick={() => setIsUserMenuOpen(false)}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     Tài khoản của tôi
@@ -143,7 +151,6 @@ const Header = () => {
 
                   <div className="dropdown-divider"></div>
 
-                  {/* Nút Đăng xuất */}
                   <button className="dropdown-item logout-btn" onClick={handleLogout}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                     Đăng xuất

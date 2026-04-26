@@ -4,7 +4,7 @@ import servicePolicyService from '../../services/servicePolicyService';
 import { servicePages as localData } from '../../data/serviceData';
 import './Service.css';
 
-// ── SVG Icon Mapper ─────────────────────────
+
 const renderServiceIcon = (emoji) => {
   const iconStyle = { width: '1em', height: '1em', display: 'inline-block', fill: 'currentColor' };
   switch (emoji) {
@@ -29,7 +29,7 @@ const renderServiceIcon = (emoji) => {
   }
 };
 
-// ── Content Block Renderer ──
+
 function ContentRenderer({ blocks }) {
   if (!blocks) return null;
   return blocks.map((block, idx) => {
@@ -110,7 +110,7 @@ function WarrantyCheck() {
   );
 }
 
-// ── Main Service Page ──
+
 const Service = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');

@@ -2,7 +2,7 @@ package com.example.vgashop.dto;
 
 import java.math.BigDecimal;
 
-// chi tiết từng sản phẩm trong đơn hàng 
+// Order
 public class OrderItemResponse {
 
     private Long productId;
@@ -23,8 +23,6 @@ public class OrderItemResponse {
         this.quantity = quantity;
         this.subtotal = subtotal;
     }
-
-    // getter setter
 
     public Long getProductId() {
         return productId;
@@ -75,3 +73,4 @@ public class OrderItemResponse {
     }
     
 }
+

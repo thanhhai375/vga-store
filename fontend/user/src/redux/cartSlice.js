@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import cartService from '../services/cartService';
+import { toastError } from '../utils/alertUtils';
 
-// Thunk: Load giỏ hàng từ DB
+// Cart
 export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { getState }) => {
   const state = getState();
   if (!state.auth?.isAuthenticated) return null;
@@ -9,7 +10,7 @@ export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { getState
   return res?.items || res?.data?.items || [];
 });
 
-// Thunk: Thêm vào giỏ
+
 export const addToCartDb = createAsyncThunk('cart/addToCartDb', async ({ product, quantity }, { dispatch, getState, rejectWithValue }) => {
   const state = getState();
   if (state.auth?.isAuthenticated) {
@@ -26,16 +27,16 @@ export const addToCartDb = createAsyncThunk('cart/addToCartDb', async ({ product
   return { product, quantity };
 });
 
-// Thunk: Cập nhật số lượng
+// Update existing
 export const updateCartItemDb = createAsyncThunk('cart/updateCartItemDb', async ({ item, quantity }, { dispatch, getState }) => {
   const state = getState();
   if (state.auth?.isAuthenticated) {
     if (item.cartItemId) await cartService.updateItem(item.cartItemId, quantity);
     dispatch(fetchCart());
   } else {
-    // Nếu local, decreaseCart/addToCart xử lý, nhưng ở đây có thể cập nhật trực tiếp, ta dùng cách cũ
-    // Hoặc xử lý đơn giản: nếu quantity > hiện tại => addToCart, else => decreaseCart (phức tạp)
-    // Tốt nhất là dispatch giảm hoặc tăng từ component.
+    // Update existing
+    // Process
+
   }
   return { item, quantity };
 });
@@ -51,7 +52,7 @@ export const removeCartItemDbAction = createAsyncThunk('cart/removeCartItemDbAct
   return item;
 });
 
-// Thunk: Checkout (Xử lý xóa giỏ)
+// Delete
 export const clearCartDb = createAsyncThunk('cart/clearCartDb', async (_, { dispatch, getState }) => {
   const state = getState();
   if (state.auth?.isAuthenticated) {
@@ -70,7 +71,7 @@ const initialState = {
 };
 
 const mapDbItemToLocal = (dbItem) => ({
-  cartItemId: dbItem.id, // Sửa dbItem.cartItemId -> dbItem.id vì Backend trả về là "id"
+  cartItemId: dbItem.id,
   id: dbItem.productId,
   name: dbItem.productName,
   price: dbItem.price,
@@ -88,7 +89,7 @@ const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    // Các thao tác local khi không đăng nhập
+    // Login
     addToCart(state, action) {
       const product = action.payload;
       const index = state.cartItems.findIndex(i => i.id === product.id);
@@ -120,7 +121,7 @@ const cartSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    // Xử lý fetchCart
+    // Process
     builder.addCase(fetchCart.pending, (state) => { state.loading = true; });
     builder.addCase(fetchCart.fulfilled, (state, action) => {
       state.loading = false;
@@ -131,9 +132,9 @@ const cartSlice = createSlice({
     });
     builder.addCase(fetchCart.rejected, (state) => { state.loading = false; });
 
-    // Xử lý báo lỗi nếu add API throw error
+    // Process
     builder.addCase(addToCartDb.rejected, (state, action) => {
-      alert(action.payload || 'Lỗi hệ thống khi thêm sản phẩm vào giỏ!');
+      toastError(action.payload || 'Lỗi hệ thống khi thêm sản phẩm vào giỏ!');
     });
   }
 });

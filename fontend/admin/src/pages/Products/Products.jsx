@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit2, Trash2, Monitor } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Monitor, ArrowUp } from 'lucide-react';
 import productService from '../../services/productService';
+import axiosClient from '../../api/axiosClient';
+import { toastSuccess, toastError, confirmDelete } from '../../utils/alertUtils';
 import './Products.css';
 
 const Products = () => {
@@ -15,12 +17,12 @@ const Products = () => {
     setLoading(true);
     try {
       const res = await productService.getAll({ page, size: SIZE, search });
-      const data = res.data || res;
-      if (data.content) {
-        setProducts(data.content);
-        setTotal(data.totalPages || 1);
-      } else if (Array.isArray(data)) {
-        setProducts(data);
+      const pageData = res.data || res;
+      if (pageData.content) {
+        setProducts(pageData.content);
+        setTotal(pageData.totalPages || 1);
+      } else if (Array.isArray(pageData)) {
+        setProducts(pageData);
         setTotal(1);
       }
     } catch (e) {
@@ -30,14 +32,38 @@ const Products = () => {
     }
   };
 
+  // Process
+  const getImageUrl = (imgUrl) => {
+    if (!imgUrl) return null;
+    if (imgUrl.startsWith('/uploads/')) return `http://localhost:8080${imgUrl}`;
+    // Image
+    if (imgUrl.startsWith('/images/')) return `http://localhost:5173${imgUrl}`;
+
+    return imgUrl;
+  };
+
   useEffect(() => { fetchProducts(); }, [page, search]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Xác nhận xóa sản phẩm?')) return;
+    const isConfirmed = await confirmDelete('Dữ liệu sản phẩm sẽ bị xóa khỏi hệ thống.', 'Xác nhận xóa sản phẩm?');
+    if (!isConfirmed) return;
     try {
       await productService.delete(id);
       fetchProducts();
-    } catch (e) { alert('Xóa thất bại!'); }
+      toastSuccess('Đã xóa sản phẩm thành công!');
+    } catch (e) {
+      toastError('Xóa sản phẩm thất bại!');
+    }
+  };
+
+  const handlePinToTop = async (id) => {
+    try {
+      await axiosClient.put(`/admin/pin-top/product/${id}`);
+      fetchProducts();
+      toastSuccess('Đã đẩy sản phẩm lên đầu bảng!');
+    } catch (e) {
+      toastError('Không thể đẩy lên đầu!');
+    }
   };
 
   return (
@@ -72,7 +98,7 @@ const Products = () => {
             <table>
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th>STT</th>
                   <th>Ảnh</th>
                   <th>Tên sản phẩm</th>
                   <th>Danh mục</th>
@@ -84,22 +110,34 @@ const Products = () => {
               <tbody>
                 {products.length === 0 ? (
                   <tr><td colSpan="7" style={{textAlign:'center', padding:'40px', color:'var(--text-muted)'}}>Không có sản phẩm</td></tr>
-                ) : products.map(p => (
-                  <tr key={p.id}>
-                    <td>#{p.id}</td>
+                ) : products.map((p, index) => (
+                  <tr key={p.productId || p.id}>
+                    <td>{page * SIZE + index + 1}</td>
                     <td>
-                      {p.imageUrl ? (
-                        <img src={`http://localhost:8080${p.imageUrl}`} alt={p.name} className="product-thumb" />
+                      {getImageUrl(p.imgUrl || p.imageUrl) ? (
+                        <img 
+                          src={getImageUrl(p.imgUrl || p.imageUrl)} 
+                          alt={p.name} 
+                          className="product-thumb"
+                          onError={(e) => { e.target.onerror = null; e.target.src = 'http://localhost:5173/images/products/gpu_original.png'; }}
+                        />
                       ) : (
                         <div className="product-thumb-empty" style={{display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-hover)', color:'var(--text-muted)'}}><Monitor size={20} /></div>
                       )}
                     </td>
                     <td className="product-name-cell">
                       <div className="product-name">{p.name}</div>
-                      <div className="product-brand">{p.brand?.name}</div>
+                      <div className="product-brand">{p.brandName || p.brand?.name}</div>
                     </td>
-                    <td>{p.category?.name || '--'}</td>
-                    <td>{p.price ? `${Number(p.price).toLocaleString('vi-VN')}đ` : '--'}</td>
+                    <td>{p.categoryName || p.category?.name || '--'}</td>
+                    <td>
+                      {p.price ? `${Number(p.price).toLocaleString('vi-VN')}đ` : '--'}
+                      {p.oldPrice > p.price && (
+                        <span className="badge badge-danger" style={{marginLeft: 8, fontSize: 10, padding: '2px 6px'}}>
+                          -{Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100)}%
+                        </span>
+                      )}
+                    </td>
                     <td>
                       <span className={`badge ${p.stock > 10 ? 'badge-success' : p.stock > 0 ? 'badge-warning' : 'badge-danger'}`}>
                         {p.stock ?? 0}
@@ -107,8 +145,11 @@ const Products = () => {
                     </td>
                     <td>
                       <div className="action-btns">
-                        <a href={`/products/${p.id}`} className="btn btn-ghost btn-sm"><Edit2 size={14} /> Sửa</a>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p.id)}><Trash2 size={14} /> Xóa</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => handlePinToTop(p.productId || p.id)} title="Đẩy lên đầu trang">
+                          <ArrowUp size={14} />
+                        </button>
+                        <a href={`/products/${p.productId || p.id}`} className="btn btn-ghost btn-sm"><Edit2 size={14} /> Sửa</a>
+                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p.productId || p.id)}><Trash2 size={14} /> Xóa</button>
                       </div>
                     </td>
                   </tr>

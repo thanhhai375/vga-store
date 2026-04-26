@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
-    List<CartItem> findByCart_IdAndDeletedFalse(Long cartId); // tìm tất cả cart item của giỏ hàng, chỉ lấy những item chưa bị xóa
+    List<CartItem> findByCart_IdAndDeletedFalse(Long cartId); // Non-deleted records only
 
 }

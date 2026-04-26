@@ -6,6 +6,7 @@ import axiosClient from '../../api/axiosClient';
 import { clearCart } from '../../redux/cartSlice';
 import { orderService } from '../../services/orderService';
 import cartService from '../../services/cartService';
+import { userService } from '../../services/userService';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -23,7 +24,7 @@ const Checkout = () => {
     note: ''
   });
 
-  // 🌟 KHỐI STATE XỬ LÝ ĐỊA CHỈ API VIỆT NAM
+  // Process
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
@@ -40,6 +41,38 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Address
+  const [userAddresses, setUserAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('new');
+  const [selectedSavedAddress, setSelectedSavedAddress] = useState(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      userService.getProfile()
+        .then(res => {
+          if (res?.data?.addresses && res.data.addresses.length > 0) {
+            setUserAddresses(res.data.addresses);
+            // Default
+            const defaultAddr = res.data.addresses.find(a => a.isDefault) || res.data.addresses[0];
+            handleSelectSavedAddress(defaultAddr);
+          }
+        })
+        .catch(err => console.error('Lỗi lấy sổ địa chỉ:', err));
+    }
+  }, [isAuthenticated]);
+
+  const handleSelectSavedAddress = (addr) => {
+    if (addr === 'new') {
+      setSelectedAddressId('new');
+      setSelectedSavedAddress(null);
+      setCustomerInfo({ ...customerInfo, fullName: '', phone: '' });
+    } else {
+      setSelectedAddressId(addr.id);
+      setSelectedSavedAddress(addr);
+      setCustomerInfo({ ...customerInfo, fullName: addr.recipientName, phone: addr.phone });
+    }
+  };
+
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [createdOrderCode, setCreatedOrderCode] = useState('');
   const [paymentUrl, setPaymentUrl] = useState('');
@@ -51,7 +84,7 @@ const Checkout = () => {
     bankId: ''
   });
 
-  // 🌟 GỌI API LẤY DANH SÁCH 63 TỈNH THÀNH (Open API)
+  // List
   useEffect(() => {
     axios.get('https://provinces.open-api.vn/api/p/')
       .then(res => setProvinces(res.data))
@@ -86,8 +119,9 @@ const Checkout = () => {
     setAddressData({ ...addressData, ward: name });
   };
 
-  // 🌟 LOGIC KHÓA HỎA TỐC: Chỉ mở khi khách chọn Tỉnh là Hồ Chí Minh
-  const canExpress = addressData.province.toLowerCase().includes('hồ chí minh') || addressData.province.toLowerCase().includes('ho chi minh');
+
+  const currentProvinceStr = selectedSavedAddress ? selectedSavedAddress.detailedAddress : addressData.province;
+  const canExpress = currentProvinceStr && (currentProvinceStr.toLowerCase().includes('hồ chí minh') || currentProvinceStr.toLowerCase().includes('ho chi minh'));
 
   useEffect(() => {
     if (!canExpress && shippingMethod === 'express') {
@@ -106,7 +140,7 @@ const Checkout = () => {
     axiosClient.get('/settings/public')
       .then(res => {
         const data = res.data || res || {};
-        // 🌟 Tự động tìm kiếm key bất kể viết hoa hay viết thường
+        // Search
         const getVal = (key) => data[key] || data[key.toLowerCase()] || data[key.toUpperCase()] || '';
 
         setBankInfo({
@@ -125,16 +159,42 @@ const Checkout = () => {
     setCustomerInfo({ ...customerInfo, [e.target.name]: e.target.value });
   };
 
-  // 🌟 LOGIC ĐẶT HÀNG ĐÃ ĐƯỢC FIX LỖI BÓC VỎ DỮ LIỆU ĐỂ LẤY ORDER CODE & VNPAY
+  // Error handling
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (checkoutItems.length === 0) return;
 
-    // Gộp địa chỉ chuẩn trước khi gửi xuống Backend
-    const fullShippingAddress = `${addressData.street ? addressData.street + ', ' : ''}${addressData.ward ? addressData.ward + ', ' : ''}${addressData.district ? addressData.district + ', ' : ''}${addressData.province}`.replace(/,\s*$/, "");
+    // Error handling
+    const showError = (msg) => {
+      setError(msg);
+      window.scrollTo({ top: 100, behavior: 'smooth' });
+    };
 
-    if (!addressData.province || !addressData.district || !addressData.ward || !addressData.street) {
-      setError('Vui lòng chọn đầy đủ Tỉnh, Huyện, Xã và nhập số nhà!');
+    // Address
+    let fullShippingAddress = '';
+    if (selectedSavedAddress) {
+      fullShippingAddress = selectedSavedAddress.detailedAddress;
+    } else {
+      fullShippingAddress = `${addressData.street ? addressData.street + ', ' : ''}${addressData.ward ? addressData.ward + ', ' : ''}${addressData.district ? addressData.district + ', ' : ''}${addressData.province}`.replace(/,\s*$/, "");
+      if (!addressData.province || !addressData.district || !addressData.ward || !addressData.street) {
+        showError('Vui lòng chọn đầy đủ Tỉnh, Huyện, Xã và nhập số nhà!');
+        return;
+      }
+    }
+
+    if (!customerInfo.fullName || !customerInfo.phone) {
+      showError('Vui lòng nhập đầy đủ Họ tên và Số điện thoại!');
+      return;
+    }
+
+    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    if (!phoneRegex.test(customerInfo.phone)) {
+      showError('Số điện thoại không hợp lệ! Phải là 10 số (vd: 0912345678).');
+      return;
+    }
+
+    if (customerInfo.fullName.trim().length < 2) {
+      showError('Vui lòng nhập đầy đủ Họ tên thực!');
       return;
     }
 
@@ -146,7 +206,7 @@ const Checkout = () => {
         fullName: customerInfo.fullName,
         phone: customerInfo.phone,
         address: fullShippingAddress,
-        shippingAddress: fullShippingAddress, // Thêm biến này để chắc chắn Backend nhận được địa chỉ
+        shippingAddress: fullShippingAddress, // Address
         note: customerInfo.note || '',
         totalPrice: finalTotal,
         totalAmount: finalTotal,
@@ -157,17 +217,17 @@ const Checkout = () => {
         }))
       };
 
-      // Gọi API tạo đơn hàng
+      // Order
       const orderRes = await orderService.createOrder(orderPayload);
 
-      // 🌟 Giải mã dữ liệu an toàn (tránh lỗi undefined)
+      // Error handling
       const orderData = orderRes?.data?.data || orderRes?.data || orderRes || {};
       const orderId = orderData.orderId || orderData.id;
       const orderCode = orderData.orderCode || orderData.id || 'N/A';
 
       setCreatedOrderCode(orderCode);
 
-      // Gọi API lấy link thanh toán
+      // Payment
       let fetchedPaymentUrl = null;
       if (orderId) {
         try {
@@ -179,7 +239,7 @@ const Checkout = () => {
         }
       }
 
-      // Xóa Giỏ hàng
+      // Delete
       if (!buyNowItem) {
         dispatch(clearCart());
         if (isAuthenticated) {
@@ -189,13 +249,13 @@ const Checkout = () => {
         }
       }
 
-      // 🌟 Xử lý chuyển hướng VNPay lập tức
+      // Process
       if (paymentMethod === 'VNPAY') {
         if (fetchedPaymentUrl) {
           window.location.href = fetchedPaymentUrl;
-          return; // Đã chuyển hướng thì không hiện popup nữa
+          return;
         } else {
-          setError('Lỗi lấy Link VNPay, vui lòng thử lại hoặc chọn thanh toán khác.');
+          showError('Lỗi lấy Link VNPay, vui lòng thử lại hoặc chọn thanh toán khác.');
           setLoading(false);
           return;
         }
@@ -206,7 +266,7 @@ const Checkout = () => {
 
     } catch (err) {
       console.error('Lỗi đặt hàng:', err);
-      setError(err?.response?.data?.message || err?.response?.data || 'Đã xảy ra lỗi hệ thống khi kết nối Backend!');
+      showError(err?.response?.data?.message || err?.response?.data || 'Đã xảy ra lỗi hệ thống khi kết nối Backend!');
     } finally {
       setLoading(false);
     }
@@ -252,19 +312,41 @@ const Checkout = () => {
                   <span className="step-number">1</span>
                   <h3>Thông tin giao hàng</h3>
                 </div>
-                <div className="form-grid">
+
+{/* Address */}
+                {isAuthenticated && userAddresses.length > 0 && (
+                  <div className="saved-addresses-section">
+                    <label className="section-sub-label">Sổ địa chỉ của bạn</label>
+                    <div className="saved-address-cards">
+                      {userAddresses.map(addr => (
+                        <div key={addr.id} className={`address-mini-card ${selectedAddressId === addr.id ? 'selected' : ''}`} onClick={() => handleSelectSavedAddress(addr)}>
+                          <div className="addr-name-phone"><strong>{addr.recipientName}</strong> | {addr.phone}</div>
+                          <div className="addr-detail-text">{addr.detailedAddress}</div>
+                          {addr.isDefault && <span className="default-badge">Mặc định</span>}
+                        </div>
+                      ))}
+                      <div className={`address-mini-card add-new-card ${selectedAddressId === 'new' ? 'selected' : ''}`} onClick={() => handleSelectSavedAddress('new')}>
+                        <span className="add-icon">+</span> Thêm địa chỉ mới
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="form-grid" style={{ marginTop: '16px' }}>
                   <div className="form-group">
                     <label>Họ và tên *</label>
-                    <input type="text" name="fullName" required placeholder="Ví dụ: Nguyễn Văn A" onChange={handleChange} />
+                    <input type="text" name="fullName" required placeholder="Ví dụ: Nguyễn Văn A" value={customerInfo.fullName} onChange={handleChange} />
                   </div>
                   <div className="form-group">
                     <label>Số điện thoại *</label>
-                    <input type="tel" name="phone" required placeholder="Nhập số điện thoại" onChange={handleChange} />
+                    <input type="tel" name="phone" required placeholder="Nhập số điện thoại" value={customerInfo.phone} onChange={handleChange} />
                   </div>
                 </div>
 
-                {/* 🌟 NÂNG CẤP CHỌN ĐỊA CHỈ CHUẨN SHOPEE */}
-                <div className="address-selectors form-grid">
+{/* Address */}
+                {selectedAddressId === 'new' && (
+                  <>
+                    <div className="address-selectors form-grid">
                   <div className="form-group">
                     <label>Tỉnh/Thành phố *</label>
                     <select required onChange={handleProvinceChange} defaultValue="">
@@ -294,8 +376,10 @@ const Checkout = () => {
                     <input type="text" required placeholder="Số nhà, tên đường, tòa nhà..." onChange={e => setAddressData({ ...addressData, street: e.target.value })} />
                   </div>
                 </div>
+              </>
+            )}
 
-                <div className="form-group" style={{ marginBottom: 0 }}>
+                <div className="form-group" style={{ marginBottom: 0, marginTop: '16px' }}>
                   <label>Ghi chú (Tùy chọn)</label>
                   <textarea name="note" rows="2" placeholder="Ghi chú thời gian nhận hàng, chỉ dẫn cho shipper..." onChange={handleChange}></textarea>
                 </div>

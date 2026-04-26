@@ -19,7 +19,6 @@ public class PaymentResponse {
     private LocalDateTime paidAt;
     private String note;
 
-    // constructor
     public  PaymentResponse() {}
 
      public PaymentResponse(Long paymentId, Long orderId, String orderCode, BigDecimal amount,
@@ -119,3 +118,4 @@ public class PaymentResponse {
         this.note = note;
     }
 }
+

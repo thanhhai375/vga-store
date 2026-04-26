@@ -14,42 +14,50 @@ import org.springframework.stereotype.Repository;
 import com.example.vgashop.entity.Order;
 import com.example.vgashop.entity.OrderStatus;
 
+/**
+ * Repository for {@link Order} entity.
+ * Provides queries for user-facing order history, admin management,
+ * and dashboard statistics.
+ */
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    // tìm đơn hàng theo user và chưa bị xóa
+    /** Returns paginated non-deleted orders belonging to the specified user. */
     Page<Order> findByUser_IdAndDeletedFalse(Long userId, Pageable pageable);
 
-    // tìm tất cả đơn hàng của user theo trạng thái
+    /** Returns paginated non-deleted orders belonging to a user, filtered by status. */
     Page<Order> findByUser_IdAndStatusAndDeletedFalse(Long userId, OrderStatus status, Pageable pageable);
 
-    // tìm đơn hàng theo mã đơn hàng
+    /** Finds a non-deleted order by its order code. */
     Optional<Order> findByOrderCodeAndDeletedFalse(String orderCode);
 
-    // tìm đơn hàng theo id và user (đảm bảo user chỉ xem đơn hàng của mình)
+    /**
+     * Finds a non-deleted order by ID and user ID.
+     * Ensures users can only access their own orders.
+     */
     Optional<Order> findByIdAndUser_IdAndDeletedFalse(Long id, Long userId);
 
-    // Admin: tìm đơn hàng theo id và chi bị xóa 
     Optional<Order> findByIdAndDeletedFalse(Long id);
 
-    // Admin: Lấy tất cả đơn hàng (có phần trang)
+    /** Returns all non-deleted orders, paginated (admin). */
     Page<Order> findByDeletedFalse(Pageable pageable);
 
-    // Admin: lọc theo trạng thái
+    /** Returns all non-deleted orders filtered by status (admin). */
     Page<Order> findByStatusAndDeletedFalse(OrderStatus status, Pageable pageable);
 
-    // kiểm tra đơn hàng có tồn tại và ch bị xóa
+    /** Returns true if a non-deleted order with the given ID exists. */
     boolean existsByIdAndDeletedFalse(Long id);
 
-    // phần admin dashboard
+    /** Returns the total count of non-deleted orders (admin dashboard). */
     long countByDeletedFalse();
 
+    /** Returns the count of non-deleted orders created after the given datetime. */
     long countByCreatedAtAfterAndDeletedFalse(LocalDateTime dateTime);
 
-    // Đếm số đơn hàng hôm nay (từ 00:00:00 đến hiện tại)
+    /** Returns the count of non-deleted orders created on or after the given start-of-day timestamp. */
     @Query("SELECT COUNT(o) FROM Order o WHERE o.deleted = false AND o.createdAt >= :startOfDay")
     long countTodayOrders(@Param("startOfDay") LocalDateTime startOfDay);
 
-    // For User Profile Order list
+    /** Returns all orders for the given user, sorted by ID descending (most recent first). */
     List<Order> findByUserIdOrderByIdDesc(Long userId);
 }

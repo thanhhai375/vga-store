@@ -20,6 +20,9 @@ public class ProductDTO {
     @DecimalMin(value= "0.01", message= "Giá phải lớn hoặc bằng 0.01")
     private BigDecimal price;
 
+    @DecimalMin(value= "0.01", message= "Giá gốc phải lớn hoặc bằng 0.01")
+    private BigDecimal oldPrice;
+
     @Min(value= 0, message= "Số lượng tồn kho không được âm")
     private Integer stock;
 
@@ -41,7 +44,7 @@ public class ProductDTO {
     // Constuctor
     public ProductDTO() {}
 
-    // getter và setter
+
     public Long getId() {
         return id;
     }
@@ -64,6 +67,14 @@ public class ProductDTO {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public BigDecimal getOldPrice() {
+        return oldPrice;
+    }
+
+    public void setOldPrice(BigDecimal oldPrice) {
+        this.oldPrice = oldPrice;
     }
 
     public Integer getStock() {

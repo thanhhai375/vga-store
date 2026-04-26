@@ -46,14 +46,14 @@ public class PaymentController {
         this.orderRepository = orderRepository;
     }
 
-    //User: tạo thanh toán cho đơn hàng
+    // Order
     @PostMapping("/orders/{orderId}")
     public ApiResponse<PaymentResponse> createPayment(@PathVariable Long orderId, @Valid @RequestBody PaymentRequest request) {
         PaymentResponse paymentResponse = paymentService.createPayment(orderId, request);
         return ApiResponse.success("Tạo yêu cầu thanh toán thành công", paymentResponse);
     }
 
-    // USER: xem thanh toán của 1 đơn hàng
+    // Order
     @GetMapping
     public ApiResponse<Page<PaymentSummaryResponse>> getMyPayments(
         @RequestParam(defaultValue = "0") int page,
@@ -65,7 +65,7 @@ public class PaymentController {
         return ApiResponse.success("Lấy danh sách thanh toán thành công", payments);
     }
 
-    // ADMIN: lấy tất cả thanh toán
+    // Retrieve all
     @GetMapping("/admin/all")
     public ApiResponse<Page<PaymentSummaryResponse>> getAllPayments(
         @RequestParam(defaultValue = "0") int page,
@@ -77,14 +77,14 @@ public class PaymentController {
         return ApiResponse.success("Lấy danh sách thanh toán thành công", payments);
     }
 
-    // ADMIN: lấy chi tiết thanh toán
+    // Payment
     @GetMapping("/admin/{paymentId}")
     public ApiResponse<PaymentResponse> getPaymentById(@PathVariable Long paymentId) {
         PaymentResponse paymentResponse = paymentService.getPaymentById(paymentId);
         return ApiResponse.success("Lấy chi tiết thanh toán thành công", paymentResponse);
     }
 
-    // Loc theo trạng thái thanh toán
+    // Payment
     @GetMapping("/admin/status")
     public ApiResponse<Page<PaymentSummaryResponse>> getPaymentsByStatus(
         @RequestParam PaymentStatus status,
@@ -97,7 +97,7 @@ public class PaymentController {
         return ApiResponse.success("Lấy danh sách thanh toán theo trạng thái thành công", payments);
     }
 
-    // ADMIN: cập nhật trạng thái thanh toán
+    // Update existing
     @PostMapping("/admin/{paymentId}/status")
     public ApiResponse<PaymentResponse> updatePaymentStatus(
         @PathVariable Long paymentId,
@@ -108,26 +108,26 @@ public class PaymentController {
         return ApiResponse.success("Cập nhật trạng thái thanh toán thành công", payments);
     }
 
-    // Callback URl nhân thông báo thanh toán từ VNPay. dùng getmapping vì vnpay gửi callback bằng phương thức GET với dữ liễu ở dạng query params trên URL
+    // Payment
     @GetMapping("/vnpay/callback")
     public ApiResponse<String> vnpayCallback(@RequestParam Map<String, String> params) {
         try {
-            // xử lý callback từ VNPay
-            String vnp_ResponseCode = params.get("vnp_ResponseCode"); // 00 = thành công, các mã khác là thất bại hoặc hủy
-            String vnp_TxnRef = params.get("vnp_TxnRef"); // Mã giao dịch duy nhất mà mình đã gửi cho VNPay khi tạo yêu cầu thanh toán, giờ VNPay sẽ trả lại để mình biết đơn hàng nào đã thanh toán thành công
-            String secureHash = params.get("vnp_secureHash"); // Chữ ký số do VNPay trả về, mình sẽ dùng để xác thực dữ liệu callback có hợp lệ hay không (để tránh giả mạo)
+            // Process
+            String vnp_ResponseCode = params.get("vnp_ResponseCode"); // Success
+            String vnp_TxnRef = params.get("vnp_TxnRef"); // Order
+            String secureHash = params.get("vnp_secureHash");
 
-            // VERIFY SIGNATURE - BẢO MẬT
-            boolean isValidSignature = VNPayUtils.verifySignature(params, "YOUR_HASH_SECRET"); // ← Thay bằng Hash Secret thật
+            // Security
+            boolean isValidSignature = VNPayUtils.verifySignature(params, "YOUR_HASH_SECRET");
 
             if (!isValidSignature) {
                 return ApiResponse.error("Chữ ký VNPay không hợp lệ - Có thể bị tấn công giả mạo");
             }
 
             if ("00".equals(vnp_ResponseCode)) {
-                // thanh toán Vnpay thành công, cập nhật trạng thái thanh toán
+                // Update existing
                 Payment payment = paymentRepository.findByTransactionCodeAndDeletedFalse(vnp_TxnRef)
-                        // .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thanh toán với mã giao dịch: " + vnp_TxnRef));
+                        // Payment
                         .orElse(null);
 
                 if (payment != null) {
@@ -135,10 +135,10 @@ public class PaymentController {
                     payment.setPaidAt(LocalDateTime.now());
                     paymentRepository.save(payment);
 
-                    // cập nhật trạng thái đơn hàng thành confirmed
+                    // Update existing
                     Order order = payment.getOrder();
                     order.setStatus(OrderStatus.CONFIRMED);
-                    orderRepository.save(order); // cập nhật trạng thái đơn hàng thành confirmed
+                    orderRepository.save(order); // Update existing
 
                     return ApiResponse.success("Thanh toán VNPay thành công", "Ok");
                 }
@@ -150,17 +150,17 @@ public class PaymentController {
         } 
     }
 
-    // Callback URl nhân thông báo thanh toán từ Momo. dùng postmapping vì momo gửi callback bằng phương thức POST với dữ liệu ở dạng JSON trong body request
+    // Payment
     @PostMapping("/momo/callback")
     public ApiResponse<String> momoCallback(@RequestBody Map<String, Object> params) {
-        // xử lý callback từ Momo
+        // Process
         try {
-            String resultCode = String.valueOf(params.get("resultCode")); // Momo trả về resultCode = 0 nếu thanh toán thành công
-            String orderId = String.valueOf(params.get("orderId")); // orderId mình gửi cho Momo khi tạo yêu cầu thanh toán, giờ Momo sẽ trả lại để mình biết đơn hàng nào đã thanh toán thành công
-            // String signature = String.valueOf(params.get("signature")); // Chữ ký số do Momo trả về, mình sẽ dùng để xác thực dữ liệu callback có hợp lệ hay không (để tránh giả mạo)
+            String resultCode = String.valueOf(params.get("resultCode")); // Payment
+            String orderId = String.valueOf(params.get("orderId")); // Order
 
-            // VERIFY SIGNATURE - BẢO MẬT
-            String secretKey = "YOUR_MOMO_SECRET_KEY"; // ← Thay bằng Secret Key thật của Momo
+
+            // Security
+            String secretKey = "YOUR_MOMO_SECRET_KEY";
 
         // VERIFY SIGNATURE
         boolean isValidSignature = MomoUtils.verifySignature(params, secretKey);
@@ -170,9 +170,9 @@ public class PaymentController {
         }
 
             if ("0".equals(resultCode)) {
-                // thanh toán Momo thành công, cập nhật trạng thái thanh toán
+                // Update existing
                 Payment payment = paymentRepository.findByTransactionCodeAndDeletedFalse(orderId)
-                        // .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thanh toán với mã giao dịch: " + orderId));
+                        // Payment
                         .orElse(null);
 
                 if (payment != null) {
@@ -183,7 +183,7 @@ public class PaymentController {
                     Order order = payment.getOrder();
                     if (order != null) {
                         order.setStatus(OrderStatus.CONFIRMED);
-                        orderRepository.save(order); // cập nhật trạng thái đơn hàng thành confirmed
+                        orderRepository.save(order); // Update existing
 
                     }
                     return ApiResponse.success("Thanh toán momo thành cônng", "OK");

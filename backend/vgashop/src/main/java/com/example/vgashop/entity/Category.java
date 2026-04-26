@@ -96,7 +96,7 @@ public class Category extends BaseEntity {
         return updatedAt;
     }
 
-    // 🌟 QUAN TRỌNG NHẤT LÀ CHỖ NÀY: PHẢI CHẶN Ở GETTER
+
     @JsonIgnore
     public List<Product> getProducts() {
         return products;

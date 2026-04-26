@@ -44,7 +44,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // === PUBLIC endpoints ===
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/uploads/**").permitAll()  // ảnh upload
+/* Image */
 
                 // Products, Brands, Categories - GET public
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
