@@ -79,7 +79,7 @@ const Dashboard = () => {
       <div className="dashboard-header">
         <div>
           <h1>VGA Store Performance Dashboard</h1>
-          <p>Tổng quan tình hình kinh doanh </p>
+          <p>Tổng quan tình hình kinh doanh</p>
         </div>
       </div>
 
