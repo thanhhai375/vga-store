@@ -154,8 +154,8 @@ npm run dev
 
 | Vai trò  | Email                   | Mật khẩu    |
 |----------|-------------------------|-------------|
-| Admin    | admin@gmail.com         | 123456      |
-| Khách hàng | user@gmail.com        | 123456      |
+| Admin    | admin       | 123     |
+| Khách hàng |Đăng Nhập gg hoặc tạo tk nha
 
 ---
 
