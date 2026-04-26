@@ -154,7 +154,7 @@ npm run dev
 
 | Vai trò  | Email                   | Mật khẩu    |
 |----------|-------------------------|-------------|
-| Admin    | admin      | 123     |
+| Admin    | hai123      | hai123     |
 | Khách hàng | Đăng nhập gg hoặc tạo tk |
 
 ---
