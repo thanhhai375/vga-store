@@ -79,11 +79,11 @@ const Dashboard = () => {
       <div className="dashboard-header">
         <div>
           <h1>VGA Store Performance Dashboard</h1>
-          <p>Tổng quan tình hình kinh doanh (Dữ liệu Thực tế)</p>
+          <p>Tổng quan tình hình kinh doanh </p>
         </div>
       </div>
 
-{/* Statistics */}
+      {/* Statistics */}
       <div className="dash-stats-grid">
         <StatCard
           title="Tổng đơn hàng"
@@ -218,8 +218,8 @@ const Dashboard = () => {
                   const st = STATUS_MAP[o.status] || { label: o.status, cls: 'badge-secondary' };
                   const isNew = isOrderNew(o.orderId || o.id);
                   return (
-                    <tr 
-                      key={o.orderId || o.id} 
+                    <tr
+                      key={o.orderId || o.id}
                       className={isNew ? 'row-new-order' : ''}
                       onClick={() => navigate('/orders')}
                       style={{ cursor: 'pointer' }}
