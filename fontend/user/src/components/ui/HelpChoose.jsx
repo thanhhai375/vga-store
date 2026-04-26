@@ -118,7 +118,7 @@ const HelpChoose = () => {
         </div>
 
         <div className="help-action">
-          <button className="btn-red-action" onClick={handleSearch}>XEM SẢN PHẨM CỦA TÔI</button>
+          <button className="btn-red-action" onClick={handleSearch}>XEM SẢN PHẨM PHÙ HỢP</button>
         </div>
       </div>
     </section>
