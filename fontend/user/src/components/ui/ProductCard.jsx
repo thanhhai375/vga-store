@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCartDb } from "../../redux/cartSlice";
 import { toggleWishlist } from "../../redux/wishlistSlice";
+import { toggleCompare } from "../../redux/compareSlice";
 import "./ProductCard.css";
 
 // Initialization
@@ -19,6 +20,9 @@ const ProductCard = ({ product }) => {
   // Validation
   const wishlistItems = useSelector(state => state.wishlist?.wishlistItems || []);
   const isWishlisted = product ? wishlistItems.some(item => item.id === product.id) : false;
+
+  const compareItems = useSelector(state => state.compare?.compareItems || []);
+  const isCompared = product ? compareItems.some(item => item.id === product.id) : false;
 
 
   if (!product) return null;
@@ -99,6 +103,15 @@ const ProductCard = ({ product }) => {
           {isWishlisted ? '❤️' : '🤍'}
         </button>
 
+        <button
+          className={`btn-wishlist ${isCompared ? 'wishlisted' : ''}`}
+          style={{ top: '60px' }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); dispatch(toggleCompare(product)); }}
+          title={isCompared ? 'Xóa khỏi so sánh' : 'Thêm vào so sánh'}
+        >
+          ⚖️
+        </button>
+
         <div className="card-image-wrapper">
           <img
             src={finalImageUrl}
@@ -125,8 +138,8 @@ const ProductCard = ({ product }) => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-            <div className="card-rating">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '10px' }}>
+            <div className="card-rating" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px', marginTop: 0 }}>
               <span className="stars" style={{ color: '#fbbf24' }}>
                 {'⭐'.repeat(Math.max(1, Math.round(Number(product.averageRating || 5))))} 
                 <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>
