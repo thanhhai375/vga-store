@@ -34,7 +34,7 @@ const HelpChoose = () => {
     if (filters.price) params.append('price', filters.price);
 
 
-    navigate(`/shop?${params.toString()}`);
+    navigate(`/products?${params.toString()}`);
   };
 
   return (
