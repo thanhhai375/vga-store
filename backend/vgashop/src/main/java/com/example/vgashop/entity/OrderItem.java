@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.math.BigDecimal;
 
 @Entity
@@ -28,13 +29,6 @@ public class OrderItem extends BaseEntity {
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name= "product_id", nullable= false)
     private Product product;
-
-    @Column(precision= 12, scale= 2)
-    private BigDecimal subtotal;
-
-    public void calculateSubtotal() {
-        this.subtotal = price.multiply(BigDecimal.valueOf(quantity));
-    }
 
     public Integer getQuantity() {
         return quantity;
@@ -60,14 +54,18 @@ public class OrderItem extends BaseEntity {
         this.product = product;
     }
 
+    /**
+     * Tính subtotal on-the-fly để đạt chuẩn 3NF.
+     * Không lưu vào database, tránh phụ thuộc bắc cầu {price, quantity} → subtotal.
+     */
+    @Transient
     public BigDecimal getSubtotal() {
-        return subtotal;
+        if (price != null && quantity != null) {
+            return price.multiply(BigDecimal.valueOf(quantity));
+        }
+        return BigDecimal.ZERO;
     }
 
-    public void setSubtotal(BigDecimal subtotal) {
-        this.subtotal = subtotal;
-    }
-    
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
 }

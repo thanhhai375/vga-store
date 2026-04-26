@@ -31,9 +31,6 @@ public class Blog extends BaseEntity {
     @Column(nullable = false)
     private String author;
 
-    @Column(name = "author_avatar")
-    private String authorAvatar;
-
     @Column(nullable = false)
     private Integer views = 0;
 

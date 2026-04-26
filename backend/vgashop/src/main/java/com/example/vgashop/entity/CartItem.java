@@ -27,18 +27,6 @@ public class CartItem extends BaseEntity {
     @JoinColumn(name= "product_id", nullable= false)
     private Product product;
 
-    // Total
-    @Column(name= "subtotal", precision= 12, scale= 2)
-    private BigDecimal subtotal;
-
-    public void calculateSubtotal() {
-        if (product != null && quantity != null) {
-            this.subtotal = product.getPrice().multiply(BigDecimal.valueOf(quantity));
-        } else {
-            this.subtotal = BigDecimal.ZERO;
-        }
-    }
-
     public Integer getQuantity() {
         return quantity;
     }
@@ -62,11 +50,13 @@ public class CartItem extends BaseEntity {
     public void setProduct(Product product) {
         this.product = product;
     }
+
+    @jakarta.persistence.Transient
     public BigDecimal getSubtotal() {
-        return subtotal;
-    }
-    public void setSubtotal(BigDecimal subtotal) {
-        this.subtotal = subtotal;
+        if (product != null && product.getPrice() != null && quantity != null) {
+            return product.getPrice().multiply(BigDecimal.valueOf(quantity));
+        }
+        return BigDecimal.ZERO;
     }
 }
 

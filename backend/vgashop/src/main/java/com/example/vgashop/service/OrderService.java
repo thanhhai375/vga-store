@@ -97,7 +97,6 @@ public class OrderService {
                     ? itemReq.getPrice()
                     : product.getPrice().doubleValue();
             item.setPrice(BigDecimal.valueOf(unitPrice));
-            item.calculateSubtotal();
             items.add(item);
             total += unitPrice * item.getQuantity();
 
@@ -187,7 +186,6 @@ public class OrderService {
             orderItem.setProduct(product);
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPrice(product.getPrice());
-            orderItem.calculateSubtotal();
 
             order.getItems().add(orderItem);
             product.setStock(product.getStock() - cartItem.getQuantity());

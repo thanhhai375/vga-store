@@ -86,14 +86,12 @@ public class CartService {
                 throw new IllegalArgumentException("Sản phẩm không đủ số lượng trong kho");
             }
             existingItem.setQuantity(newQuantity);
-            existingItem.calculateSubtotal(); // Update existing
         } else {
             // Create new
             CartItem newItem = new CartItem();
             newItem.setCart(cart);
             newItem.setProduct(product);
             newItem.setQuantity(request.getQuantity());
-            newItem.calculateSubtotal();
             cart.getCartItems().add(newItem);
         }
 
@@ -123,7 +121,6 @@ public class CartService {
                 throw new IllegalArgumentException("Vượt quá số lượng tồn kho của sản phẩm");
             }
             cartItem.setQuantity(request.getQuantity());
-            cartItem.calculateSubtotal();
         }
 
         cart.recalculateTotal(); // Update existing

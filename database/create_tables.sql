@@ -94,7 +94,6 @@ CREATE TABLE public.blogs (
     deleted boolean DEFAULT false NOT NULL,
     updated_at timestamp(6) without time zone,
     author character varying(255) NOT NULL,
-    author_avatar character varying(255),
     category character varying(255) NOT NULL,
     content text NOT NULL,
     excerpt character varying(1000) NOT NULL,
@@ -169,7 +168,6 @@ CREATE TABLE public.cart_items (
     created_at timestamp(6) without time zone,
     deleted boolean DEFAULT false NOT NULL,
     updated_at timestamp(6) without time zone,
-    subtotal numeric(12,2),
     display_order integer DEFAULT 0
 );
 
@@ -302,7 +300,6 @@ CREATE TABLE public.order_items (
     created_at timestamp(6) without time zone,
     deleted boolean DEFAULT false NOT NULL,
     updated_at timestamp(6) without time zone,
-    subtotal numeric(12,2),
     display_order integer DEFAULT 0
 );
 
