@@ -6,6 +6,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -22,11 +23,24 @@ public class DataSeeder {
             ReviewRepository reviewRepository,
             ServicePolicyRepository servicePolicyRepository,
             SystemSettingRepository systemSettingRepository,
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
             JdbcTemplate jdbcTemplate) {
 
         return args -> {
 
-            // Delete
+            // Seed Admin User if not exists
+            if (userRepository.count() == 0) {
+                User admin = new User();
+                admin.setUsername("admin");
+                admin.setEmail("admin@vgastore.com");
+                admin.setPassword(passwordEncoder.encode("123"));
+                admin.setFullName("System Admin");
+                admin.setRole(Role.ADMIN);
+                admin.setStatus(true);
+                userRepository.save(admin);
+                System.out.println(">>> [SEEDER] Created default Admin account: admin / 123");
+            }
 
             // Error handling
             try {
