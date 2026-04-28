@@ -57,6 +57,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     /** Returns all non-deleted products, paginated. */
     Page<Product> findByDeletedFalse(Pageable pageable);
 
+    /** Search products for admin panel (by name, sku, category, brand) */
+    @Query("SELECT p FROM Product p WHERE p.deleted = false AND " +
+           "(LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.sku) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.category.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.brand.name) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Product> searchAdminProducts(@Param("search") String search, Pageable pageable);
+
     /** Finds a product by ID and soft-delete flag. */
     Optional<Product> findByIdAndDeleted(Long id, boolean deleted);
 

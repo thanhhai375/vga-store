@@ -292,12 +292,17 @@ public class AdminService {
 
 
     @Transactional(readOnly = true)
-    public Page<ProductAdminResponse> getAllProductForAdmin(int page, int size) {
-        log.info("Admin lấy danh sách sản phẩm - page: {}", page);
+    public Page<ProductAdminResponse> getAllProductForAdmin(int page, int size, String search) {
+        log.info("Admin lấy danh sách sản phẩm - page: {}, search: {}", page, search);
 
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by(Sort.Direction.ASC, "id")));
-        Page<Product> products = productRepository.findByDeletedFalse(pageable);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder").and(Sort.by(Sort.Direction.DESC, "id")));
+        
+        Page<Product> products;
+        if (search != null && !search.trim().isEmpty()) {
+            products = productRepository.searchAdminProducts(search.trim(), pageable);
+        } else {
+            products = productRepository.findByDeletedFalse(pageable);
+        }
 
         Page<ProductAdminResponse> result = products.map(p -> new ProductAdminResponse(
                 p.getId(),

@@ -145,8 +145,9 @@ public class AdminController {
     @GetMapping("/products")
     public ApiResponse<Page<ProductAdminResponse>> getAllProductsForAdmin(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-        Page<ProductAdminResponse> products = adminService.getAllProductForAdmin(page, size);
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(required = false) String search) {
+        Page<ProductAdminResponse> products = adminService.getAllProductForAdmin(page, size, search);
         return ApiResponse.success("Lấy danh sách sản phẩm thành công", products);
     }
 
