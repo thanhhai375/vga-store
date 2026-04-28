@@ -36,7 +36,7 @@ public class Brand extends BaseEntity {
     private Boolean status = true;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "brand", fetch = FetchType.LAZY)
     private List<Product> products;
 
     public Brand() {
