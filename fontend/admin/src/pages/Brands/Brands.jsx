@@ -77,7 +77,11 @@ const Brands = () => {
                 ) : items.map((item, index) => (
                   <tr key={item.id}>
                     <td>{index + 1}</td>
-                    <td style={{fontWeight:600, color:'var(--text-primary)'}}>{item.name}</td>
+                    <td style={{fontWeight:600, color:'var(--text-primary)'}}>
+                      <a href={`http://localhost:5173/products?brand=${encodeURIComponent(item.name)}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'var(--primary-color)' }} title="Nhấn để xem các sản phẩm thuộc thương hiệu này trên cửa hàng">
+                        {item.name}
+                      </a>
+                    </td>
                     <td>{item.description || '--'}</td>
                     <td>
                       <div className="action-btns">
