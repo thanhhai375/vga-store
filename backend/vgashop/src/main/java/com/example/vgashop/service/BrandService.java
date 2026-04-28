@@ -156,8 +156,8 @@ public class BrandService {
     Brand brand = brandRepository.findByIdAndDeleted(id, false)
             .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thương hiệu với ID " + id));
 
-    brand.setDeleted(true);           // Soft delete
-    brandRepository.save(brand);
+    // Hard delete to trigger DB constraints for demo
+    brandRepository.delete(brand);
     }
 
 

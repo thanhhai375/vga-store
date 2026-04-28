@@ -117,7 +117,7 @@ public class CategoryService {
         Category category = categoryRepository.findByIdAndDeleted(id, false)
             .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục với ID " + id));
 
-        category.setDeleted(true);
-        categoryRepository.save(category); 
+        // Hard delete to trigger DB constraints for demo
+        categoryRepository.delete(category);
     }
 }
