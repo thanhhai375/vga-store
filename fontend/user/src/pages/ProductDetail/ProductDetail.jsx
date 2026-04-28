@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
 import './ProductDetail.css';
@@ -37,6 +37,13 @@ const ProductDetail = () => {
   // Fix error
   const wishlistItems = useSelector(state => state.wishlist?.wishlistItems || []);
   const isWishlisted = product ? wishlistItems.some(i => i.id === product.id) : false;
+
+  const compareItems = useSelector(state => state.compare?.compareItems || []);
+  const isCompared = product ? compareItems.some(i => i.id === product.id) : false;
+
+  const handleToggleCompareDetail = () => {
+    import('../../redux/compareSlice').then(({ toggleCompare }) => dispatch(toggleCompare(product)));
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -325,6 +332,13 @@ const ProductDetail = () => {
                     onClick={handleToggleWishlistDetail}
                   >
                     {isWishlisted ? '❤️ Đã yêu thích' : '🤍 Yêu Thích'}
+                  </button>
+                  <button
+                    className={`btn-wishlist-detail ${isCompared ? 'wishlisted' : ''}`}
+                    onClick={handleToggleCompareDetail}
+                    style={{ marginLeft: '10px' }}
+                  >
+                    {isCompared ? '⚖️ Đang so sánh' : '⚖️ So sánh'}
                   </button>
                 </div>
               </div>

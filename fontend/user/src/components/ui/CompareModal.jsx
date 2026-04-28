@@ -153,7 +153,8 @@ const styles = {
     borderBottom: '1px solid #e2e8f0',
     borderRight: '1px solid #e2e8f0',
     textAlign: 'center',
-    verticalAlign: 'middle'
+    verticalAlign: 'middle',
+    color: '#1e293b'
   },
   dataColName: {
     width: '26%',
@@ -163,7 +164,8 @@ const styles = {
     textAlign: 'center',
     verticalAlign: 'middle',
     fontWeight: 'bold',
-    fontSize: '15px'
+    fontSize: '15px',
+    color: '#1e293b'
   },
   dataColPrice: {
     width: '26%',
