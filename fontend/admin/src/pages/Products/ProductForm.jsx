@@ -96,6 +96,10 @@ const ProductForm = () => {
     e.preventDefault();
     if (!form.name || !form.price || form.stock === '') return toastError('Vui lòng điền đủ thông tin bắt buộc (*): Tên, Giá, Tồn kho');
 
+    if (!isEdit && !file) {
+      return toastError('Vui lòng chọn Hình ảnh sản phẩm!');
+    }
+
     setSaving(true);
     
 

@@ -285,7 +285,7 @@ public class ProductService {
     private String uploadImageFile(MultipartFile file) {
 
         if (file == null || file.isEmpty()) {
-            throw new RuntimeException("File ảnh không được để trống!");
+            throw new IllegalArgumentException("File ảnh không được để trống!");
         }
 
         try {
@@ -304,8 +304,7 @@ public class ProductService {
 
             java.nio.file.Path filePath = uploadPath.resolve(fileName);
 
-
-            file.transferTo(filePath.toFile());
+            file.transferTo(filePath.toAbsolutePath().toFile());
 
             return "/uploads/products/" + fileName; // Image
         } catch (Exception e) {
