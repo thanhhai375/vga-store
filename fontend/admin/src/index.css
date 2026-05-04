@@ -128,6 +128,11 @@ td {
 }
 tr:hover td { background: var(--bg-hover); color: var(--text-primary); }
 
+/* Clickable row - make entire row area interactive */
+tr.clickable-row { cursor: pointer; }
+tr.clickable-row td { cursor: pointer; }
+tr.clickable-row:hover td { background: #eef2ff; color: var(--text-primary); }
+
 /* ===== BADGE ===== */
 .badge {
   display: inline-flex;

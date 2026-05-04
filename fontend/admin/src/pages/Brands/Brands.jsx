@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Edit2, Trash2, X, ArrowUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import brandService from '../../services/brandService';
 import axiosClient from '../../api/axiosClient';
 import { toastSuccess, toastError, confirmDelete } from '../../utils/alertUtils';
 
 const Brands = () => {
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -75,21 +77,19 @@ const Brands = () => {
                 {items.length === 0 ? (
                   <tr><td colSpan="4" style={{textAlign:'center', padding:'40px', color:'var(--text-muted)'}}>Chưa có thương hiệu</td></tr>
                 ) : items.map((item, index) => (
-                  <tr key={item.id}>
+                  <tr key={item.id} className="clickable-row" onClick={() => navigate(`/products?search=${encodeURIComponent(item.name)}`)} title="Nhấn để xem các sản phẩm thuộc thương hiệu này">
                     <td>{index + 1}</td>
                     <td style={{fontWeight:600, color:'var(--text-primary)'}}>
-                      <a href={`http://localhost:5173/products?brand=${encodeURIComponent(item.name)}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'var(--primary-color)' }} title="Nhấn để xem các sản phẩm thuộc thương hiệu này trên cửa hàng">
                         {item.name}
-                      </a>
                     </td>
                     <td>{item.description || '--'}</td>
                     <td>
                       <div className="action-btns">
-                        <button className="btn btn-ghost btn-sm" onClick={() => handlePinToTop(item.id)} title="Đẩy lên đầu trang">
+                        <button className="btn btn-ghost btn-sm" onClick={(e) => { e.stopPropagation(); handlePinToTop(item.id); }} title="Đẩy lên đầu trang">
                           <ArrowUp size={14} />
                         </button>
-                        <button className="btn btn-ghost btn-sm" onClick={() => openEdit(item)}><Edit2 size={14} /> Sửa</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}><Trash2 size={14} /> Xóa</button>
+                        <button className="btn btn-ghost btn-sm" onClick={(e) => { e.stopPropagation(); openEdit(item); }}><Edit2 size={14} /> Sửa</button>
+                        <button className="btn btn-danger btn-sm" onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}><Trash2 size={14} /> Xóa</button>
                       </div>
                     </td>
                   </tr>

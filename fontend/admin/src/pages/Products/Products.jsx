@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, Monitor, ArrowUp } from 'lucide-react';
 import productService from '../../services/productService';
 import axiosClient from '../../api/axiosClient';
@@ -6,9 +7,14 @@ import { toastSuccess, toastError, confirmDelete } from '../../utils/alertUtils'
 import './Products.css';
 
 const Products = () => {
+  const location = useLocation();
+  
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('search') || '';
+  });
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const SIZE = 10;
@@ -43,6 +49,15 @@ const Products = () => {
   };
 
   useEffect(() => { fetchProducts(); }, [page, search]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlSearch = params.get('search');
+    if (urlSearch !== null && urlSearch !== search) {
+      setSearch(urlSearch);
+      setPage(0);
+    }
+  }, [location.search]);
 
   const handleDelete = async (id) => {
     const isConfirmed = await confirmDelete('Dữ liệu sản phẩm sẽ bị xóa khỏi hệ thống.', 'Xác nhận xóa sản phẩm?');

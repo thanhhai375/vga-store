@@ -213,6 +213,16 @@ public class ProductService {
 
     // Product
     public Product createProductWithImage(ProductImageDTO dto) {
+        if (productRepository.existsByNameIgnoreCase(dto.getName())) {
+            throw new DuplicateResourceException("Sản phẩm với tên '" + dto.getName() + "' đã tồn tại!");
+        }
+
+        if (dto.getSku() != null && !dto.getSku().trim().isEmpty()) {
+            if (productRepository.existsBySkuIgnoreCase(dto.getSku().trim())) {
+                throw new DuplicateResourceException("Sku '" + dto.getSku() + "' đã tồn tại!");
+            }
+        }
+
         // Image
         String imgUrl = uploadImageFile(dto.getImageFile());
 
@@ -248,6 +258,16 @@ public class ProductService {
     public Product updateProductWithImage(Long id, ProductImageDTO dto) {
         return productRepository.findByIdAndDeleted(id, false)
                 .map(product -> {
+                    if (!product.getName().equalsIgnoreCase(dto.getName()) && productRepository.existsByNameIgnoreCase(dto.getName())) {
+                        throw new DuplicateResourceException("Sản phẩm với tên '" + dto.getName() + "' đã tồn tại!");
+                    }
+
+                    if (dto.getSku() != null && !dto.getSku().trim().isEmpty()) {
+                        if (!dto.getSku().trim().equalsIgnoreCase(product.getSku()) && productRepository.existsBySkuIgnoreCase(dto.getSku().trim())) {
+                            throw new DuplicateResourceException("Sku '" + dto.getSku() + "' đã tồn tại!");
+                        }
+                    }
+
                     product.setName(dto.getName());
                     product.setPrice(dto.getPrice());
                     product.setOldPrice(dto.getOldPrice());
