@@ -28,7 +28,7 @@ const seriesData = [
 
 const SeriesSection = () => {
   return (
-    <section className="series-section">
+    <section id="series-section" className="series-section">
       <div className="container">
         <div className="series-header-center">
           <h1 className="series-huge-title">CARD ĐỒ HỌA</h1>
