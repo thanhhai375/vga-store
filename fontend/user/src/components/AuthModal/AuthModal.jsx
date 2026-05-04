@@ -13,6 +13,7 @@ const AuthModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -22,6 +23,7 @@ const AuthModal = ({ isOpen, onClose }) => {
       setEmail('');
       setPassword('');
       setFullName('');
+      setUsername('');
     }
   }, [isOpen]);
 
@@ -81,15 +83,23 @@ const AuthModal = ({ isOpen, onClose }) => {
         dispatch(loginSuccess({ user: userObj, token: payload.token }));
         onClose();
       } else {
-        await authService.register({ username: email, email, password, fullName });
+        await authService.register({ username: username, email, password, fullName });
         toastSuccess('Đăng ký thành công! Vui lòng đăng nhập.');
         setIsLogin(true);
         setEmail('');
         setPassword('');
+        setUsername('');
       }
     } catch (err) {
       console.error('Lỗi Auth:', err);
-      toastError(err.response?.data?.message || err.message || (isLogin ? 'Tài khoản hoặc mật khẩu không đúng!' : 'Đăng ký thất bại!'));
+      let errorMsg = err.response?.data?.message || err.message || (isLogin ? 'Tài khoản hoặc mật khẩu không đúng!' : 'Đăng ký thất bại!');
+      if (err.response?.data?.data && typeof err.response.data.data === 'object') {
+        const errorDetails = Object.values(err.response.data.data);
+        if (errorDetails.length > 0) {
+          errorMsg = errorDetails.join(', ');
+        }
+      }
+      toastError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -116,10 +126,16 @@ const AuthModal = ({ isOpen, onClose }) => {
         <div className="auth-body">
           <form className="auth-form" onSubmit={handleSubmit}>
             {!isLogin && (
-              <div className="auth-input-group">
-                <label>Họ và Tên</label>
-                <input type="text" placeholder="Nhập họ và tên của bạn" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-              </div>
+              <>
+                <div className="auth-input-group">
+                  <label>Tên đăng nhập</label>
+                  <input type="text" placeholder="Nhập tên đăng nhập" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                </div>
+                <div className="auth-input-group">
+                  <label>Họ và Tên</label>
+                  <input type="text" placeholder="Nhập họ và tên của bạn" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                </div>
+              </>
             )}
 
             <div className="auth-input-group">

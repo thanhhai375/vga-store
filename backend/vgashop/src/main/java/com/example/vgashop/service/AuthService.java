@@ -29,17 +29,18 @@ public class AuthService {
 
     // Register
     public AuthResponse register(RegisterRequest req) {
-        if (userRepository.existsByUsername(req.getUsername())) {
-            throw new RuntimeException("Tên đăng nhập đã tồn tại!");
-        }
         if (userRepository.existsByEmail(req.getEmail())) {
-            throw new RuntimeException("Email đã được sử dụng!");
+            throw new DuplicateResourceException("Email đã được sử dụng!");
+        }
+        if (userRepository.existsByUsername(req.getUsername())) {
+            throw new DuplicateResourceException("Tên đăng nhập đã tồn tại!");
         }
 
         User user = new User();
         user.setUsername(req.getUsername());
         user.setEmail(req.getEmail());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
+        user.setFullName(req.getFullName());
         user.setRole(Role.USER);
         user.setStatus(true);
 

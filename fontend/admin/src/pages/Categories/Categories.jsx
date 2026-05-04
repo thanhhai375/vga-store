@@ -38,14 +38,14 @@ const Categories = () => {
       setShowModal(false);
       fetchCategories();
       toastSuccess('Lưu thành công!');
-    } catch { toastError('Lưu thất bại!'); }
+    } catch (err) { toastError(err?.response?.data?.message || 'Lưu thất bại!'); }
   };
 
   const handleDelete = async (id) => {
     const isConfirmed = await confirmDelete('Dữ liệu danh mục này sẽ bị xóa khỏi hệ thống.', 'Xác nhận xóa danh mục?');
     if (!isConfirmed) return;
     try { await categoryService.delete(id); fetchCategories(); toastSuccess('Xóa thành công!'); }
-    catch { toastError('Xóa thất bại!'); }
+    catch (err) { toastError(err?.response?.data?.message || 'Xóa thất bại!'); }
   };
 
   const handlePinToTop = async (id) => {

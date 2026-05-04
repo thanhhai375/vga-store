@@ -9,10 +9,9 @@ services:
       POSTGRES_PASSWORD: "3007"
       POSTGRES_DB: vga_store
     ports:
-      - "5433:5432" # Map 5433 ở máy host để tránh đụng với Postgres 5432 gốc của sếp
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      # Mount các file init để tự động khởi tạo database ngay lần chạy đầu tiên
       - ./database/create_tables.sql:/docker-entrypoint-initdb.d/1-create_tables.sql
       - ./database/seed_vga.sql:/docker-entrypoint-initdb.d/2-seed_vga.sql
 
@@ -24,7 +23,6 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # Kết nối vào db qua hostname nội bộ 'db' thay vì localhost
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/vga_store?useUnicode=true&characterEncoding=UTF-8
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=3007

@@ -34,14 +34,14 @@ const Brands = () => {
       setForm({ name: '', description: '' });
       setShowModal(false);
       fetch();
-    } catch { toastError('Lưu thất bại!'); }
+    } catch (err) { toastError(err?.response?.data?.message || 'Lưu thất bại!'); }
   };
 
   const handleDelete = async (id) => {
     const isConfirmed = await confirmDelete('Thương hiệu này sẽ bị loại bỏ khỏi danh sách.', 'Xác nhận xóa thương hiệu?');
     if (!isConfirmed) return;
     try { await brandService.delete(id); fetch(); toastSuccess('Xóa thành công!'); }
-    catch { toastError('Xóa thất bại!'); }
+    catch (err) { toastError(err?.response?.data?.message || 'Xóa thất bại!'); }
   };
 
   const handlePinToTop = async (id) => {
