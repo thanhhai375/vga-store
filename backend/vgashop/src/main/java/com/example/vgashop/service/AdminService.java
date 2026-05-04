@@ -218,29 +218,49 @@ public class AdminService {
 
     // Status
     @Transactional
-    public void toggleUserStatus(Long userId) {
-        log.info("Admin toggle status userId={}", userId);
+    public void toggleUserStatus(Long userId, String currentAdminUsername) {
+        log.info("Admin '{}' toggle status userId={}", currentAdminUsername, userId);
 
         User user = userRepository.findByIdAndDeleted(userId, false)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user vói ID:" + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user với ID:" + userId));
+
+        // Guard 1: Không thể tự khóa chính mình
+        if (user.getUsername().equals(currentAdminUsername)) {
+            throw new IllegalStateException("Không thể khóa tài khoản đang đăng nhập!");
+        }
+
+        // Guard 2: Không thể khóa tài khoản ADMIN khác
+        if (user.getRole() == Role.ADMIN) {
+            throw new IllegalStateException("Không thể khóa tài khoản Quản trị viên!");
+        }
 
         boolean newStatus = !user.getStatus();
         user.setStatus(newStatus);
         userRepository.save(user);
 
-        log.info("Đã thay đổi status userId={} thành {}", userId, newStatus);
+        log.info("Đã thay đổi status userId={} thành {} bởi admin '{}'", userId, newStatus, currentAdminUsername);
     }
 
-    // Delete
+    // Delete (soft)
     @Transactional
-    public void softDeleteUser(Long userId) {
-        log.info("Admin xóa mềm userId={}", userId);
+    public void softDeleteUser(Long userId, String currentAdminUsername) {
+        log.info("Admin '{}' xóa mềm userId={}", currentAdminUsername, userId);
         User user = userRepository.findByIdAndDeleted(userId, false)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user với ID:" + userId));
 
+        // Guard 1: Không thể tự xóa chính mình
+        if (user.getUsername().equals(currentAdminUsername)) {
+            throw new IllegalStateException("Không thể xóa tài khoản đang đăng nhập!");
+        }
+
+        // Guard 2: Không thể xóa tài khoản ADMIN khác
+        if (user.getRole() == Role.ADMIN) {
+            throw new IllegalStateException("Không thể xóa tài khoản Quản trị viên!");
+        }
+
         user.setDeleted(true);
         userRepository.save(user);
-        log.info("Đã xóa mềm (deleted=true) userId={}", userId);
+        log.info("Đã xóa mềm (deleted=true) userId={} bởi admin '{}'", userId, currentAdminUsername);
     }
 
 

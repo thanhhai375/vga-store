@@ -91,9 +91,15 @@ public class AuthService {
         System.out.println("User found - ID: " + user.getId() + ", Role: " + user.getRole() + ", Status: " + user.getStatus());
 
         // Validation
+        if (Boolean.TRUE.equals(user.isDeleted())) {
+            System.out.println("ERROR: Account has been deleted");
+            throw new RuntimeException("Tài khoản không tồn tại hoặc đã bị xóa");
+        }
+
+        // Validation
         if (Boolean.FALSE.equals(user.getStatus())) {
             System.out.println("ERROR: Account is disabled");
-            throw new RuntimeException("Tài khoản đã bị khóa");
+            throw new RuntimeException("Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ!");
         }
 
         // Validation

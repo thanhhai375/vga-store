@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Lock, Unlock, Trash2 } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { Search, Lock, Unlock } from 'lucide-react';
 import userService from '../../services/userService';
 import { toastSuccess, toastError, confirmDelete } from '../../utils/alertUtils';
 
@@ -15,6 +16,9 @@ const Users = () => {
   const [adding, setAdding] = useState(false);
   const SIZE = 10;
 
+  const currentUser = useSelector(state => state.auth.user);
+  const currentUsername = currentUser?.username || '';
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -28,16 +32,40 @@ const Users = () => {
 
   useEffect(() => { fetchUsers(); }, [page, search, roleFilter]);
 
-  const handleToggle = async (id) => {
-    try { await userService.toggleStatus(id); fetchUsers(); }
-    catch { toastError('Thao tác thất bại!'); }
+  // Tài khoản ADMIN hoặc chính mình → không được khóa
+  const isProtected = (u) => u.role === 'ADMIN' || u.username === currentUsername;
+
+  const getLockTooltip = (u) => {
+    if (u.username === currentUsername) return 'Không thể khóa tài khoản đang đăng nhập';
+    if (u.role === 'ADMIN') return 'Không thể khóa tài khoản Quản trị viên';
+    return u.status ? 'Khóa — ngăn người dùng đăng nhập' : 'Mở khóa — cho phép đăng nhập trở lại';
   };
 
-  const handleDelete = async (id) => {
-    const isConfirmed = await confirmDelete('Hành động này sẽ xóa người dùng vĩnh viễn khỏi hệ thống!', 'Xác nhận xóa người dùng?');
-    if (!isConfirmed) return;
-    try { await userService.delete(id); fetchUsers(); toastSuccess('Xóa người dùng thành công!'); }
-    catch { toastError('Xóa thất bại!'); }
+  const handleToggle = async (u) => {
+    if (isProtected(u)) {
+      toastError(getLockTooltip(u));
+      return;
+    }
+    const action = u.status ? 'khóa' : 'mở khóa';
+    const confirmed = await confirmDelete(
+      u.status
+        ? `Người dùng "${u.username}" sẽ không thể đăng nhập cho đến khi được mở khóa.`
+        : `Người dùng "${u.username}" sẽ có thể đăng nhập trở lại.`,
+      `Xác nhận ${action} tài khoản?`
+    );
+    if (!confirmed) return;
+    try {
+      await userService.toggleStatus(u.id);
+      toastSuccess(
+        u.status
+          ? `Đã khóa tài khoản "${u.username}" thành công!`
+          : `Đã mở khóa tài khoản "${u.username}" thành công!`
+      );
+      fetchUsers();
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Thao tác thất bại!';
+      toastError(msg);
+    }
   };
 
   const handleAddUser = async (e) => {
@@ -70,12 +98,17 @@ const Users = () => {
         <div className="toolbar" style={{ display: 'flex', gap: '16px' }}>
           <div className="search-bar" style={{ flex: 1 }}>
             <Search size={16} color="var(--text-muted)" />
-            <input type="text" placeholder="Tìm tài khoản..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
+            <input
+              type="text"
+              placeholder="Tìm tài khoản..."
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(0); }}
+            />
           </div>
-          <select 
-            className="form-control" 
+          <select
+            className="form-control"
             style={{ width: '200px', backgroundColor: 'var(--bg-card)' }}
-            value={roleFilter} 
+            value={roleFilter}
             onChange={e => { setRoleFilter(e.target.value); setPage(0); }}
           >
             <option value="">Tất cả vai trò</option>
@@ -100,33 +133,57 @@ const Users = () => {
               </thead>
               <tbody>
                 {users.length === 0 ? (
-                  <tr><td colSpan="7" style={{textAlign:'center', padding:'40px', color:'var(--text-muted)'}}>Không có người dùng</td></tr>
-                ) : users.map((u, index) => (
-                  <tr key={u.id}>
-                    <td>{page * SIZE + index + 1}</td>
-                    <td style={{fontWeight: 600, color: 'var(--text-primary)'}}>{u.username}</td>
-                    <td>{u.email}</td>
-                    <td>{u.fullName || '--'}</td>
-                    <td>
-                      <span className={`badge ${u.role === 'ADMIN' ? 'badge-danger' : u.role === 'STAFF' ? 'badge-info' : 'badge-secondary'}`}>
-                        {u.role}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`badge ${u.status ? 'badge-success' : 'badge-danger'}`}>
-                        {u.status ? 'Hoạt động' : 'Bị khóa'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="action-btns">
-                        <button className="btn btn-ghost btn-sm" onClick={() => handleToggle(u.id)}>
-                          {u.status ? <><Lock size={14} /> Khóa</> : <><Unlock size={14} /> Mở</>}
-                        </button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(u.id)}><Trash2 size={14} /> Xóa</button>
-                      </div>
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                      Không có người dùng
                     </td>
                   </tr>
-                ))}
+                ) : users.map((u, index) => {
+                  const protected_ = isProtected(u);
+                  return (
+                    <tr key={u.id}>
+                      <td>{page * SIZE + index + 1}</td>
+                      <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {u.username}
+                        {u.username === currentUsername && (
+                          <span style={{
+                            marginLeft: 6, fontSize: 10, padding: '1px 6px',
+                            background: 'var(--primary)', color: '#fff',
+                            borderRadius: 10, verticalAlign: 'middle'
+                          }}>Bạn</span>
+                        )}
+                      </td>
+                      <td>{u.email}</td>
+                      <td>{u.fullName || '--'}</td>
+                      <td>
+                        <span className={`badge ${u.role === 'ADMIN' ? 'badge-danger' : 'badge-secondary'}`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`badge ${u.status ? 'badge-success' : 'badge-danger'}`}>
+                          {u.status ? 'Hoạt động' : 'Bị khóa'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="action-btns">
+                          <button
+                            className={`btn btn-sm ${u.status ? 'btn-ghost' : 'btn-primary'}`}
+                            onClick={() => handleToggle(u)}
+                            disabled={protected_}
+                            title={getLockTooltip(u)}
+                            style={protected_ ? { opacity: 0.35, cursor: 'not-allowed' } : {}}
+                          >
+                            {u.status
+                              ? <><Lock size={14} /> Khóa</>
+                              : <><Unlock size={14} /> Mở khóa</>
+                            }
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -142,38 +199,49 @@ const Users = () => {
           </div>
         )}
       </div>
-      
+
       {showAddModal && (
-        <div style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999}}>
-          <div className="card" style={{width: 400, padding: 24, position: 'relative'}}>
-            <h2 style={{marginTop: 0, marginBottom: 20}}>Thêm Người Dùng Mới</h2>
-            <form onSubmit={handleAddUser} style={{display: 'flex', flexDirection: 'column', gap: 16}}>
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 9999
+        }}>
+          <div className="card" style={{ width: 400, padding: 24 }}>
+            <h2 style={{ marginTop: 0, marginBottom: 20 }}>Thêm Người Dùng Mới</h2>
+            <form onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="form-group">
                 <label>Tên đăng nhập *</label>
-                <input className="form-control" required value={newUser.username} onChange={e => setNewUser({...newUser, username: e.target.value})} placeholder="Username" />
+                <input className="form-control" required value={newUser.username}
+                  onChange={e => setNewUser({ ...newUser, username: e.target.value })} placeholder="Username" />
               </div>
               <div className="form-group">
                 <label>Mật khẩu *</label>
-                <input className="form-control" type="password" required value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} placeholder="Mật khẩu" />
+                <input className="form-control" type="password" required value={newUser.password}
+                  onChange={e => setNewUser({ ...newUser, password: e.target.value })} placeholder="Mật khẩu" />
               </div>
               <div className="form-group">
                 <label>Email *</label>
-                <input className="form-control" type="email" required value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} placeholder="Email" />
+                <input className="form-control" type="email" required value={newUser.email}
+                  onChange={e => setNewUser({ ...newUser, email: e.target.value })} placeholder="Email" />
               </div>
               <div className="form-group">
                 <label>Họ tên</label>
-                <input className="form-control" value={newUser.fullName} onChange={e => setNewUser({...newUser, fullName: e.target.value})} placeholder="Họ và tên" />
+                <input className="form-control" value={newUser.fullName}
+                  onChange={e => setNewUser({ ...newUser, fullName: e.target.value })} placeholder="Họ và tên" />
               </div>
               <div className="form-group">
                 <label>Vai trò *</label>
-                <select className="form-control" value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})}>
+                <select className="form-control" value={newUser.role}
+                  onChange={e => setNewUser({ ...newUser, role: e.target.value })}>
                   <option value="USER">Người dùng (USER)</option>
                   <option value="ADMIN">Quản trị viên (ADMIN)</option>
                 </select>
               </div>
-              <div style={{display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 10}}>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 10 }}>
                 <button type="button" className="btn btn-ghost" onClick={() => setShowAddModal(false)}>Hủy</button>
-                <button type="submit" className="btn btn-primary" disabled={adding}>{adding ? 'Đang thêm...' : 'Lưu tài khoản'}</button>
+                <button type="submit" className="btn btn-primary" disabled={adding}>
+                  {adding ? 'Đang thêm...' : 'Lưu tài khoản'}
+                </button>
               </div>
             </form>
           </div>

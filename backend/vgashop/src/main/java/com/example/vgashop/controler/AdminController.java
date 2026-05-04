@@ -1,5 +1,6 @@
 package com.example.vgashop.controler;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -108,14 +109,14 @@ public class AdminController {
     }
 
     @PutMapping("/users/{userId}/status")
-    public ApiResponse<String> toggleUserStatus(@PathVariable Long userId) {
-        adminService.toggleUserStatus(userId);
+    public ApiResponse<String> toggleUserStatus(@PathVariable Long userId, Principal principal) {
+        adminService.toggleUserStatus(userId, principal.getName());
         return ApiResponse.success("Cập nhật trạng thái người dùng thành công", "OK");
     }
 
     @DeleteMapping("/users/{userId}")
-    public ApiResponse<String> deleteUser(@PathVariable Long userId) {
-        adminService.softDeleteUser(userId);
+    public ApiResponse<String> deleteUser(@PathVariable Long userId, Principal principal) {
+        adminService.softDeleteUser(userId, principal.getName());
         return ApiResponse.success("Đã xóa người dùng thành công", "OK");
     }
 
@@ -302,14 +303,14 @@ public class AdminController {
     }
 
     @GetMapping("/orders/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getOrderDetailsForAdmin(@PathVariable Long id) {
         return ResponseEntity.ok(adminService.getOrderDetailsForAdmin(id));
     }
 
 
     @GetMapping("/dashboard/charts")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getDashboardCharts(
             @RequestParam(required = false, defaultValue = "6months") String period) {
         return ResponseEntity.ok(adminService.getDashboardCharts(period));
@@ -317,7 +318,7 @@ public class AdminController {
 
 
     @PutMapping("/pin-top/{entityType}/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<String> pinToTop(@PathVariable String entityType, @PathVariable Long id) {
         adminService.pinToTop(entityType, id);
         return ApiResponse.success("Đã đẩy mục này lên đầu thành công", "OK");
