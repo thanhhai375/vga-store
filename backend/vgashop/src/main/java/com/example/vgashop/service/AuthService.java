@@ -4,9 +4,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.vgashop.dto.AuthResponse;
-import com.example.vgashop.dto.UserDTO;
 import com.example.vgashop.dto.GoogleLoginRequest;
 import com.example.vgashop.dto.RegisterRequest;
+import com.example.vgashop.dto.UserDTO;
 import com.example.vgashop.entity.Role;
 import com.example.vgashop.entity.User;
 import com.example.vgashop.exception.DuplicateResourceException;
@@ -17,24 +17,21 @@ import com.example.vgashop.security.JwtUtil;
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
+    private final UserRepository       userRepository;
+    private final JwtUtil              jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
 
     public AuthService(UserRepository userRepository, JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
-        this.jwtUtil = jwtUtil;
+        this.userRepository  = userRepository;
+        this.jwtUtil         = jwtUtil;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
-    // Register
     public AuthResponse register(RegisterRequest req) {
-        if (userRepository.existsByEmail(req.getEmail())) {
-            throw new DuplicateResourceException("Email đã được sử dụng!");
-        }
-        if (userRepository.existsByUsername(req.getUsername())) {
-            throw new DuplicateResourceException("Tên đăng nhập đã tồn tại!");
-        }
+        if (userRepository.existsByEmail(req.getEmail()))
+            throw new DuplicateResourceException("Email is already in use");
+        if (userRepository.existsByUsername(req.getUsername()))
+            throw new DuplicateResourceException("Username is already taken");
 
         User user = new User();
         user.setUsername(req.getUsername());
@@ -45,20 +42,16 @@ public class AuthService {
         user.setStatus(true);
 
         User saved = userRepository.save(user);
-        String token = jwtUtil.generateToken(saved.getUsername(), saved.getRole());
-
-        return new AuthResponse(token, saved.getUsername(), saved.getEmail(), saved.getRole().name(), saved.getId(), "Đăng ký thành công");
+        return new AuthResponse(jwtUtil.generateToken(saved.getUsername(), saved.getRole()),
+                saved.getUsername(), saved.getEmail(), saved.getRole().name(), saved.getId(),
+                "Registration successful");
     }
 
-    // Register
     public AuthResponse register(UserDTO dto) {
-        if (userRepository.existsByUsername(dto.getUsername())) {
-            throw new DuplicateResourceException("Username đã tồn tại!");
-        }
-
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new DuplicateResourceException("Email đã tồn tại!");
-        }
+        if (userRepository.existsByUsername(dto.getUsername()))
+            throw new DuplicateResourceException("Username is already taken");
+        if (userRepository.existsByEmail(dto.getEmail()))
+            throw new DuplicateResourceException("Email is already in use");
 
         User user = new User();
         user.setUsername(dto.getUsername());
@@ -71,89 +64,51 @@ public class AuthService {
         user.setStatus(true);
 
         User saved = userRepository.save(user);
-
-        String token = jwtUtil.generateToken(saved.getUsername(), saved.getRole());
-
-        return new AuthResponse(token, saved.getUsername(), saved.getEmail(), saved.getRole().name(), saved.getId(), "Đăng ký thành công");
+        return new AuthResponse(jwtUtil.generateToken(saved.getUsername(), saved.getRole()),
+                saved.getUsername(), saved.getEmail(), saved.getRole().name(), saved.getId(),
+                "Registration successful");
     }
 
-
     public AuthResponse login(String username, String password) {
-        System.out.println("=== LOGIN ATTEMPT ===");
-        System.out.println("Username input: [" + username + "]");
-
-
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> {
-                    System.out.println("ERROR: User not found with username: " + username);
-                    return new ResourceNotFoundException("Tài khoản hoặc mật khẩu không đúng");
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid username or password"));
 
-        System.out.println("User found - ID: " + user.getId() + ", Role: " + user.getRole() + ", Status: " + user.getStatus());
+        if (Boolean.TRUE.equals(user.isDeleted()))
+            throw new RuntimeException("Account does not exist or has been removed");
+        if (Boolean.FALSE.equals(user.getStatus()))
+            throw new RuntimeException("Account is disabled. Please contact support.");
+        if (!passwordEncoder.matches(password, user.getPassword()))
+            throw new RuntimeException("Invalid username or password");
 
-        // Validation
-        if (Boolean.TRUE.equals(user.isDeleted())) {
-            System.out.println("ERROR: Account has been deleted");
-            throw new RuntimeException("Tài khoản không tồn tại hoặc đã bị xóa");
-        }
-
-        // Validation
-        if (Boolean.FALSE.equals(user.getStatus())) {
-            System.out.println("ERROR: Account is disabled");
-            throw new RuntimeException("Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ!");
-        }
-
-        // Validation
-        boolean passwordMatch = passwordEncoder.matches(password, user.getPassword());
-        System.out.println("Password match result: " + passwordMatch);
-
-        if (!passwordMatch) {
-            System.out.println("ERROR: Password does not match");
-            throw new RuntimeException("Tài khoản hoặc mật khẩu không đúng");
-        }
-
-
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        System.out.println("Login successful - Token generated");
-
-        return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getRole().name(), user.getId(), "Đăng nhập thành công");
+        return new AuthResponse(jwtUtil.generateToken(user.getUsername(), user.getRole()),
+                user.getUsername(), user.getEmail(), user.getRole().name(), user.getId(),
+                "Login successful");
     }
 
     public AuthResponse googleLogin(GoogleLoginRequest req) {
-        System.out.println("=== GOOGLE LOGIN ATTEMPT ===");
-        System.out.println("Email input: [" + req.getEmail() + "]");
-
-        // Check if user exists by email
         User user = userRepository.findByEmail(req.getEmail()).orElse(null);
 
         if (user == null) {
-            System.out.println("Google User not found -> Registering new User");
-            // Register new user automatically
-            user = new User();
-            // Google names can contain spaces, use email prefix as username
-            String usernamePrefix = req.getEmail().split("@")[0];
-            String username = usernamePrefix;
-            int counter = 1;
-            while(userRepository.existsByUsername(username)) {
-                username = usernamePrefix + counter++;
-            }
+            String prefix   = req.getEmail().split("@")[0];
+            String username = prefix;
+            int    counter  = 1;
+            while (userRepository.existsByUsername(username)) username = prefix + counter++;
 
+            user = new User();
             user.setUsername(username);
             user.setEmail(req.getEmail());
-            // Random password for google users
             user.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
             user.setFullName(req.getName());
             user.setRole(Role.USER);
             user.setStatus(true);
             user = userRepository.save(user);
         } else {
-            System.out.println("Google User found - ID: " + user.getId() + ", Status: " + user.getStatus());
-            if (Boolean.FALSE.equals(user.getStatus())) {
-                throw new RuntimeException("Tài khoản đã bị khóa");
-            }
+            if (Boolean.FALSE.equals(user.getStatus()))
+                throw new RuntimeException("Account is disabled");
         }
 
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getRole().name(), user.getId(), "Đăng nhập Google thành công");
+        return new AuthResponse(jwtUtil.generateToken(user.getUsername(), user.getRole()),
+                user.getUsername(), user.getEmail(), user.getRole().name(), user.getId(),
+                "Login successful");
     }
 }
