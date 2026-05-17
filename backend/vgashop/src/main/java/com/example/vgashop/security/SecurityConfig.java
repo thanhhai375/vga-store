@@ -46,15 +46,17 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // === PUBLIC endpoints ===
                 .requestMatchers("/api/auth/**").permitAll()
-                /* Image */
                 .requestMatchers("/uploads/**").permitAll()
-                // Products, Brands, Categories - GET public
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/brands/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/blogs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/reviews/**").permitAll()
+                // POST reviews requires authentication to prevent anonymous submissions
+                .requestMatchers(HttpMethod.POST, "/api/reviews/**").authenticated()
+                // Payment gateway callbacks have no JWT — called by external servers
+                .requestMatchers("/api/payments/vnpay/callback").permitAll()
+                .requestMatchers("/api/payments/momo/callback").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/service-policies/**").permitAll()
 
                 // === ADMIN endpoints ===
@@ -65,8 +67,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/orders/**").authenticated()
                 .requestMatchers("/api/cart/**").authenticated()
                 .requestMatchers("/api/users/**").authenticated()
-
-                // Everything else requires auth
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
