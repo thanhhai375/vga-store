@@ -36,7 +36,7 @@ public class Order extends BaseEntity {
     private User user;
 
     @Column(nullable = false)
-    private String orderCode; // Order
+    private String orderCode;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
@@ -58,7 +58,7 @@ public class Order extends BaseEntity {
     private String note;
 
     private LocalDateTime createdAt;
-    private LocalDateTime confirmedAt; //
+    private LocalDateTime confirmedAt;
     private LocalDateTime shippedAt;
     private LocalDateTime deliveredAt;
 
@@ -70,10 +70,9 @@ public class Order extends BaseEntity {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Order() {
-    };
+    public Order() {}
 
-    // method
+    /** Recalculates totalAmount by summing all order item subtotals. */
     public void calculateTotal() {
         this.totalAmount = items.stream()
                 .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
@@ -208,9 +207,11 @@ public class Order extends BaseEntity {
         this.createdAt = createdAt;
     }
 
-    public void setTotalPrice(BigDecimal valueOf) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setTotalPrice'");
+    /**
+     * Backward-compatible alias for setTotalAmount().
+     */
+    public void setTotalPrice(BigDecimal totalPrice) {
+        this.totalAmount = totalPrice;
     }
 
 }

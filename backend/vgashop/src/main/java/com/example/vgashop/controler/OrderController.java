@@ -7,7 +7,9 @@ import com.example.vgashop.dto.OrderStatusUpdateRequest;
 import com.example.vgashop.dto.OrderSummaryResponse;
 import com.example.vgashop.repository.ApiResponse;
 import com.example.vgashop.service.OrderService;
+
 import jakarta.validation.Valid;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,84 +28,63 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    // ===================================
-
-    // ===================================
-
-/* Login */
     @PostMapping
-    public ResponseEntity<?> placeOrder(@Valid @RequestBody OrderRequest req, Authentication authentication) {
+    public ResponseEntity<?> placeOrder(@Valid @RequestBody OrderRequest req, Authentication auth) {
         try {
-            String username = authentication.getName();
-            Map<String, Object> result = orderService.placeOrder(req, username);
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(orderService.placeOrder(req, auth.getName()));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 
-/* Order */
     @GetMapping("/my")
-    public ResponseEntity<?> getMyOrdersList(Authentication authentication) {
+    public ResponseEntity<?> getMyOrdersList(Authentication auth) {
         try {
-            String username = authentication.getName();
-            return ResponseEntity.ok(orderService.getUserOrders(username));
+            return ResponseEntity.ok(orderService.getUserOrders(auth.getName()));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 
-    // ===================================
-    // Details
-    // ===================================
-
-    // Cart
     @PostMapping("/checkout")
     public ApiResponse<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        OrderResponse order = orderService.createOrderFromCart(request);
-        return ApiResponse.success("Tạo đơn hàng thành công", order);
+        return ApiResponse.success("Order created", orderService.createOrderFromCart(request));
     }
 
-    // Order
     @GetMapping
     public ApiResponse<Page<OrderSummaryResponse>> getMyOrdersPage(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
-        Page<OrderSummaryResponse> orders = orderService.getMyOrders(page, size, sortBy, direction);
-        return ApiResponse.success("Lấy danh sách đơn hàng thành công", orders);
+            @RequestParam(defaultValue = "desc")      String direction) {
+        return ApiResponse.success("Orders retrieved",
+                orderService.getMyOrders(page, size, sortBy, direction));
     }
 
-    // Order
     @GetMapping("/{orderId}")
     public ApiResponse<OrderResponse> getOrderById(@PathVariable Long orderId) {
-        OrderResponse order = orderService.getOrderById(orderId);
-        return ApiResponse.success("Lấy chi tiết đơn hàng thành công", order);
+        return ApiResponse.success("Order retrieved", orderService.getOrderById(orderId));
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelOrder(@PathVariable Long id, @RequestParam(required = false) String reason) {
-
+    public ResponseEntity<?> cancelOrder(@PathVariable Long id,
+            @RequestParam(required = false) String reason) {
         return ResponseEntity.ok(orderService.cancelOrder(id, reason));
     }
 
-    // Retrieve all
     @GetMapping("/admin/all")
     public ApiResponse<Page<OrderSummaryResponse>> getAllOrders(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
-        Page<OrderSummaryResponse> orders = orderService.getAllOrders(page, size, sortBy, direction);
-        return ApiResponse.success("Lấy tất cả đơn hàng thành công", orders);
+            @RequestParam(defaultValue = "desc")      String direction) {
+        return ApiResponse.success("All orders retrieved",
+                orderService.getAllOrders(page, size, sortBy, direction));
     }
 
-    // Update existing
     @PutMapping("/admin/{orderId}/status")
     public ApiResponse<OrderResponse> updateOrderStatus(@PathVariable Long orderId,
             @Valid @RequestBody OrderStatusUpdateRequest request) {
-        OrderResponse order = orderService.updateOrderStatus(orderId, request);
-        return ApiResponse.success("Cập nhật trạng thái đơn hàng thành công", order);
+        return ApiResponse.success("Order status updated", orderService.updateOrderStatus(orderId, request));
     }
 }
