@@ -1,13 +1,7 @@
 package com.example.vgashop.utils;
+
 import java.math.BigDecimal;
 import java.net.URLEncoder;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import com.example.vgashop.entity.Order;
-import java.nio.charset.StandardCharsets;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,119 +9,93 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.tomcat.util.buf.UDecoder;
-import org.springframework.data.repository.query.Param;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
-// Uttils class hỗ trợ tạo chữ ký số và Url cho VNPay
+import com.example.vgashop.entity.Order;
+
 public class VNPayUtils {
 
-    // tạo SecureHash (HMAC SHA256) để đảm bảo tính toàn vẹn của dữ liệu khi gửi đến VNPay
     public static String hmacSHA512(String key, String data) {
         try {
             Mac mac = Mac.getInstance("HmacSHA512");
-            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
-            mac.init(secretKey);
+            mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512"));
             byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
+                if (hex.length() == 1) sb.append('0');
+                sb.append(hex);
             }
-            return hexString.toString();
+            return sb.toString();
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi tạo chữ ký VNPay", e);
+            throw new RuntimeException("Failed to generate HMAC-SHA512", e);
         }
     }
 
-    
-    // tạo Url thanh toán VNPay (sanbox, production) dựa trên thông tin đơn hàng và mã giao dịch
-    /* 
-    @Param order // Thông tin đơn hàng cần thanh toán
-    @Param transactionCode // Mã giao dịch duy nhất để xác định đơn hàng trong VNPay
-    @Param returnUrl // URL mà VNPay sẽ chuyển hướng sau khi thanh toán xong (thường là trang kết quả thanh toán của bạn)
-    */
-    public static String createPaymentUrl(Order order, String transactionCode, String returnUrl) {
-        String vnp_TmnCode = "Your_TmnCode"; // Mã website của bạn tại VNPay
-        String vnp_HashSecret = "secret_key"; // Chuỗi bí mật để tạo chữ ký (thay bằng key của bạn)
-        String vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"; // URL thanh toán VNPay (sandbox)
-        // String vnp_Url = "https://pay.vnpayment.vn/vpcpay.html"; // Production
+    public static String createPaymentUrl(Order order, String transactionCode, String returnUrl,
+                                          String clientIp, String tmnCode, String hashSecret, String vnpayUrl) {
+        Map<String, String> params = new HashMap<>();
+        params.put("vnp_Version",   "2.1.0");
+        params.put("vnp_Command",   "pay");
+        params.put("vnp_TmnCode",   tmnCode);
+        params.put("vnp_Amount",    order.getTotalAmount().multiply(BigDecimal.valueOf(100)).toBigInteger().toString());
+        params.put("vnp_CurrCode",  "VND");
+        params.put("vnp_TxnRef",    transactionCode);
+        params.put("vnp_OrderInfo", "Payment for order " + order.getOrderCode());
+        params.put("vnp_OrderType", "other");
+        params.put("vnp_Locale",    "vn");
+        params.put("vnp_ReturnUrl", returnUrl);
+        params.put("vnp_IpAddr",    (clientIp != null && !clientIp.isBlank()) ? clientIp : "127.0.0.1");
 
-        Map<String, String> vnp_Params = new HashMap<>();
-        vnp_Params.put("vnp_Version", "2.1.0");
-        vnp_Params.put("vnp_Command", "pay");
-        vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
-        vnp_Params.put("vnp_Amount", order.getTotalAmount().multiply(BigDecimal.valueOf(100)).toString()); // Vnpay yêu cầu số tiền phải nhân với 100
-        vnp_Params.put("vnp_CurrCode", "VND");;
-        vnp_Params.put("vnp_TxnRef", transactionCode);
-        vnp_Params.put("vnp_orderInfo", "Thanh toán đơn hàng" + order.getOrderCode());
-        vnp_Params.put("vnp_orderType", "other");
-        vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", returnUrl);
-        vnp_Params.put("vnp_IpAddr", "127.0.0.1"); // IP của khách hàng (có thể lấy từ request). Có thể để tạm là localhost, có thể lấy ip thật của client từ request.getRemoteAddr()
+        List<String> keys = new ArrayList<>(params.keySet());
+        Collections.sort(keys);
 
-        // sắp xếp các tham số theo thứ tự tăng dần của key alphabet
-        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
-        Collections.sort(fieldNames);
-        StringBuilder hasData = new StringBuilder();
-        StringBuilder query = new StringBuilder();
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder query    = new StringBuilder();
 
-        for (String fieldName : fieldNames) {
-            String fieldvalue = vnp_Params.get(fieldName);
-            if (fieldvalue != null && !fieldvalue.isEmpty()) {
-                // tạo chuỗi dữ liệu để tạo chứ ký số
-                hasData.append(fieldName).append('=').append(fieldvalue);
-                query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8))
+        for (int i = 0; i < keys.size(); i++) {
+            String k = keys.get(i);
+            String v = params.get(k);
+            if (v != null && !v.isEmpty()) {
+                hashData.append(k).append('=').append(v);
+                query.append(URLEncoder.encode(k, StandardCharsets.UTF_8))
                      .append('=')
-                     .append(URLEncoder.encode(fieldvalue, StandardCharsets.UTF_8));
-                if (fieldNames.indexOf(fieldName) < fieldNames.size() - 1) {
-                    hasData.append('&');
+                     .append(URLEncoder.encode(v, StandardCharsets.UTF_8));
+                if (i < keys.size() - 1) {
+                    hashData.append('&');
                     query.append('&');
-                } 
+                }
             }
         }
 
-        // xóa dấu & cuối cùng nếu có
-        if (query.length() > 0) {
-            query.deleteCharAt(query.length() - 1);
-        }
-
-        String vnp_SecureHash = hmacSHA512(vnp_HashSecret, hasData.toString());
-        query.append("&vnp_SecureHash=").append(vnp_SecureHash);
-
-        return vnp_Url + "?" + query.toString();
+        query.append("&vnp_SecureHash=").append(hmacSHA512(hashSecret, hashData.toString()));
+        return vnpayUrl + "?" + query;
     }
 
-    // VERIFY SIGNATURE cho VNPay Callback. trả về true nếu chữ ký hợp lệ, false nếu không hợp lệ (để đảm bảo callback là từ VNPay gửi đến chứ không phải giả mạo)
     public static boolean verifySignature(Map<String, String> params, String hashSecret) {
         try {
-            String vnp_SecureHash = params.get("vnp_SecureHash");
-            if (vnp_SecureHash == null || vnp_SecureHash.isEmpty()) {
-                return false;
-            }
+            String receivedHash = params.get("vnp_SecureHash");
+            if (receivedHash == null || receivedHash.isEmpty()) return false;
 
-            // loại bỏ tham số vnp_SecureHash khỏi dữ liệu để tạo lại chữ ký
-            Map<String, String> paramsForHash = new HashMap<>(params);
-            paramsForHash.remove(vnp_SecureHash);
+            Map<String, String> filtered = new HashMap<>(params);
+            filtered.remove("vnp_SecureHash");
+            filtered.remove("vnp_SecureHashType");
 
-            List<String> fieldNames = new ArrayList<>(paramsForHash.keySet()); // lấy tất cả key của tham số (trừ vnp_SecureHash)
-            Collections.sort(fieldNames); // sắp xếp key theo thứ tự alphabet
+            List<String> keys = new ArrayList<>(filtered.keySet());
+            Collections.sort(keys);
 
-            StringBuilder hashData = new StringBuilder(); // tạo chuỗi dữ liệu để tạo chữ ký
-            for (String fieldName : fieldNames) {
-                String fieldValue = paramsForHash.get(fieldName);
-                if (fieldValue != null && !fieldValue.isEmpty()) {
-                    hashData.append(fieldName).append('=').append(fieldValue).append('&');
+            StringBuilder hashData = new StringBuilder();
+            for (int i = 0; i < keys.size(); i++) {
+                String k = keys.get(i);
+                String v = filtered.get(k);
+                if (v != null && !v.isEmpty()) {
+                    hashData.append(k).append('=').append(v);
+                    if (i < keys.size() - 1) hashData.append('&');
                 }
             }
 
-            // xóa dấu & cuối cùng nếu có
-            if (hashData.length() > 0) {
-                hashData.deleteCharAt(hashData.length() - 1);
-            }
-
-            String calculatedHash = hmacSHA512(hashSecret, hashData.toString());
-            return calculatedHash.equalsIgnoreCase(vnp_SecureHash);
+            return hmacSHA512(hashSecret, hashData.toString()).equalsIgnoreCase(receivedHash);
         } catch (Exception e) {
             return false;
         }
