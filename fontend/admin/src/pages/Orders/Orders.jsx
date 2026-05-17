@@ -4,6 +4,7 @@ import orderService from '../../services/orderService';
 import { toastSuccess, toastError, confirmAction } from '../../utils/alertUtils';
 import axiosClient from '../../api/axiosClient';
 import { markOrdersAsSeen, isOrderNew } from '../../utils/orderNewUtils';
+import { refreshPendingPayments } from '../../hooks/usePendingPayments';
 import './Orders.css';
 
 const STATUS_MAP = {
@@ -57,19 +58,37 @@ const Orders = () => {
 
   const handleStatusChange = async (id, status) => {
     if (status === 'CANCELLED') {
-      const isConfirmed = await confirmAction('Hủy đơn hàng?', 'Duyệt HỦY đơn hàng này? Số lượng sản phẩm sẽ được tự động hoàn về kho.');
-      if (!isConfirmed) return;
+      const ok = await confirmAction('Hủy đơn hàng?', 'Duyệt HỦY đơn hàng này? Số lượng sản phẩm sẽ được tự động hoàn về kho.');
+      if (!ok) return;
     } else if (status === 'PENDING') {
-      const isConfirmed = await confirmAction('Từ chối Hủy?', 'Từ chối yêu cầu hủy? Đơn hàng sẽ quay về trạng thái Chờ xử lý.');
-      if (!isConfirmed) return;
+      const ok = await confirmAction('Từ chối Hủy?', 'Từ chối yêu cầu hủy? Đơn hàng sẽ quay về trạng thái Chờ xử lý.');
+      if (!ok) return;
     }
-
     try {
       await orderService.updateStatus(id, status);
       if (status === 'CANCELLED') toastSuccess('Đã duyệt Hủy đơn hàng và hoàn kho!');
       fetchOrders();
       if (isModalOpen) setIsModalOpen(false);
     } catch { toastError('Cập nhật thất bại!'); }
+  };
+
+  const handleConfirmPayment = async (orderId, paymentId) => {
+    const ok = await confirmAction(
+      'Xác nhận đã nhận tiền?',
+      'Bạn xác nhận đã nhận được tiền chuyển khoản? Đơn hàng sẽ chuyển sang trạng thái Đã xác nhận.'
+    );
+    if (!ok) return;
+    try {
+      if (paymentId) {
+        await axiosClient.post(`/payments/admin/${paymentId}/status?status=SUCCESS`);
+      } else {
+        await orderService.updateStatus(orderId, 'CONFIRMED');
+      }
+      toastSuccess('Đã xác nhận thanh toán thành công!');
+      refreshPendingPayments();
+      fetchOrders();
+      if (isModalOpen) viewOrderDetails(orderId);
+    } catch { toastError('Xác nhận thất bại!'); }
   };
 
   // Details
@@ -129,11 +148,17 @@ const Orders = () => {
                     <tr key={o.orderId || o.id}
                       onClick={() => viewOrderDetails(o.orderId || o.id)}
                       style={{ cursor: 'pointer' }}
-                      className={orderIsNew ? 'row-new-order' : ''}
+                      className={[
+                        orderIsNew ? 'row-new-order' : '',
+                        (o.status === 'PENDING' && o.paymentStatus === 'UNPAID') ? 'row-pending-payment' : ''
+                      ].filter(Boolean).join(' ')}
                     >
                       <td>
                         <strong style={{ color: '#2563eb' }}>{o.orderCode || `#${o.orderId}`}</strong>
                         {orderIsNew && <span className="badge-new">MỚI</span>}
+                        {(o.status === 'PENDING' && o.paymentStatus === 'UNPAID') && (
+                          <span className="badge-payment-pending">Chờ TT</span>
+                        )}
                       </td>
                       <td>{o.fullName || o.user?.username || '--'}</td>
                       <td>{o.phone || o.phoneNumber || '--'}</td>
@@ -141,7 +166,14 @@ const Orders = () => {
                       <td><span className={`badge ${st.cls}`}>{st.label}</span></td>
                       <td>{o.createdAt ? new Date(o.createdAt).toLocaleDateString('vi-VN') : '--'}</td>
                       <td onClick={e => e.stopPropagation()}>
-                        {o.status === 'CANCEL_REQUESTED' ? (
+                        {(o.status === 'PENDING' && o.paymentStatus === 'UNPAID') ? (
+                          <button
+                            className="btn-confirm-payment"
+                            onClick={() => handleConfirmPayment(o.orderId || o.id, null)}
+                          >
+                            ✓ Xác nhận TT
+                          </button>
+                        ) : o.status === 'CANCEL_REQUESTED' ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <button onClick={() => handleStatusChange(o.orderId || o.id, 'CANCELLED')} className="btn-approve">✓ Duyệt Hủy</button>
                             <button onClick={() => handleStatusChange(o.orderId || o.id, 'PENDING')} className="btn-reject">✕ Từ chối</button>
@@ -319,6 +351,19 @@ const Orders = () => {
                     <div className="admin-modal-total">
                       Tổng tiền: <span>{selectedOrder.totalAmount ? `${Number(selectedOrder.totalAmount).toLocaleString('vi-VN')}đ` : '0đ'}</span>
                     </div>
+
+                    {selectedOrder.paymentStatus === 'UNPAID' && selectedOrder.status === 'PENDING' && (
+                      <div style={{ marginTop: 20, padding: '16px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10 }}>
+                        <p style={{ color: '#ef4444', fontWeight: 600, marginBottom: 10 }}>⚠️ Đơn hàng này đang chờ xác nhận thanh toán chuyển khoản</p>
+                        <button
+                          className="btn-confirm-payment"
+                          style={{ width: '100%', padding: '12px' }}
+                          onClick={() => handleConfirmPayment(selectedOrder.id || selectedOrder.orderId, selectedOrder.paymentId)}
+                        >
+                          ✓ Xác nhận đã nhận tiền chuyển khoản
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

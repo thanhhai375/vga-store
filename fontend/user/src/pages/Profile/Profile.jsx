@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { userService } from '../../services/userService';
 import { logout, updateUser } from '../../redux/authSlice';
 import { toastSuccess, toastError, confirmDelete } from "../../utils/alertUtils";
@@ -11,6 +11,12 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('info');
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) setActiveTab(tab);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -59,6 +65,10 @@ const Profile = () => {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
               Đổi mật khẩu
             </button>
+            <button className="nav-btn" onClick={() => navigate('/track-order')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              Đơn hàng của tôi
+            </button>
 
             <div className="sidebar-divider"></div>
 
@@ -71,8 +81,8 @@ const Profile = () => {
 
         {/* ================= MAIN CONTENT ================= */}
         <main className="profile-content-area">
-          {activeTab === 'info' && <ProfileInfo user={user} dispatch={dispatch} />}
-          {activeTab === 'address' && <ProfileAddress />}
+          {activeTab === 'info'     && <ProfileInfo user={user} dispatch={dispatch} />}
+          {activeTab === 'address'  && <ProfileAddress />}
           {activeTab === 'password' && <ProfilePassword />}
         </main>
 
@@ -379,6 +389,92 @@ const ProfilePassword = () => {
           {loading ? 'ĐANG XỬ LÝ...' : 'XÁC NHẬN ĐỔI'}
         </button>
       </form>
+    </div>
+  );
+};
+
+// ==========================================
+// Orders
+// ==========================================
+const ORDER_STATUS_LABEL = {
+  PENDING:          { label: 'Chờ xử lý',         color: '#f59e0b' },
+  CONFIRMED:        { label: 'Đã xác nhận',        color: '#2563eb' },
+  SHIPPING:         { label: 'Đang giao',          color: '#7c3aed' },
+  DELIVERED:        { label: 'Hoàn thành',         color: '#16a34a' },
+  CANCEL_REQUESTED: { label: 'Yêu cầu hủy',       color: '#dc2626' },
+  CANCELLED:        { label: 'Đã hủy',             color: '#6b7280' },
+};
+
+const ProfileOrders = ({ navigate }) => {
+  const [orders, setOrders]   = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axiosClient.get('/orders', { params: { page: 0, size: 50, sortBy: 'createdAt', direction: 'desc' } })
+      .then(res => {
+        const data = res?.data?.data || res?.data || res;
+        setOrders(Array.isArray(data) ? data : (data.content || []));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const isPaymentExpired = (order) => {
+    if (!order.createdAt) return false;
+    const created = new Date(order.createdAt).getTime();
+    return Date.now() - created > 15 * 60 * 1000;
+  };
+
+  const handlePayAgain = (order) => {
+    navigate(`/payment/pending?orderId=${order.id || order.orderId}&orderCode=${encodeURIComponent(order.orderCode)}&amount=${order.totalAmount || 0}`);
+  };
+
+  return (
+    <div className="tab-pane fade-in">
+      <div className="tab-header">
+        <h2 className="tab-title">Đơn hàng của tôi</h2>
+        <p className="tab-desc">Theo dõi trạng thái và lịch sử đơn hàng</p>
+      </div>
+
+      {loading ? (
+        <p className="text-muted">Đang tải...</p>
+      ) : orders.length === 0 ? (
+        <div className="empty-state">Bạn chưa có đơn hàng nào.</div>
+      ) : (
+        <div className="orders-list">
+          {orders.map(order => {
+            const id          = order.id || order.orderId;
+            const isPending   = order.status === 'PENDING' && order.paymentStatus === 'UNPAID';
+            const isCancelled = order.status === 'CANCELLED' && order.note?.includes('[SYSTEM]: Payment expired');
+            const statusInfo  = ORDER_STATUS_LABEL[order.status] || { label: order.status, color: '#6b7280' };
+
+            return (
+              <div key={id} className={`order-item-card${isPending ? ' order-item--pending-pay' : ''}`}>
+                <div className="order-item-header">
+                  <div>
+                    <span className="order-code">{order.orderCode || `#${id}`}</span>
+                    {isCancelled && <span className="badge-expired">Hết thời gian TT</span>}
+                    {isPending   && <span className="badge-waiting-pay">Chờ thanh toán</span>}
+                  </div>
+                  <span className="order-status" style={{ color: statusInfo.color }}>{statusInfo.label}</span>
+                </div>
+
+                <div className="order-item-info">
+                  <span>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</span>
+                  <span>{order.totalItems || 0} sản phẩm</span>
+                  <strong className="order-total">{Number(order.totalAmount || 0).toLocaleString('vi-VN')}₫</strong>
+                </div>
+
+                {isPending && !isPaymentExpired(order) && (
+                  <button className="btn-pay-again" onClick={() => handlePayAgain(order)}>
+                    🏦 Tiếp tục thanh toán
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

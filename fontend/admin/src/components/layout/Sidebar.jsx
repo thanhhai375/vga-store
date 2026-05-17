@@ -1,55 +1,56 @@
 import React from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/authSlice';
 import { LayoutDashboard, ShoppingCart, Monitor, Tags, Tag, BookOpen, Star, Users, LogOut, Settings } from 'lucide-react';
+import { usePendingPayments } from '../../hooks/usePendingPayments';
 import './Sidebar.css';
-
-const NAV_ITEMS = [
-  {
-    group: 'TỔNG QUAN',
-    items: [
-      { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
-    ]
-  },
-  {
-    group: 'QUẢN LÝ BÁN HÀNG',
-    items: [
-      { path: '/orders', label: 'Đơn hàng', icon: <ShoppingCart size={20} /> },
-      { path: '/products', label: 'Sản phẩm', icon: <Monitor size={20} /> },
-      { path: '/categories', label: 'Danh mục', icon: <Tags size={20} /> },
-      { path: '/brands', label: 'Thương hiệu', icon: <Tag size={20} /> },
-    ]
-  },
-  {
-    group: 'QUẢN LÝ NỘI DUNG',
-    items: [
-      { path: '/blogs', label: 'Bài viết', icon: <BookOpen size={20} /> },
-      { path: '/reviews', label: 'Đánh giá', icon: <Star size={20} /> },
-    ]
-  },
-  {
-    group: 'HỆ THỐNG',
-    items: [
-      { path: '/users', label: 'Người dùng', icon: <Users size={20} /> },
-      { path: '/settings', label: 'Cài đặt', icon: <Settings size={20} /> },
-    ]
-  },
-];
 
 const Sidebar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector(state => state.auth);
+  const { count: pendingCount } = usePendingPayments();
 
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
   };
 
+  const NAV_ITEMS = [
+    {
+      group: 'TỔNG QUAN',
+      items: [
+        { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+      ]
+    },
+    {
+      group: 'QUẢN LÝ BÁN HÀNG',
+      items: [
+        { path: '/orders', label: 'Đơn hàng', icon: <ShoppingCart size={20} />, badge: pendingCount },
+        { path: '/products', label: 'Sản phẩm', icon: <Monitor size={20} /> },
+        { path: '/categories', label: 'Danh mục', icon: <Tags size={20} /> },
+        { path: '/brands', label: 'Thương hiệu', icon: <Tag size={20} /> },
+      ]
+    },
+    {
+      group: 'QUẢN LÝ NỘI DUNG',
+      items: [
+        { path: '/blogs', label: 'Bài viết', icon: <BookOpen size={20} /> },
+        { path: '/reviews', label: 'Đánh giá', icon: <Star size={20} /> },
+      ]
+    },
+    {
+      group: 'HỆ THỐNG',
+      items: [
+        { path: '/users', label: 'Người dùng', icon: <Users size={20} /> },
+        { path: '/settings', label: 'Cài đặt', icon: <Settings size={20} /> },
+      ]
+    },
+  ];
+
   return (
     <aside className="sidebar">
-      {/* Logo */}
       <div className="sidebar-logo">
         <img src="/images/logo.png" alt="VGA Store" className="sidebar-logo-img" />
         <div className="sidebar-logo-text">
@@ -58,7 +59,6 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Nav */}
       <nav className="sidebar-nav">
         {NAV_ITEMS.map((group) => (
           <div key={group.group} className="nav-group">
@@ -72,13 +72,15 @@ const Sidebar = () => {
               >
                 <span className="nav-icon">{item.icon}</span>
                 <span>{item.label}</span>
+                {item.badge > 0 && (
+                  <span className="nav-badge">{item.badge > 99 ? '99+' : item.badge}</span>
+                )}
               </NavLink>
             ))}
           </div>
         ))}
       </nav>
 
-      {/* User Info */}
       <div className="sidebar-footer">
         <div className="sidebar-user">
           <div className="user-avatar">{user?.username?.[0]?.toUpperCase() || 'A'}</div>

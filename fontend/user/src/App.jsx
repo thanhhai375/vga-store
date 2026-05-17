@@ -16,6 +16,7 @@ import NotFound from './pages/NotFound/NotFound';
 import CompareBar from './components/ui/CompareBar';
 import CompareModal from './components/ui/CompareModal';
 import AIChatWidget from './components/ui/AIChatWidget';
+import PaymentPending from './pages/PaymentPending/PaymentPending';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/cart" element={<Cart />} />
 
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/payment/pending" element={<PaymentPending />} />
           <Route path="/track-order" element={<TrackOrder />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/profile" element={<Profile />} />

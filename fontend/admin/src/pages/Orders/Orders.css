@@ -177,4 +177,43 @@
   background: linear-gradient(135deg, #4338ca, #4f46e5);
   transform: translateY(-1px);
   box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.3);
-}
+}
+
+.row-pending-payment {
+  background: linear-gradient(90deg, #fef2f2 0%, #ffffff 100%) !important;
+  border-left: 3px solid #ef4444 !important;
+}
+
+.badge-payment-pending {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 7px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.btn-confirm-payment {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(22,163,74,0.25);
+}
+
+.btn-confirm-payment:hover {
+  background: linear-gradient(135deg, #15803d, #166534);
+  transform: translateY(-1px);
+}
+

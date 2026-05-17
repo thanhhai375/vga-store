@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { orderService } from '../../services/orderService';
 import axiosClient from '../../api/axiosClient';
 import './TrackOrder.css';
@@ -39,6 +39,7 @@ const formatDate = (dateStr) => {
 
 const TrackOrder = () => {
   const { isAuthenticated } = useSelector((state) => state.auth) || {};
+  const navigate = useNavigate();
 
   const [orders, setOrders] = useState([]);
   const [pendingReviews, setPendingReviews] = useState([]);
@@ -242,11 +243,24 @@ const TrackOrder = () => {
                           <span className={`status-badge ${getStatusClass(order.status)}`}>
                             {getStatusLabel(order.status)}
                           </span>
+                          {order.status === 'PENDING' && order.paymentStatus === 'UNPAID' && (
+                            <span className="pay-status-badge unpaid">Chưa thanh toán</span>
+                          )}
                         </td>
                         <td style={{ textAlign: 'center' }}>
-                          {['PENDING', 'CONFIRMED'].includes(order.status) ? (
+                          {['PENDING', 'CONFIRMED'].includes(order.status) && order.paymentStatus !== 'UNPAID' ? (
                             <button onClick={(e) => openCancelModal(order.orderId || order.id, e)} className="btn-cancel-sm">
                               Hủy đơn
+                            </button>
+                          ) : order.status === 'PENDING' && order.paymentStatus === 'UNPAID' ? (
+                            <button
+                              className="btn-pay-now-sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/payment/pending?orderId=${order.orderId || order.id}&orderCode=${encodeURIComponent(order.orderCode)}&amount=${order.totalAmount || 0}`);
+                              }}
+                            >
+                              🏦 Thanh toán
                             </button>
                           ) : order.status === 'DELIVERED' && order.productIds && order.productIds.some(id => pendingReviews.includes(id)) ? (
                             <button 
@@ -332,11 +346,25 @@ const TrackOrder = () => {
                           borderRadius: '12px',
                           fontSize: '12px',
                           fontWeight: 600,
-                          background: selectedOrder.paymentMethod === 'COD' ? '#fef3c7' : selectedOrder.paymentMethod === 'VNPAY' ? '#dbeafe' : selectedOrder.paymentMethod === 'MOMO' ? '#fce7f3' : '#f3f4f6',
-                          color: selectedOrder.paymentMethod === 'COD' ? '#92400e' : selectedOrder.paymentMethod === 'VNPAY' ? '#1e40af' : selectedOrder.paymentMethod === 'MOMO' ? '#9d174d' : '#374151',
+                          background: selectedOrder.paymentMethod === 'COD' ? '#fef3c7' : selectedOrder.paymentMethod === 'VNPAY' ? '#dbeafe' : selectedOrder.paymentMethod === 'MOMO' ? '#fce7f3' : '#f0fdf4',
+                          color: selectedOrder.paymentMethod === 'COD' ? '#92400e' : selectedOrder.paymentMethod === 'VNPAY' ? '#1e40af' : selectedOrder.paymentMethod === 'MOMO' ? '#9d174d' : '#166534',
                         }}>
-                          {selectedOrder.paymentMethod === 'COD' ? '💵 Tiền mặt (COD)' : selectedOrder.paymentMethod === 'VNPAY' ? '🏦 VNPay' : selectedOrder.paymentMethod === 'MOMO' ? '💜 MoMo' : selectedOrder.paymentMethod || 'Chưa rõ'}
+                          {selectedOrder.paymentMethod === 'COD' ? '💵 Tiền mặt (COD)' : selectedOrder.paymentMethod === 'VNPAY' ? '🏦 VNPay' : selectedOrder.paymentMethod === 'MOMO' ? '💜 MoMo' : selectedOrder.paymentMethod === 'BANK_TRANSFER' ? '🏦 Chuyển khoản' : selectedOrder.paymentMethod || 'Chưa rõ'}
                         </span>
+                        {' '}
+                        {selectedOrder.status === 'PENDING' && (
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '2px 10px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            background: selectedOrder.paymentStatus === 'PAID' ? '#dcfce7' : '#fef2f2',
+                            color: selectedOrder.paymentStatus === 'PAID' ? '#15803d' : '#b91c1c',
+                          }}>
+                            {selectedOrder.paymentStatus === 'PAID' ? '✅ Đã thanh toán' : '⚠️ Chưa thanh toán'}
+                          </span>
+                        )}
                       </p>
                       {selectedOrder.note && <p style={{ marginTop: '8px' }}><strong>Ghi chú:</strong> {selectedOrder.note}</p>}
                     </div>
@@ -370,7 +398,19 @@ const TrackOrder = () => {
                   </>
                 )}
 
-                {['PENDING', 'CONFIRMED'].includes(selectedOrder.status) && (
+                {selectedOrder.status === 'PENDING' && selectedOrder.paymentStatus === 'UNPAID' && selectedOrder.paymentMethod === 'BANK_TRANSFER' && (
+                  <div className="pending-pay-banner">
+                    <span>🏦 Đơn hàng chưa được thanh toán. Tiếp tục để hoàn tất.</span>
+                    <button
+                      className="btn-pay-now-lg"
+                      onClick={() => navigate(`/payment/pending?orderId=${selectedOrder.id || selectedOrder.orderId}&orderCode=${encodeURIComponent(selectedOrder.orderCode)}&amount=${selectedOrder.totalAmount || 0}`)}
+                    >
+                      Tiếp tục thanh toán
+                    </button>
+                  </div>
+                )}
+
+                {['PENDING', 'CONFIRMED'].includes(selectedOrder.status) && selectedOrder.paymentStatus !== 'UNPAID' && (
                   <button className="btn-cancel-lg" onClick={(e) => openCancelModal(selectedOrder.orderId || selectedOrder.id, e)}>
                     Yêu cầu hủy đơn hàng
                   </button>

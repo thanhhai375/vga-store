@@ -227,11 +227,9 @@ const Checkout = () => {
         }
       }
 
-      // Với VNPay/MoMo: redirect ngay, CHƯA clear giỏ hàng
-      // Giỏ hàng chỉ clear sau khi callback về thành công
+      // For VNPay/MoMo: redirect to gateway immediately, do NOT clear cart yet
       if (paymentMethod === 'VNPAY' || paymentMethod === 'MOMO') {
         if (fetchedPaymentUrl) {
-          // Lưu orderId vào sessionStorage để callback page có thể clear cart
           sessionStorage.setItem('pendingOrderId', orderId);
           window.location.href = fetchedPaymentUrl;
           return;
@@ -242,11 +240,23 @@ const Checkout = () => {
         }
       }
 
-      // Với COD và Bank Transfer: clear giỏ hàng ngay sau khi tạo đơn thành công
+      // For Bank Transfer: redirect to payment pending page with QR + countdown
+      if (paymentMethod === 'BANK_TRANSFER') {
+        if (!buyNowItem) {
+          dispatch(clearCart());
+          if (isAuthenticated) {
+            try { await cartService.clearCart(); } catch (e) {}
+          }
+        }
+        navigate(`/payment/pending?orderId=${orderId}&orderCode=${encodeURIComponent(orderCode)}&amount=${orderData.totalPrice || orderData.totalAmount || ''}`);
+        return;
+      }
+
+      // For COD: clear cart and show success popup
       if (!buyNowItem) {
         dispatch(clearCart());
         if (isAuthenticated) {
-          try { await cartService.clearCart(); } catch (e) { /* bỏ qua lỗi clear cart */ }
+          try { await cartService.clearCart(); } catch (e) {}
         }
       }
 

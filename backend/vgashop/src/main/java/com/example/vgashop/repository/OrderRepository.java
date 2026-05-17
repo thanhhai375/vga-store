@@ -60,4 +60,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     /** Returns all orders for the given user, sorted by ID descending (most recent first). */
     List<Order> findByUserIdOrderByIdDesc(Long userId);
+
+    @Query("SELECT o FROM Order o WHERE o.status = 'PENDING' AND o.paymentStatus = 'UNPAID' AND o.deleted = false AND o.createdAt < :cutoff")
+    List<Order> findExpiredPendingOrders(@Param("cutoff") LocalDateTime cutoff);
 }

@@ -232,10 +232,23 @@ public class OrderService {
         order.setStatus(request.getStatus());
 
         switch (request.getStatus()) {
-            case CONFIRMED  -> order.setConfirmedAt(LocalDateTime.now());
-            case SHIPPING   -> order.setShippedAt(LocalDateTime.now());
-            case DELIVERED  -> order.setDeliveredAt(LocalDateTime.now());
-            case CANCELLED  -> {
+            case CONFIRMED -> {
+                order.setConfirmedAt(LocalDateTime.now());
+                order.setPaymentStatus(PaymentStatus.PAID);
+            }
+            case SHIPPING -> {
+                order.setShippedAt(LocalDateTime.now());
+                if (order.getPaymentStatus() == PaymentStatus.UNPAID) {
+                    order.setPaymentStatus(PaymentStatus.PAID);
+                }
+            }
+            case DELIVERED -> {
+                order.setDeliveredAt(LocalDateTime.now());
+                if (order.getPaymentStatus() == PaymentStatus.UNPAID) {
+                    order.setPaymentStatus(PaymentStatus.PAID);
+                }
+            }
+            case CANCELLED -> {
                 if (oldStatus != OrderStatus.CANCELLED) {
                     for (OrderItem item : order.getItems()) {
                         Product p = item.getProduct();
