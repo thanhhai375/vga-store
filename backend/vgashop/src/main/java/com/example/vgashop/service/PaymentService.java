@@ -3,9 +3,13 @@ package com.example.vgashop.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.vgashop.dto.PaymentRequest;
 import com.example.vgashop.dto.PaymentResponse;
@@ -18,12 +22,6 @@ import com.example.vgashop.entity.User;
 import com.example.vgashop.exception.ResourceNotFoundException;
 import com.example.vgashop.repository.OrderRepository;
 import com.example.vgashop.repository.PaymentRepository;
-import com.example.vgashop.service.UserService;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-
 import com.example.vgashop.utils.MomoUtils;
 import com.example.vgashop.utils.VNPayUtils;
 
@@ -31,169 +29,152 @@ import com.example.vgashop.utils.VNPayUtils;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final OrderRepository orderRepository;
-    private final UserService userService;
+    private final OrderRepository   orderRepository;
+    private final UserService       userService;
+
+    @Value("${vnpay.tmn-code}")    private String vnpayTmnCode;
+    @Value("${vnpay.hash-secret}") private String vnpayHashSecret;
+    @Value("${vnpay.url}")         private String vnpayUrl;
+    @Value("${vnpay.return-url}")  private String vnpayReturnUrl;
+
+    @Value("${momo.partner-code}") private String momoPartnerCode;
+    @Value("${momo.access-key}")   private String momoAccessKey;
+    @Value("${momo.secret-key}")   private String momoSecretKey;
+    @Value("${momo.ipn-url}")      private String momoIpnUrl;
+    @Value("${momo.return-url}")   private String momoReturnUrl;
 
     public PaymentService(PaymentRepository paymentRepository, OrderRepository orderRepository,
             UserService userService) {
         this.paymentRepository = paymentRepository;
-        this.orderRepository = orderRepository;
-        this.userService = userService;
+        this.orderRepository   = orderRepository;
+        this.userService       = userService;
     }
 
-    // Order
     @Transactional
-    public PaymentResponse createPayment(Long orderId, PaymentRequest request) {
+    public PaymentResponse createPayment(Long orderId, PaymentRequest request, String clientIp) {
         User user = userService.getCurrentUser();
+
         Order order = orderRepository.findByIdAndUser_IdAndDeletedFalse(orderId, user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new IllegalArgumentException("Không thể tạo thanh toán cho đơn hàng đã hủy");
+            throw new IllegalArgumentException("Cannot create payment for a cancelled order");
         }
+
+        paymentRepository.findByOrder_IdAndDeletedFalse(orderId).ifPresent(existing -> {
+            if (existing.getPaymentStatus() == PaymentStatus.SUCCESS) {
+                throw new IllegalArgumentException("Order has already been paid");
+            }
+        });
 
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setPaymentMethod(request.getPaymentMethod());
         payment.setAmount(order.getTotalAmount());
         payment.setPaymentStatus(PaymentStatus.PENDING);
+        payment.setTransactionCode("PAY-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase());
 
-        String transactionCode = "PAY-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase();
-        payment.setTransactionCode(transactionCode);
-
-
-        String returnUrl = "http://localhost:5173/payment/vnpay-callback";
-
-        // Process
         switch (request.getPaymentMethod()) {
             case COD:
-                payment.setNote("Thanh toán khi nhận hàng (COD)");
-                payment.setPaymentStatus(PaymentStatus.PENDING);
+                payment.setNote("Cash on delivery");
                 break;
-
             case BANK_TRANSFER:
-                payment.setNote("Chuyển khoản ngân hàng. Nội dung: " + order.getOrderCode());
-                payment.setPaymentStatus(PaymentStatus.PENDING);
+                payment.setNote("Bank transfer. Ref: " + order.getOrderCode());
                 break;
-
             case VNPAY:
-                payment.setPaymentUrl(VNPayUtils.createPaymentUrl(order, transactionCode, returnUrl));
-                payment.setNote("Thanh toán qua VNPay");
-                break; // Required
-
+                payment.setPaymentUrl(VNPayUtils.createPaymentUrl(
+                        order, payment.getTransactionCode(), vnpayReturnUrl,
+                        clientIp, vnpayTmnCode, vnpayHashSecret, vnpayUrl));
+                payment.setNote("VNPay");
+                break;
             case MOMO:
-                payment.setPaymentUrl(MomoUtils.createPaymentUrl(order, transactionCode, returnUrl));
-                payment.setNote("Thanh toán qua " + request.getPaymentMethod());
+                payment.setPaymentUrl(MomoUtils.createPaymentUrl(
+                        order, payment.getTransactionCode(), momoReturnUrl,
+                        momoPartnerCode, momoAccessKey, momoSecretKey, momoIpnUrl));
+                payment.setNote("MoMo");
                 break;
         }
-        Payment savedPayment = paymentRepository.save(payment);
-        return convertToPaymentResponse(savedPayment);
+
+        return toPaymentResponse(paymentRepository.save(payment));
     }
 
-    // Update existing
     @Transactional
     public PaymentResponse updatePaymentStatus(Long paymentId, PaymentStatus newStatus, String transactionCode) {
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thanh toán"));
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + paymentId));
 
         payment.setPaymentStatus(newStatus);
 
         if (newStatus == PaymentStatus.SUCCESS) {
             payment.setPaidAt(LocalDateTime.now());
-            // Order
             Order order = payment.getOrder();
             order.setStatus(OrderStatus.CONFIRMED);
+            order.setPaymentStatus(PaymentStatus.PAID);
             orderRepository.save(order);
+        } else if (newStatus == PaymentStatus.FAILED) {
+            payment.getOrder().setPaymentStatus(PaymentStatus.UNPAID);
+            orderRepository.save(payment.getOrder());
         }
 
-        // Update existing
         if (transactionCode != null && !transactionCode.isEmpty()) {
             payment.setTransactionCode(transactionCode);
         }
 
-        Payment saved = paymentRepository.save(payment);
-        return convertToPaymentResponse(saved);
+        return toPaymentResponse(paymentRepository.save(payment));
     }
 
-    // Order
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByOrderId(Long orderId) {
-        User currentUser = userService.getCurrentUser();
-
-        Payment payment = paymentRepository.findByOrder_IdAndDeletedFalse(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin cho đơn hàng này"));
-
-        return convertToPaymentResponse(payment);
+        userService.getCurrentUser();
+        return toPaymentResponse(paymentRepository.findByOrder_IdAndDeletedFalse(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("No payment for order: " + orderId)));
     }
 
-    // Payment
-    @Transactional(readOnly = true)
-    public Page<PaymentSummaryResponse> getPaymentsByStatus(PaymentStatus status, int size, int page, String sortBy,
-            String direction) {
-        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<Payment> payments = paymentRepository.findByPaymentStatusAndDeletedFalse(status, pageable);
-        return payments.map(this::convertToPaymentSummaryResponse);
-    }
-
-    // By ID
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentById(Long paymentId) {
-
-        Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thanh toán"));
-
-        return convertToPaymentResponse(payment);
+        return toPaymentResponse(paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + paymentId)));
     }
 
-    // Payment
     @Transactional(readOnly = true)
     public Page<PaymentSummaryResponse> getMyPayments(int size, int page, String sortBy, String direction) {
-        User currentUser = userService.getCurrentUser();
-
-        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<Payment> payments = paymentRepository.findByOrder_User_IdAndDeletedFalse(currentUser.getId(), pageable);
-        return payments.map(this::convertToPaymentSummaryResponse);
+        User user = userService.getCurrentUser();
+        return paymentRepository
+                .findByOrder_User_IdAndDeletedFalse(user.getId(), pageable(page, size, sortBy, direction))
+                .map(this::toPaymentSummaryResponse);
     }
 
-    // Retrieve all
     @Transactional(readOnly = true)
     public Page<PaymentSummaryResponse> getAllPayments(int size, int page, String sortBy, String direction) {
+        return paymentRepository
+                .findByDeletedFalse(pageable(page, size, sortBy, direction))
+                .map(this::toPaymentSummaryResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PaymentSummaryResponse> getPaymentsByStatus(PaymentStatus status, int size, int page,
+            String sortBy, String direction) {
+        return paymentRepository
+                .findByPaymentStatusAndDeletedFalse(status, pageable(page, size, sortBy, direction))
+                .map(this::toPaymentSummaryResponse);
+    }
+
+    public String getVnpayHashSecret() { return vnpayHashSecret; }
+    public String getMomoSecretKey()   { return momoSecretKey; }
+
+    private Pageable pageable(int page, int size, String sortBy, String direction) {
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<Payment> payments = paymentRepository.findByDeletedFalse(pageable);
-        return payments.map(this::convertToPaymentSummaryResponse);
+        return PageRequest.of(page, size, sort);
     }
 
-    // convert method
-    private PaymentResponse convertToPaymentResponse(Payment payment) {
-        return new PaymentResponse(
-                payment.getId(),
-                payment.getOrder().getId(),
-                payment.getOrder().getOrderCode(),
-                payment.getAmount(),
-                payment.getPaymentMethod(),
-                payment.getPaymentStatus(),
-                payment.getTransactionCode(),
-                payment.getPaymentUrl(),
-                payment.getPaidAt(),
-                payment.getNote());
+    private PaymentResponse toPaymentResponse(Payment p) {
+        return new PaymentResponse(p.getId(), p.getOrder().getId(), p.getOrder().getOrderCode(),
+                p.getAmount(), p.getPaymentMethod(), p.getPaymentStatus(),
+                p.getTransactionCode(), p.getPaymentUrl(), p.getPaidAt(), p.getNote());
     }
 
-    private PaymentSummaryResponse convertToPaymentSummaryResponse(Payment payment) {
-        return new PaymentSummaryResponse(
-                payment.getId(),
-                payment.getOrder().getOrderCode(),
-                payment.getAmount(),
-                payment.getPaymentMethod(),
-                payment.getPaymentStatus(),
-                payment.getCreatedAt());
+    private PaymentSummaryResponse toPaymentSummaryResponse(Payment p) {
+        return new PaymentSummaryResponse(p.getId(), p.getOrder().getOrderCode(),
+                p.getAmount(), p.getPaymentMethod(), p.getPaymentStatus(), p.getCreatedAt());
     }
 }
