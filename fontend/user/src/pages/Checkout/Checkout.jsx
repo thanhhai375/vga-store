@@ -24,7 +24,6 @@ const Checkout = () => {
     note: ''
   });
 
-  // Process
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
@@ -52,12 +51,11 @@ const Checkout = () => {
         .then(res => {
           if (res?.data?.addresses && res.data.addresses.length > 0) {
             setUserAddresses(res.data.addresses);
-            // Default
             const defaultAddr = res.data.addresses.find(a => a.isDefault) || res.data.addresses[0];
             handleSelectSavedAddress(defaultAddr);
           }
         })
-        .catch(err => console.error('Lỗi lấy sổ địa chỉ:', err));
+        .catch(err => console.error('Failed to load address book:', err));
     }
   }, [isAuthenticated]);
 
@@ -84,11 +82,10 @@ const Checkout = () => {
     bankId: ''
   });
 
-  // List
   useEffect(() => {
     axios.get('https://provinces.open-api.vn/api/p/')
       .then(res => setProvinces(res.data))
-      .catch(err => console.error("Lỗi lấy Tỉnh/Thành:", err));
+      .catch(err => console.error('Failed to load provinces:', err));
   }, []);
 
   const handleProvinceChange = (e) => {
@@ -140,9 +137,7 @@ const Checkout = () => {
     axiosClient.get('/settings/public')
       .then(res => {
         const data = res.data || res || {};
-        // Search
         const getVal = (key) => data[key] || data[key.toLowerCase()] || data[key.toUpperCase()] || '';
-
         setBankInfo({
           bankId: getVal('BANK_ID'),
           accountNumber: getVal('BANK_ACC_NO'),
@@ -150,51 +145,46 @@ const Checkout = () => {
           bankName: getVal('BANK_ID')
         });
       })
-      .catch(err => {
-        console.error('Lỗi API Settings:', err);
-      });
+      .catch(err => console.error('Failed to load bank settings:', err));
   }, []);
 
   const handleChange = (e) => {
     setCustomerInfo({ ...customerInfo, [e.target.name]: e.target.value });
   };
 
-  // Error handling
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (checkoutItems.length === 0) return;
 
-    // Error handling
     const showError = (msg) => {
       setError(msg);
       window.scrollTo({ top: 100, behavior: 'smooth' });
     };
 
-    // Address
     let fullShippingAddress = '';
     if (selectedSavedAddress) {
       fullShippingAddress = selectedSavedAddress.detailedAddress;
     } else {
       fullShippingAddress = `${addressData.street ? addressData.street + ', ' : ''}${addressData.ward ? addressData.ward + ', ' : ''}${addressData.district ? addressData.district + ', ' : ''}${addressData.province}`.replace(/,\s*$/, "");
       if (!addressData.province || !addressData.district || !addressData.ward || !addressData.street) {
-        showError('Vui lòng chọn đầy đủ Tỉnh, Huyện, Xã và nhập số nhà!');
+        showError('Please fill in Province, District, Ward and Street address.');
         return;
       }
     }
 
     if (!customerInfo.fullName || !customerInfo.phone) {
-      showError('Vui lòng nhập đầy đủ Họ tên và Số điện thoại!');
+      showError('Please enter your full name and phone number.');
       return;
     }
 
     const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
     if (!phoneRegex.test(customerInfo.phone)) {
-      showError('Số điện thoại không hợp lệ! Phải là 10 số (vd: 0912345678).');
+      showError('Invalid phone number. Must be 10 digits (e.g. 0912345678).');
       return;
     }
 
     if (customerInfo.fullName.trim().length < 2) {
-      showError('Vui lòng nhập đầy đủ Họ tên thực!');
+      showError('Please enter your real full name.');
       return;
     }
 
@@ -202,32 +192,30 @@ const Checkout = () => {
     setError('');
 
     try {
+      // Payload gửi lên Backend — KHÔNG gửi price để tránh user chỉnh sửa giá
+      // Backend sẽ tự lấy giá từ DB và tính lại totalAmount
       const orderPayload = {
         fullName: customerInfo.fullName,
         phone: customerInfo.phone,
         address: fullShippingAddress,
-        shippingAddress: fullShippingAddress, // Address
+        shippingAddress: fullShippingAddress,
         note: customerInfo.note || '',
-        totalPrice: finalTotal,
-        totalAmount: finalTotal,
+        shippingFee: shippingFee, // Phí ship gửi để backend ghi nhận
         items: checkoutItems.map(item => ({
           productId: item.id,
           quantity: item.cartQuantity || 1,
-          price: Number(item.price)
+          // Không gửi price — backend lấy từ DB để đảm bảo an toàn
         }))
       };
 
-      // Order
       const orderRes = await orderService.createOrder(orderPayload);
-
-      // Error handling
       const orderData = orderRes?.data?.data || orderRes?.data || orderRes || {};
       const orderId = orderData.orderId || orderData.id;
       const orderCode = orderData.orderCode || orderData.id || 'N/A';
 
       setCreatedOrderCode(orderCode);
 
-      // Payment
+      // Tạo bản ghi thanh toán
       let fetchedPaymentUrl = null;
       if (orderId) {
         try {
@@ -239,25 +227,26 @@ const Checkout = () => {
         }
       }
 
-      // Delete
-      if (!buyNowItem) {
-        dispatch(clearCart());
-        if (isAuthenticated) {
-          try {
-            await cartService.clearCart();
-          } catch (err) { }
-        }
-      }
-
-      // Process
-      if (paymentMethod === 'VNPAY') {
+      // Với VNPay/MoMo: redirect ngay, CHƯA clear giỏ hàng
+      // Giỏ hàng chỉ clear sau khi callback về thành công
+      if (paymentMethod === 'VNPAY' || paymentMethod === 'MOMO') {
         if (fetchedPaymentUrl) {
+          // Lưu orderId vào sessionStorage để callback page có thể clear cart
+          sessionStorage.setItem('pendingOrderId', orderId);
           window.location.href = fetchedPaymentUrl;
           return;
         } else {
-          showError('Lỗi lấy Link VNPay, vui lòng thử lại hoặc chọn thanh toán khác.');
+          showError('Lỗi lấy link thanh toán, vui lòng thử lại hoặc chọn phương thức khác.');
           setLoading(false);
           return;
+        }
+      }
+
+      // Với COD và Bank Transfer: clear giỏ hàng ngay sau khi tạo đơn thành công
+      if (!buyNowItem) {
+        dispatch(clearCart());
+        if (isAuthenticated) {
+          try { await cartService.clearCart(); } catch (e) { /* bỏ qua lỗi clear cart */ }
         }
       }
 
