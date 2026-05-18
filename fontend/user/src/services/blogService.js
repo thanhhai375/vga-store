@@ -42,7 +42,9 @@ export const blogService = {
   getById: async (id) => {
     try {
       const response = await axiosClient.get(`/blogs/${id}`);
-      return response;
+      if (!response) return null;
+      // Process thumbnail URL same as getAll
+      return { ...response, thumbnail: processImageUrl(response, 0) };
     } catch (error) {
       console.error(`Lỗi lấy bài viết ${id}:`, error);
       return null;

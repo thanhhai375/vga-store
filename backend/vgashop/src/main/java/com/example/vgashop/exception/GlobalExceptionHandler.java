@@ -3,6 +3,7 @@ package com.example.vgashop.exception;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -133,16 +134,20 @@ public class GlobalExceptionHandler {
     // }
 
 
+    // DB constraint violations (nullable=false, unique key, etc.)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
+        String msg = ex.getRootCause() != null ? ex.getRootCause().getMessage() : ex.getMessage();
+        ApiResponse<Object> response = ApiResponse.error("Lỗi ràng buộc dữ liệu: " + msg);
+        ex.printStackTrace();
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneral(Exception ex) {
-        ApiResponse<Object> response = ApiResponse.error("Đã xảy ra lỗi hệ thống vui lòng thử lại!");
-        // Error handling
+        String errMsg = ex.getMessage() != null ? ex.getMessage() : "Đã xảy ra lỗi hệ thống";
+        ApiResponse<Object> response = ApiResponse.error("Lỗi hệ thống: " + errMsg);
         ex.printStackTrace();
-        ApiError error = new ApiError(
-        HttpStatus.INTERNAL_SERVER_ERROR.value(), 
-        "Internal Server Error",
-        ex.getMessage() != null ? ex.getMessage() : "Đã xảy ra lỗi hệ thống"
-        );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

@@ -529,6 +529,8 @@ public class AdminService {
         blog.setAuthor(dto.getAuthor() != null ? dto.getAuthor() : "Admin");
         blog.setContent(dto.getContent());
         blog.setPublishedDate(new Date());
+        blog.setFeatured(dto.getFeatured() != null ? dto.getFeatured() : false);
+        blog.setTags(dto.getTags());
         
         if (image != null && !image.isEmpty()) {
             blog.setThumbnail(uploadBlogImage(image));
@@ -547,9 +549,14 @@ public class AdminService {
         
         blog.setTitle(dto.getTitle());
         blog.setCategory(dto.getCategory());
-        blog.setExcerpt(dto.getExcerpt());
-        if (dto.getAuthor() != null) blog.setAuthor(dto.getAuthor());
-        blog.setContent(dto.getContent());
+        // Null-safe: keep existing value if DTO sends null
+        if (dto.getExcerpt() != null) blog.setExcerpt(dto.getExcerpt());
+        if (dto.getAuthor() != null && !dto.getAuthor().isBlank()) blog.setAuthor(dto.getAuthor());
+        if (dto.getContent() != null) blog.setContent(dto.getContent());
+        // Fix: old DB records may have NULL views — default to 0
+        if (blog.getViews() == null) blog.setViews(0);
+        if (dto.getFeatured() != null) blog.setFeatured(dto.getFeatured());
+        if (dto.getTags() != null) blog.setTags(dto.getTags());
 
         if (image != null && !image.isEmpty()) {
             blog.setThumbnail(uploadBlogImage(image));
@@ -571,15 +578,14 @@ public class AdminService {
 
     private String uploadBlogImage(MultipartFile file) {
         try {
-            String uploadDir = "uploads/blogs/";
-            Path uploadPath = Paths.get(uploadDir);
+            Path uploadPath = Paths.get("uploads", "blogs").toAbsolutePath();
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
             String originalFileName = file.getOriginalFilename();
             String fileName = System.currentTimeMillis() + "_" + originalFileName;
             Path filePath = uploadPath.resolve(fileName);
-            file.transferTo(filePath.toFile());
+            file.transferTo(filePath.toFile()); // absolute path — no temp dir issues
             return "/uploads/blogs/" + fileName;
         } catch (Exception e) {
             throw new RuntimeException("Không thể upload ảnh Blog: " + e.getMessage(), e);

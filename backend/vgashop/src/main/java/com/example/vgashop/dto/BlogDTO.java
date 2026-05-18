@@ -18,6 +18,16 @@ public class BlogDTO {
 
     private String content;
 
+    private Boolean featured = false;
+
+    private String tags; // comma-separated
+
+    public Boolean getFeatured() { return featured; }
+    public void setFeatured(Boolean featured) { this.featured = featured; }
+
+    public String getTags() { return tags; }
+    public void setTags(String tags) { this.tags = tags; }
+
     public String getTitle() {
         return title;
     }

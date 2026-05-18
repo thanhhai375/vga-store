@@ -153,7 +153,7 @@ public class AdminController {
     }
 
     // Update existing
-    @PutMapping("/products/{productID}/stock")
+    @PutMapping("/products/{productId}/stock")
     public ApiResponse<String> updateProductStock(@PathVariable Long productId, @RequestParam Integer stock) {
         adminService.updateProductStock(productId, stock);
         return ApiResponse.success("Cập nhật số lượng tồn kho thành công", "OK");

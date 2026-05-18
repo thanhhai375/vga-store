@@ -26,7 +26,7 @@ public class BlogController {
     public ResponseEntity<Blog> getBlogById(@PathVariable Long id) {
         Blog blog = blogRepository.findById(id).orElse(null);
         if (blog != null) {
-            blog.setViews(blog.getViews() + 1); // Increase view
+            blog.setViews((blog.getViews() == null ? 0 : blog.getViews()) + 1);
             blogRepository.save(blog);
             return ResponseEntity.ok(blog);
         }

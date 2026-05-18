@@ -40,4 +40,7 @@ public class Blog extends BaseEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private Date publishedDate;
 
+    @Column(length = 500)
+    private String tags; // comma-separated: "NVIDIA,RTX 4070,Benchmark"
+
 }

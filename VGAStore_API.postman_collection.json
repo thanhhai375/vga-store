@@ -1,0 +1,249 @@
+{
+  "info": {
+    "name": "VGA Store API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api" },
+    { "key": "token", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Đăng ký",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"123456\",\n  \"email\": \"test@example.com\",\n  \"fullName\": \"Test User\"\n}" }
+          }
+        },
+        {
+          "name": "Đăng nhập",
+          "event": [{ "listen": "test", "script": { "exec": ["const r = pm.response.json(); if(r.token) pm.collectionVariables.set('token', r.token);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"123456\"\n}" }
+          }
+        },
+        {
+          "name": "Google Login",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/auth/google",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"googleToken\": \"YOUR_GOOGLE_ID_TOKEN\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Users",
+      "item": [
+        { "name": "Lấy profile", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": "{{baseUrl}}/users/profile" } },
+        {
+          "name": "Cập nhật profile",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "PUT", "url": "{{baseUrl}}/users/profile",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Nguyễn Văn A\",\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Đường ABC\"\n}" }
+          }
+        },
+        {
+          "name": "Đổi mật khẩu",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "PUT", "url": "{{baseUrl}}/users/change-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"oldPassword\": \"123456\",\n  \"newPassword\": \"newpass123\"\n}" }
+          }
+        },
+        {
+          "name": "Thêm địa chỉ",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "POST", "url": "{{baseUrl}}/users/addresses",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Nguyễn Văn A\",\n  \"phone\": \"0901234567\",\n  \"address\": \"123 Đường ABC, TP.HCM\"\n}" }
+          }
+        },
+        { "name": "Xóa địa chỉ", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "DELETE", "url": "{{baseUrl}}/users/addresses/1" } },
+        { "name": "Danh sách users (admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/users?page=0&size=10", "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "10" }] } } }
+      ]
+    },
+    {
+      "name": "📦 Products",
+      "item": [
+        { "name": "Danh sách sản phẩm", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/products?page=0&size=10&sortBy=id&direction=asc", "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "10" }, { "key": "sortBy", "value": "id" }, { "key": "direction", "value": "asc" }] } } },
+        { "name": "Tìm kiếm sản phẩm", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/products/search?keyWord=RTX&page=0&size=10", "query": [{ "key": "keyWord", "value": "RTX" }, { "key": "page", "value": "0" }, { "key": "size", "value": "10" }] } } },
+        { "name": "Lọc sản phẩm", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/products/filter?minPrice=5000000&maxPrice=20000000&page=0&size=10", "query": [{ "key": "keyWord", "value": "", "disabled": true }, { "key": "brandIds", "value": "1,2", "disabled": true }, { "key": "minPrice", "value": "5000000" }, { "key": "maxPrice", "value": "20000000" }, { "key": "page", "value": "0" }, { "key": "size", "value": "10" }, { "key": "sortBy", "value": "price" }, { "key": "direction", "value": "asc" }] } } },
+        { "name": "Chi tiết sản phẩm", "request": { "method": "GET", "url": "{{baseUrl}}/products/1" } }
+      ]
+    },
+    {
+      "name": "🛒 Cart",
+      "item": [
+        { "name": "Lấy giỏ hàng", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": "{{baseUrl}}/cart" } },
+        {
+          "name": "Thêm vào giỏ hàng",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "POST", "url": "{{baseUrl}}/cart/add",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": 1,\n  \"quantity\": 1\n}" }
+          }
+        },
+        {
+          "name": "Cập nhật số lượng",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "PUT", "url": "{{baseUrl}}/cart/items/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 2\n}" }
+          }
+        },
+        { "name": "Xóa item khỏi giỏ", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "DELETE", "url": "{{baseUrl}}/cart/items/1" } },
+        { "name": "Xóa toàn bộ giỏ hàng", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "DELETE", "url": "{{baseUrl}}/cart" } }
+      ]
+    },
+    {
+      "name": "📋 Orders",
+      "item": [
+        {
+          "name": "Đặt hàng",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "POST", "url": "{{baseUrl}}/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Nguyễn Văn A\",\n  \"phone\": \"0901234567\",\n  \"shippingAddress\": \"123 Đường ABC, TP.HCM\",\n  \"note\": \"\",\n  \"items\": [\n    { \"productId\": 1, \"quantity\": 1 }\n  ]\n}" }
+          }
+        },
+        { "name": "Đơn hàng của tôi", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": "{{baseUrl}}/orders/my" } },
+        { "name": "Chi tiết đơn hàng", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": "{{baseUrl}}/orders/1" } },
+        { "name": "Hủy đơn hàng", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "PUT", "url": { "raw": "{{baseUrl}}/orders/1/cancel?reason=Không+còn+nhu+cầu", "query": [{ "key": "reason", "value": "Không còn nhu cầu" }] } } }
+      ]
+    },
+    {
+      "name": "💳 Payments",
+      "item": [
+        {
+          "name": "Tạo thanh toán",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "POST", "url": "{{baseUrl}}/payments/orders/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"method\": \"VNPAY\",\n  \"returnUrl\": \"http://localhost:5173/payment/pending\"\n}" }
+          }
+        },
+        { "name": "Lịch sử thanh toán", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/payments?page=0&size=10", "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "10" }] } } },
+        { "name": "VNPay Callback", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/payments/vnpay/callback?vnp_ResponseCode=00&vnp_TxnRef=TXN123", "query": [{ "key": "vnp_ResponseCode", "value": "00" }, { "key": "vnp_TxnRef", "value": "TXN123" }] } } }
+      ]
+    },
+    {
+      "name": "📝 Blogs",
+      "item": [
+        { "name": "Danh sách bài viết", "request": { "method": "GET", "url": "{{baseUrl}}/blogs" } },
+        { "name": "Chi tiết bài viết", "request": { "method": "GET", "url": "{{baseUrl}}/blogs/1" } },
+        { "name": "Bài viết nổi bật", "request": { "method": "GET", "url": "{{baseUrl}}/blogs/featured" } },
+        { "name": "Theo danh mục", "request": { "method": "GET", "url": "{{baseUrl}}/blogs/category/Đánh giá" } }
+      ]
+    },
+    {
+      "name": "⭐ Reviews",
+      "item": [
+        { "name": "Reviews theo sản phẩm", "request": { "method": "GET", "url": "{{baseUrl}}/reviews/product/1" } },
+        { "name": "Reviews theo blog", "request": { "method": "GET", "url": "{{baseUrl}}/reviews/blog/1" } },
+        {
+          "name": "Tạo review sản phẩm",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/reviews",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"product\": { \"id\": 1 },\n  \"rating\": 5,\n  \"comment\": \"Sản phẩm rất tốt!\",\n  \"guestName\": \"Nguyễn Văn A\"\n}" }
+          }
+        },
+        {
+          "name": "Tạo review blog",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/reviews",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"blog\": { \"id\": 1 },\n  \"rating\": 5,\n  \"comment\": \"Bài viết hay!\",\n  \"guestName\": \"Nguyễn Văn A\"\n}" }
+          }
+        },
+        { "name": "Kiểm tra có thể review", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": "{{baseUrl}}/reviews/can-review/1" } }
+      ]
+    },
+    {
+      "name": "🏷️ Brands",
+      "item": [
+        { "name": "Danh sách thương hiệu", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/brands?page=0&size=20", "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }] } } },
+        { "name": "Chi tiết thương hiệu", "request": { "method": "GET", "url": "{{baseUrl}}/brands/1" } },
+        { "name": "Tìm kiếm thương hiệu", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/brands/search?keyWord=ASUS", "query": [{ "key": "keyWord", "value": "ASUS" }] } } }
+      ]
+    },
+    {
+      "name": "📂 Categories",
+      "item": [
+        { "name": "Danh sách danh mục", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/categories?page=0&size=20", "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }] } } },
+        { "name": "Danh mục active", "request": { "method": "GET", "url": "{{baseUrl}}/categories/active" } },
+        { "name": "Chi tiết danh mục", "request": { "method": "GET", "url": "{{baseUrl}}/categories/1" } }
+      ]
+    },
+    {
+      "name": "🔧 Admin",
+      "item": [
+        { "name": "Dashboard", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": "{{baseUrl}}/admin/dashboard" } },
+        { "name": "Dashboard Charts", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/dashboard/charts?period=6months", "query": [{ "key": "period", "value": "6months" }] } } },
+        { "name": "Danh sách đơn hàng (admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/orders?page=0&size=12&status=PENDING", "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "12" }, { "key": "status", "value": "PENDING", "disabled": true }] } } },
+        { "name": "Chi tiết đơn hàng (admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": "{{baseUrl}}/admin/orders/1" } },
+        {
+          "name": "Cập nhật trạng thái đơn hàng",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "PUT", "url": "{{baseUrl}}/admin/orders/1/status",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"CONFIRMED\",\n  \"note\": \"Đã xác nhận đơn hàng\"\n}" }
+          }
+        },
+        { "name": "Danh sách users (admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/users?page=0&size=12", "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "12" }, { "key": "search", "value": "", "disabled": true }, { "key": "role", "value": "USER", "disabled": true }] } } },
+        { "name": "Toggle trạng thái user", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "PUT", "url": "{{baseUrl}}/admin/users/2/status" } },
+        { "name": "Xóa user", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "DELETE", "url": "{{baseUrl}}/admin/users/2" } },
+        { "name": "Danh sách sản phẩm (admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/products?page=0&size=12", "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "12" }, { "key": "search", "value": "", "disabled": true }] } } },
+        {
+          "name": "Tạo sản phẩm (admin)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "POST", "url": "{{baseUrl}}/admin/products",
+            "body": { "mode": "formdata", "formdata": [{ "key": "name", "value": "RTX 4070 SUPER" }, { "key": "price", "value": "15990000" }, { "key": "stock", "value": "10" }, { "key": "brandId", "value": "1" }, { "key": "categoryId", "value": "1" }, { "key": "image", "type": "file", "src": "" }] }
+          }
+        },
+        { "name": "Xóa sản phẩm (admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "DELETE", "url": "{{baseUrl}}/admin/products/1" } },
+        {
+          "name": "Tạo bài viết blog (admin)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "POST", "url": "{{baseUrl}}/admin/blogs",
+            "body": { "mode": "formdata", "formdata": [{ "key": "blog", "value": "{\"title\":\"Test Blog\",\"category\":\"Đánh giá\",\"author\":\"Admin\",\"excerpt\":\"Tóm tắt bài viết\",\"content\":\"Nội dung\",\"featured\":false,\"tags\":\"NVIDIA,RTX\"}", "contentType": "application/json" }, { "key": "image", "type": "file", "src": "", "disabled": true }] }
+          }
+        },
+        {
+          "name": "Cập nhật bài viết blog (admin)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "method": "PUT", "url": "{{baseUrl}}/admin/blogs/1",
+            "body": { "mode": "formdata", "formdata": [{ "key": "blog", "value": "{\"title\":\"Updated Blog\",\"category\":\"Đánh giá\",\"author\":\"Admin\",\"excerpt\":\"Tóm tắt\",\"content\":\"Nội dung mới\",\"featured\":true,\"tags\":\"NVIDIA\"}", "contentType": "application/json" }, { "key": "image", "type": "file", "src": "", "disabled": true }] }
+          }
+        },
+        { "name": "Xóa bài viết blog (admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "DELETE", "url": "{{baseUrl}}/admin/blogs/1" } },
+        { "name": "Danh sách reviews (admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "GET", "url": "{{baseUrl}}/admin/reviews" } },
+        { "name": "Xóa review (admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "DELETE", "url": "{{baseUrl}}/admin/reviews/1" } },
+        { "name": "Pin lên đầu", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] }, "method": "PUT", "url": "{{baseUrl}}/admin/pin-top/blog/1" } }
+      ]
+    }
+  ]
+}
